@@ -161,8 +161,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="more-item" onclick="showPage('bar')"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#1F4E79;fill:none;stroke-width:1.8"><path d="M8 22h8M12 11v11M5 2l2 9h10l2-9"/></svg>Бар</div>
     <div class="more-item" onclick="showPage('catch')"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#1F4E79;fill:none;stroke-width:1.8"><path d="M12 22C6 22 2 17 2 12c0-3 3-5 3-5s1 2 3 3c0-3 2-6 4-7 0 4 2 6 4 6 1.5 0 3-1 4-2 1 2 2 4 2 6 0 5-4 9-10 9z"/></svg>Улов</div>
     <div class="more-item" onclick="showPage('gear')"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#1F4E79;fill:none;stroke-width:1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Снаряга</div>
-    <div class="more-item" onclick="showPage('pantry')"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#1F4E79;fill:none;stroke-width:1.8"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h18v4H3z"/></svg>Кладовая</div>
-    <div class="more-item" onclick="showPage('expenses')"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#1F4E79;fill:none;stroke-width:1.8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4v4m0 4h.01M8 12h8"/><circle cx="12" cy="12" r="10"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>Расходы</div>
     <div class="more-item" onclick="showPage('safety')"><svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:#1F4E79;fill:none;stroke-width:1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Безопасность</div>
   </div>
 </div>
@@ -171,25 +169,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="p-catch" class="page"></div>
 <div id="p-gear" class="page"></div>
 <div id="p-safety" class="page"></div>
-<div id="p-expenses" class="page"></div>
-<div id="p-pantry" class="page"></div>
 <div id="river-detail" class="river-detail"></div>
 <div class="overlay" id="overlay" onclick="closePicker()"></div>
 <div class="meal-picker" id="mealPicker">
   <div class="picker-title" id="pickerTitle">Выбери блюдо</div>
   <div id="pickerItems"></div>
   <button class="picker-cancel" onclick="closePicker()">Отмена</button>
-</div>
-
-<div id="mealConstructor" style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:16px 16px 0 0;padding:16px;z-index:300;box-shadow:0 -4px 20px rgba(0,0,0,0.15);display:none;max-height:80vh;overflow-y:auto">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <div style="font-size:16px;font-weight:700" id="constructorTitle">Выбери блюдо</div>
-    <button onclick="closeConstructor()" style="background:none;border:none;font-size:20px;color:#888;cursor:pointer">×</button>
-  </div>
-  <div id="constructorMain"></div>
-  <div id="constructorGarnish"></div>
-  <div id="constructorCocktail"></div>
-  <button onclick="saveConstructor()" style="width:100%;padding:14px;background:#1F4E79;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:12px">Сохранить</button>
 </div>
 <div class="bottomnav">
   <div class="bnav active" id="bn-route" onclick="showPage('route',this)"><svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Маршрут</div>
@@ -361,15 +346,6 @@ var SHOP=[
 {id:'b13',name:'Angostura биттер',qty:'1 бутылочка',pp:0,unit:'шт'},
 {id:'b14',name:'Фляжки (наполнить дома)',qty:'по числу',pp:0,unit:'шт'},
 ]},
-,
-{group:'Маркетплейсы (заказать заранее)',items:[
-{id:'mp1',name:'Фальшфейеры',qty:'3 шт',pp:0,unit:'шт'},
-{id:'mp2',name:'Медвежий спрей',qty:'2 шт',pp:0,unit:'шт'},
-{id:'mp3',name:'Газ цанговый',qty:'10 шт',pp:0,unit:'шт'},
-{id:'mp4',name:'Колокольчики на рюкзак',qty:'3 шт',pp:0,unit:'шт'},
-{id:'mp5',name:'Дрипы кофе (если не нашли)',qty:'по нужде',pp:0,unit:'шт'},
-{id:'mp6',name:'Ремкомплект BOA',qty:'1 шт',pp:0,unit:'шт'},
-]},
 ];
 
 var GC=['Тент Маверик 3x3','Котелок 5 л','Котелок 2 л','Сковорода (x2)','Плита основная','Джетбойл + газ НЗ','Газ цанговый (x10)','Доски разделочные (x2)','Миски пластик (x5)','Стаканы железные (x4)','Ложки, вилки','Лопатки для жарки','Нож кухонный','Половник складной','Пиллер','Фумитокс / репелленты','Огниво + диски','Сигнал охотника','Баул гермо 120 л','Веревка / паракорд','Пила складная','ФАЛЬШФЕЙЕРЫ (x3 минимум!!)','МЕДВЕЖИЙ СПРЕЙ (x2)','Колокольчики на рюкзак','Фонари + батарейки','Пакеты мусорные 120 л'];
@@ -405,8 +381,6 @@ function render(id){
   else if(id==='catch')rCatch();
   else if(id==='gear')rGear();
   else if(id==='safety')rSafety();
-  else if(id==='pantry')rPantry();
-  else if(id==='expenses')rExpenses();
 }
 function toggle(c){c.classList.toggle('open');}
 function esc(s){return s.replace(/'/g,"\\'");}
@@ -450,14 +424,8 @@ function showRiver(id){
   +'<div class="info-card"><div class="info-title">Приманки</div><div style="font-size:14px;line-height:1.6">'+r.lures+'</div></div>'
   +'<div class="info-card"><div class="info-title">Лучшее время</div><div style="font-size:14px;line-height:1.6">'+r.best+'</div></div>'
   +'<div class="info-card"><div class="info-title">Люди</div><div style="font-size:14px">'+r.people+'</div></div>'
-  +'<div class="info-card" style="background:#fff3cd"><div class="info-title">Безопасность на реке</div><div class="bul">Фальшфейер — всегда иметь при себе у воды</div><div class="bul">Медвежий спрей на поясе при ходьбе по берегу</div><div class="bul">Колокольчик шуметь при перемещении в кустах</div><div class="bul">Не оставлять рыбу и потроха у воды</div><div class="bul">При встрече — не бежать, говорить громко, медленно отступать</div><div class="bul">Экстренный: 112</div></div>'
-+'<div class="info-card"><div class="info-title">Быстро записать улов</div>'
-+'<div class="form-row-2"><div><div class="form-label">Рыба</div><select class="form-select" id="qFish"><option>Сима</option><option>Кунджа</option><option>Горбуша</option><option>Голец</option><option>Другое</option></select></div><div><div class="form-label">Кол-во</div><input class="form-input" type="number" id="qCnt" value="1" min="1"></div></div>'
-+'<div class="toggle-row" style="margin-bottom:10px"><div class="toggle-btn active" id="qKept" onclick="setQK(true)">Взяли</div><div class="toggle-btn" id="qRel" onclick="setQK(false)">Отпустили</div></div>'
-+'<button class="save-catch-btn" id="qSave">Сохранить улов</button></div>'
-+'<div class="info-card"><div class="info-title">Заметки</div><textarea class="notes-area" id="rn-'+id+'" placeholder="Что работало, где клевало...">'+note+'</textarea><button class="notes-save" onclick="saveRN(\''+id+'\')">Сохранить</button></div>';
+  +'<div class="info-card"><div class="info-title">Заметки</div><textarea class="notes-area" id="rn-'+id+'" placeholder="Что работало, где клевало...">'+note+'</textarea><button class="notes-save" onclick="saveRN(\''+id+'\')">Сохранить</button></div>';
   det.classList.add('show');
-  setTimeout(function(){setupQuickCatch(r.name);},100);
 }
 function backR(){document.getElementById('river-detail').classList.remove('show');document.getElementById('p-rivers').classList.add('show');}
 function saveRN(id){ST.riverN[id]=document.getElementById('rn-'+id).value;save();alert('Сохранено!');}
@@ -515,8 +483,7 @@ function rShop(){
     });
     html+='</div>';
   });
-  html+='<button class="reset-btn" onclick="rstS()">Сбросить все отметки</button>
-    <button class="reset-btn" style="color:#1F4E79;margin-top:4px" onclick="addShopGroup()">+ Добавить свою группу</button>';
+  html+='<button class="reset-btn" onclick="rstS()">Сбросить все отметки</button>';
   el.innerHTML=html;
 }
 function chP(d){ST.people=Math.max(1,Math.min(10,ST.people+d));save();rShop();}
@@ -544,93 +511,11 @@ function setK(v){cKept=v;document.getElementById('bKept').classList.toggle('acti
 function saveCatch(){ST.catches.push({date:document.getElementById('cDate').value,river:document.getElementById('cRiver').value,fish:document.getElementById('cFish').value,count:parseInt(document.getElementById('cCnt').value)||1,weight:parseFloat(document.getElementById('cWt').value)||0,kept:cKept});save();document.getElementById('cForm').classList.remove('show');rCatch();}
 function delC(i){if(confirm('Удалить?')){ST.catches.splice(i,1);save();rCatch();}}
 
-
-// ============ GEAR GROUPS (by bags) ============
-var GEAR_GROUPS_COMMON = [
-  {title:'Медведи — ОБЯЗАТЕЛЬНО', items:['ФАЛЬШФЕЙЕРЫ (x3 минимум!!)', 'МЕДВЕЖИЙ СПРЕЙ (x2)', 'Колокольчики на рюкзак']},
-  {title:'Лагерь и кухня', items:['Тент Маверик 3x3','Котелок 5 л','Котелок 2 л','Сковорода (x2)','Плита основная','Джетбойл + газ НЗ','Газ цанговый (x10)','Доски разделочные (x2)','Миски пластик (x5)','Стаканы железные (x4)','Ложки, вилки','Лопатки для жарки','Нож кухонный','Половник складной','Пиллер']},
-  {title:'Инструменты и прочее', items:['Баул гермо 120 л','Веревка / паракорд','Пила складная','Фонари + батарейки','Пакеты мусорные 120 л','Огниво + диски','Сигнал охотника','Фумитокс / репелленты']},
-];
-var GEAR_GROUPS_PERSONAL = [
-  {title:'Одежда и обувь', items:['Вейдерсы','Боты забродные','Кроксы / сандали','Куртка штормовая','Флис комплект','Термобельё','Пуховик','Шапки (x2)','Перчатки (x2 пары)','Бафф','Носки теплые (x3 пары)','Поляризационные очки','Кепка / бейсболка','Дождевик']},
-  {title:'Снаряжение и техника', items:['Налобный фонарь','Спальник','Коврик','Подушка','Пауэрбанк (x2)','Зарядки + провода','Наушники','Фляга']},
-  {title:'Документы', items:['Паспорт','Лицензия на симу']},
-  {title:'Снасти', items:['Спиннинги','Катушки','Приманки (вобы, колебалки)','Шнуры / поводки / застежки','Нахлыст (если берешь)','Ремкомплект BOA']},
-  {title:'Личная аптечка и уход', items:['Аптечка личная','Несессер','Крем от солнца','Сухой душ']},
-];
-
 function rGear(){
   var el=document.getElementById('p-gear');
   if(!ST.gearP)ST.gearP=GP.slice();
-  
-  var allCommonItems=[];
-  GEAR_GROUPS_COMMON.forEach(function(g){allCommonItems=allCommonItems.concat(g.items);});
-  var dcC=allCommonItems.filter(function(_,i){return ST.gearCC[i];}).length;
-  var dcP=ST.gearP.filter(function(_,i){return ST.gearPC[i];}).length;
-  
-  var html='<div class="subtabs"><div class="stab'+(gT==='common'?' active':'')+'" onclick="setGT(\'common\')">Общая</div><div class="stab'+(gT==='personal'?' active':'')+'" onclick="setGT(\'personal\')">Личная</div></div>';
-  
-  // COMMON
-  html+='<div id="gC" style="display:'+(gT==='common'?'block':'none')+'">';
-  html+='<div style="font-size:13px;color:#888;margin-bottom:8px">'+dcC+' / '+allCommonItems.length+' собрано</div>';
-  var ci=0;
-  GEAR_GROUPS_COMMON.forEach(function(g){
-    html+='<div style="font-size:13px;font-weight:700;color:#1F4E79;margin:12px 0 6px;padding-left:4px">'+g.title+'</div>';
-    html+='<div class="check-group">';
-    g.items.forEach(function(item){
-      var i=ci++;
-      html+='<div class="check-item'+(ST.gearCC[i]?' done':'')+'" onclick="togGC('+i+',this)"><div class="check-box'+(ST.gearCC[i]?' checked':'')+'"></div><span class="check-text">'+item+'</span></div>';
-    });
-    html+='</div>';
-  });
-  html+='</div>';
-  
-  // PERSONAL
-  html+='<div id="gP" style="display:'+(gT==='personal'?'block':'none')+'">';
-  html+='<div style="font-size:13px;color:#888;margin-bottom:8px">'+dcP+' / '+ST.gearP.length+' собрано</div>';
-  
-  // Group personal items
-  var pi=0;
-  var personalGroups={};
-  GEAR_GROUPS_PERSONAL.forEach(function(g){
-    personalGroups[g.title]=[];
-    g.items.forEach(function(item){
-      var idx=ST.gearP.indexOf(item);
-      if(idx>=0)personalGroups[g.title].push({name:item,idx:idx});
-    });
-  });
-  // User-added items
-  var customP=[];
-  ST.gearP.forEach(function(item,idx){
-    var found=false;
-    GEAR_GROUPS_PERSONAL.forEach(function(g){if(g.items.indexOf(item)>=0)found=true;});
-    if(!found)customP.push({name:item,idx:idx});
-  });
-  
-  GEAR_GROUPS_PERSONAL.forEach(function(g){
-    if(!personalGroups[g.title]||!personalGroups[g.title].length)return;
-    html+='<div style="font-size:13px;font-weight:700;color:#1F4E79;margin:12px 0 6px;padding-left:4px">'+g.title+'</div>';
-    html+='<div class="check-group">';
-    personalGroups[g.title].forEach(function(item){
-      html+='<div class="check-item'+(ST.gearPC[item.idx]?' done':'')+'" onclick="togGP('+item.idx+',this)"><div class="check-box'+(ST.gearPC[item.idx]?' checked':'')+'"></div><span class="check-text">'+item.name+'</span></div>';
-    });
-    html+='</div>';
-  });
-  
-  if(customP.length){
-    html+='<div style="font-size:13px;font-weight:700;color:#1F4E79;margin:12px 0 6px;padding-left:4px">Своё</div>';
-    html+='<div class="check-group">';
-    customP.forEach(function(item){
-      html+='<div class="check-item'+(ST.gearPC[item.idx]?' done':'')+'" onclick="togGP('+item.idx+',this)"><div class="check-box'+(ST.gearPC[item.idx]?' checked':'')+'"></div><span class="check-text">'+item.name+'</span><span class="delete-item" onclick="event.stopPropagation();delGP('+item.idx+')">×</span></div>';
-    });
-    html+='</div>';
-  }
-  
-  html+='<div class="check-group"><div class="add-item-btn" onclick="showAG()">+ Добавить свою позицию</div><div class="add-item-input" id="addGI"><input type="text" id="addGT" placeholder="Что добавить..."><button onclick="addG()">OK</button></div></div>';
-  html+='</div>';
-  
-  el.innerHTML=html;
-}).length;
+  var gp=ST.gearP;
+  var dcC=GC.filter(function(_,i){return ST.gearCC[i];}).length;
   var dcP=gp.filter(function(_,i){return ST.gearPC[i];}).length;
   var html='<div class="subtabs"><div class="stab'+(gT==='common'?' active':'')+'" onclick="setGT(\'common\')">Общая</div><div class="stab'+(gT==='personal'?' active':'')+'" onclick="setGT(\'personal\')">Личная</div></div>';
   html+='<div id="gC" style="display:'+(gT==='common'?'block':'none')+'"><div style="font-size:13px;color:#888;margin-bottom:8px">'+dcC+' / '+GC.length+' собрано</div><div class="check-group">';
@@ -754,375 +639,6 @@ function rSafety(){
   +'<div class="info-card"><div class="bul">Оформить в день прилёта — не тянуть!</div><div class="bul">Южный: ул. Ленина 551 — магазин Эмико Фиш</div><div class="bul">~1300 руб за 5 экземпляров / человека</div><div class="bul">На '+ST.people+' чел лимит: '+(ST.people*5)+' симы</div><div class="bul">Приложение Сахалинрыбвод — онлайн</div><div class="bul">Сахалинский таймень — только поймал-отпустил!</div></div>';
 }
 
-
-
-// ============ PANTRY DATA ============
-var PANTRY = {
-  breakfasts: [
-    {id:'b1',name:'Омлет с бужениной',time:15},
-    {id:'b2',name:'Яичница',time:10},
-    {id:'b3',name:'Яйца пашот + малосольная сима',time:20},
-    {id:'b4',name:'Яйца пашот + голландский + икра',time:30},
-    {id:'b5',name:'Шакшука',time:20},
-    {id:'b6',name:'Каша быстрая',time:5},
-    {id:'b7',name:'Бутики с бужениной',time:5},
-    {id:'b8',name:'Бутики с малосольной симой',time:5},
-    {id:'b9',name:'Риет на хлебе + варёные яйца',time:5},
-    {id:'b10',name:'Паштет на хлебе',time:5},
-    {id:'b11',name:'Малосольная сима + масло + хлеб',time:5},
-  ],
-  lunches: [
-    {id:'l1',name:'Орехи + сникерс + дрип',time:0},
-    {id:'l2',name:'Казинаки + батончики',time:0},
-    {id:'l3',name:'Бутики с колбасой',time:5},
-    {id:'l4',name:'Сосиски на костре + хлеб',time:15},
-    {id:'l5',name:'Устрицы на Буссе',time:0},
-    {id:'l6',name:'Перекус в дороге',time:0},
-    {id:'l7',name:'Уха быстрая',time:20},
-  ],
-  dinners: [
-    {id:'d1',name:'Рыба бабочкой на костре',time:40},
-    {id:'d2',name:'Рыба в фольге',time:30},
-    {id:'d3',name:'Стейки из симы',time:15},
-    {id:'d4',name:'Уха рыбацкая',time:40},
-    {id:'d5',name:'Пельмени из симы на сочнях',time:30},
-    {id:'d6',name:'Хе из симы',time:40},
-    {id:'d7',name:'Сугудай',time:20},
-    {id:'d8',name:'Сашими',time:10},
-    {id:'d9',name:'Яйца пашот + голландский + икра',time:40},
-    {id:'d10',name:'Карбонара из симы',time:25},
-    {id:'d11',name:'Феттучини с симой',time:25},
-    {id:'d12',name:'Макароны по-флотски с тушняком',time:15},
-    {id:'d13',name:'Тушняк + гречка',time:15},
-    {id:'d14',name:'Макароны с бужениной',time:15},
-    {id:'d15',name:'Дошик + плавленый сырок',time:10},
-    {id:'d16',name:'Суп из пакета',time:10},
-    {id:'d17',name:'Рис с рыбой',time:25},
-  ],
-  garnishes: ['Гречка','Макароны','Спагетти','Рис быстрый','Хлеб + масло','Хлебцы','Без гарнира'],
-  cocktails: [
-    'Негрони классика','Негрони Сбальято','Джин-тоник','Джин + тархун',
-    'French 75',"Bee's Knees",'Том Коллинз','Московский мул','Куба либре',
-    'Мохито','Dark & Stormy','Rum Old Fashioned','Егерь сауэр','Jäger тоник',
-    'Wine Spritzer','Spritz без апероля','Kir Royale','Раф с халвой',
-    'Бамбл би','Без коктейля'
-  ]
-};
-
-// Load pantry customizations
-(function(){
-  try {
-    var c=JSON.parse(localStorage.getItem('pantryCustom')||'{}');
-    ['breakfasts','lunches','dinners'].forEach(function(k){
-      if(c[k])PANTRY[k]=PANTRY[k].concat(c[k]);
-    });
-    if(c.garnishes)PANTRY.garnishes=PANTRY.garnishes.concat(c.garnishes);
-    if(c.cocktails)PANTRY.cocktails=PANTRY.cocktails.concat(c.cocktails);
-  }catch(e){}
-})();
-
-// ============ PANTRY PAGE ============
-function rPantry(){
-  var el=document.getElementById('p-pantry');
-  if(!el)return;
-  function PG(title,key,items,addFn){
-    var h='<div class="sec-h">'+title+'</div><div class="check-group">';
-    items.forEach(function(item,i){
-      var name=typeof item==='string'?item:item.name;
-      h+='<div class="check-item" style="cursor:default"><span class="check-text">'+name+'</span><span class="delete-item" onclick="delPantry(\''+key+'\','+i+')">×</span></div>';
-    });
-    h+='<div class="add-item-btn" onclick="showAddPantry(\''+key+'\',\''+addFn+'\')">+ Добавить своё</div>';
-    h+='<div class="add-item-input" id="addP-'+key+'"><input type="text" id="addPT-'+key+'" placeholder="Название..."><button onclick="addPantryItem(\''+key+'\')">OK</button></div>';
-    h+='</div>';
-    return h;
-  }
-  el.innerHTML=
-    '<div style="font-size:13px;color:#888;margin-bottom:10px">База всех блюд и вариантов. Используется в Меню для выбора.</div>'
-    +PG('Завтраки','breakfasts',PANTRY.breakfasts)
-    +PG('Обеды и перекусы','lunches',PANTRY.lunches)
-    +PG('Ужины','dinners',PANTRY.dinners)
-    +PG('Гарниры','garnishes',PANTRY.garnishes)
-    +'<div class="sec-h">Коктейли</div><div class="check-group">'
-    +PANTRY.cocktails.map(function(c,i){return '<div class="check-item" style="cursor:default"><span class="check-text">'+c+'</span></div>';}).join('')
-    +'</div>';
-}
-
-function showAddPantry(key){
-  document.getElementById('addP-'+key).classList.add('show');
-  document.getElementById('addPT-'+key).focus();
-}
-
-function addPantryItem(key){
-  var v=document.getElementById('addPT-'+key).value.trim();
-  if(!v)return;
-  var c=JSON.parse(localStorage.getItem('pantryCustom')||'{}');
-  if(!c[key])c[key]=[];
-  if(key==='garnishes'||key==='cocktails'){c[key].push(v);PANTRY[key].push(v);}
-  else{c[key].push({id:'u'+Date.now(),name:v,time:0});PANTRY[key].push({id:'u'+Date.now(),name:v,time:0});}
-  localStorage.setItem('pantryCustom',JSON.stringify(c));
-  rPantry();
-}
-
-function delPantry(key,i){
-  // Only allow deleting user-added items (id starts with 'u')
-  var item=PANTRY[key][i];
-  var isCustom=typeof item==='string'?false:(item.id&&item.id.indexOf('u')===0);
-  if(!isCustom){alert('Базовые блюда нельзя удалить, только свои.');return;}
-  PANTRY[key].splice(i,1);
-  var c=JSON.parse(localStorage.getItem('pantryCustom')||'{}');
-  if(c[key])c[key]=c[key].filter(function(x){return x.id!==item.id;});
-  localStorage.setItem('pantryCustom',JSON.stringify(c));
-  rPantry();
-}
-
-// ============ MEAL CONSTRUCTOR ============
-var mealPickState = {di:0, mi:0, type:'dinner'};
-
-function openMealConstructor(di, mi, mealType){
-  mealPickState={di:di,mi:mi,type:mealType};
-  var listKey = mealType==='breakfast'?'breakfasts':mealType==='lunch'?'lunches':'dinners';
-  var items = PANTRY[listKey];
-  
-  document.getElementById('constructorTitle').textContent = 
-    mealType==='breakfast'?'Выбери завтрак':mealType==='lunch'?'Выбери обед':'Выбери ужин';
-  
-  // Main dish
-  document.getElementById('constructorMain').innerHTML = 
-    '<div class="ing-label">Основное блюдо</div>'
-    +items.map(function(item){
-      var name=item.name||item;
-      var k='main_'+di+'_'+mi;
-      var cur=ST.menuOv[k]||'';
-      return '<div class="picker-item'+(cur===name?' style=\"background:#E6F1FB\"':'')+'" onclick="selMain(\''+name.replace(/'/g,"\\'")+'\')">'+name+(item.time?' <span style=\"color:#aaa;font-size:12px\">~'+item.time+' мин</span>':'')+'</div>';
-    }).join('');
-  
-  // Garnish
-  document.getElementById('constructorGarnish').innerHTML=
-    '<div class="ing-label">Гарнир</div>'
-    +PANTRY.garnishes.map(function(g){
-      var k='garn_'+di+'_'+mi;
-      var cur=ST.menuOv[k]||'';
-      return '<div class="picker-item'+(cur===g?' style=\"background:#E6F1FB\"':'')+'" onclick="selGarn(\''+g+'\')">'+g+'</div>';
-    }).join('');
-  
-  // Cocktail
-  document.getElementById('constructorCocktail').innerHTML=
-    '<div class="ing-label">Коктейль вечера</div>'
-    +PANTRY.cocktails.map(function(c){
-      var k='cock_'+di+'_'+mi;
-      var cur=ST.menuOv[k]||'';
-      return '<div class="picker-item'+(cur===c?' style=\"background:#E6F1FB\"':'')+'" onclick="selCock(\''+c.replace(/'/g,"\\'")+'\')">'+c+'</div>';
-    }).join('');
-  
-  document.getElementById('mealConstructor').classList.add('show');
-  document.getElementById('overlay').classList.add('show');
-}
-
-function selMain(v){ST.menuOv['main_'+mealPickState.di+'_'+mealPickState.mi]=v;save();hiliteSel('main',v);}
-function selGarn(v){ST.menuOv['garn_'+mealPickState.di+'_'+mealPickState.mi]=v;save();hiliteSel('garn',v);}
-function selCock(v){ST.menuOv['cock_'+mealPickState.di+'_'+mealPickState.mi]=v;save();hiliteSel('cock',v);}
-function hiliteSel(t,v){
-  var id=t==='main'?'constructorMain':t==='garn'?'constructorGarnish':'constructorCocktail';
-  document.getElementById(id).querySelectorAll('.picker-item').forEach(function(el){
-    el.style.background=el.textContent.trim().indexOf(v)===0?'#E6F1FB':'';
-  });
-}
-function saveConstructor(){
-  document.getElementById('mealConstructor').classList.remove('show');
-  document.getElementById('overlay').classList.remove('show');
-  rMenu();
-}
-function closeConstructor(){
-  document.getElementById('mealConstructor').classList.remove('show');
-  document.getElementById('overlay').classList.remove('show');
-}
-
-
-function rMenu(){
-  var el=document.getElementById('p-menu');
-  var tabs=[['all','Все'],['breakfast','Завтраки'],['lunch','Обеды'],['dinner','Ужины'],['snack','Перекусы']];
-  var html='<div class="subtabs">'+tabs.map(function(t){return '<div class="stab'+(mF===t[0]?' active':'')+'" onclick="setMF(\''+t[0]+'\')">'+t[1]+'</div>';}).join('')+'</div>';
-  
-  MENU.forEach(function(d,di){
-    var allMeals = d.meals;
-    // Ensure every day has breakfast, lunch, dinner
-    var hasBreakfast = allMeals.some(function(m){return m.type.indexOf('Утро')>=0;});
-    var hasLunch = allMeals.some(function(m){return m.type.indexOf('Обед')>=0;});
-    var hasDinner = allMeals.some(function(m){return m.type.indexOf('Ужин')>=0;});
-    
-    if(!hasLunch && d.day!=='День 8'){
-      allMeals = allMeals.slice();
-      allMeals.splice(1,0,{type:'Обед',text:'Перекус в дороге',cocktail:'',alts:[]});
-    }
-    
-    var meals=allMeals.filter(function(m){
-      if(mF==='all')return true;
-      if(mF==='breakfast')return m.type.indexOf('Утро')>=0;
-      if(mF==='lunch')return m.type.indexOf('Обед')>=0;
-      if(mF==='dinner')return m.type.indexOf('Ужин')>=0;
-      if(mF==='snack')return m.type.indexOf('Перекус')>=0;
-      return true;
-    });
-    if(!meals.length)return;
-    
-    html+='<div class="menu-day"><div class="menu-day-title"'+(d.special?' style="background:#d5f5e3;color:#1a5c2a"':'')+'>'+d.day+' — '+d.date+(d.special?' ★':'')+'</div>';
-    
-    meals.forEach(function(m){
-      var mi=allMeals.indexOf(m);
-      var mainKey='main_'+di+'_'+mi;
-      var garnKey='garn_'+di+'_'+mi;
-      var cockKey='cock_'+di+'_'+mi;
-      
-      var mainText=ST.menuOv[mainKey]||m.text;
-      var garnText=ST.menuOv[garnKey]||'';
-      var cockText=ST.menuOv[cockKey]||m.cocktail||'';
-      
-      var mealType=m.type.indexOf('Утро')>=0?'breakfast':m.type.indexOf('Обед')>=0?'lunch':'dinner';
-      var canEdit=(m.type.indexOf('Перекус')<0 && d.day!=='День 8');
-      
-      html+='<div class="meal-row"'+(canEdit?' onclick="openMealConstructor('+di+','+mi+',\''+mealType+'\')"':' style="cursor:default"')+'>';
-      html+='<span class="meal-type">'+m.type+'</span>';
-      html+='<div class="meal-text">'+mainText;
-      if(garnText&&garnText!=='Без гарнира')html+='<span style="color:#aaa;font-size:12px"> + '+garnText+'</span>';
-      if(cockText)html+='<div class="meal-cocktail">🍸 '+cockText+'</div>';
-      html+='</div>';
-      if(canEdit)html+='<span style="font-size:11px;color:#c7c7cc;flex-shrink:0">✎</span>';
-      html+='</div>';
-    });
-    html+='</div>';
-  });
-  el.innerHTML=html;
-}
-
-else if(id==='pantry')rPantry();
-
-// ============ EXPENSES ============
-function rExpenses(){
-  var el=document.getElementById('p-expenses');
-  if(!el)return;
-  var exp=ST.expenses||[];
-  var total=exp.reduce(function(s,e){return s+e.amount;},0);
-  var perPerson=ST.people>0?Math.round(total/ST.people):0;
-  
-  // Calculate who owes whom
-  var byPerson={};
-  exp.forEach(function(e){
-    if(!byPerson[e.paidBy])byPerson[e.paidBy]=0;
-    byPerson[e.paidBy]+=e.amount;
-  });
-  
-  var html='<div class="stat-grid">'
-    +'<div class="stat-box"><div class="stat-num">'+Math.round(total).toLocaleString()+'</div><div class="stat-lbl">Итого ₽</div></div>'
-    +'<div class="stat-box"><div class="stat-num">'+perPerson.toLocaleString()+'</div><div class="stat-lbl">На человека</div></div>'
-    +'<div class="stat-box"><div class="stat-num">'+exp.length+'</div><div class="stat-lbl">Позиций</div></div>'
-    +'</div>';
-  
-  html+='<button class="catch-add-btn" onclick="togExpForm()">+ Добавить расход</button>';
-  
-  html+='<div class="catch-form" id="expForm">';
-  html+='<div class="form-row"><div class="form-label">Описание</div><input class="form-input" type="text" id="expDesc" placeholder="Бензин, продукты..."></div>';
-  html+='<div class="form-row"><div class="form-label">Сумма ₽</div><input class="form-input" type="number" id="expAmt" placeholder="0"></div>';
-  html+='<div class="form-row"><div class="form-label">Кто платил</div><input class="form-input" type="text" id="expWho" placeholder="Имя"></div>';
-  html+='<div class="form-row"><div class="form-label">Категория</div><select class="form-select" id="expCat"><option>Топливо</option><option>Продукты</option><option>Алкоголь</option><option>Жильё</option><option>Снаряжение</option><option>Рестораны</option><option>Лицензии</option><option>Другое</option></select></div>';
-  html+='<button class="save-catch-btn" onclick="saveExp()">Сохранить</button></div>';
-  
-  // By person summary
-  if(Object.keys(byPerson).length>0){
-    html+='<div class="sec-h">По участникам</div><div class="check-group">';
-    Object.keys(byPerson).forEach(function(name){
-      var paid=byPerson[name];
-      var diff=paid-perPerson;
-      html+='<div class="check-item" style="cursor:default"><span class="check-text">'+name+'</span><span style="font-size:13px;color:'+(diff>=0?'#34c759':'#ff3b30')+';font-weight:600">'+(diff>=0?'+':'')+Math.round(diff).toLocaleString()+' ₽</span></div>';
-    });
-    html+='</div>';
-  }
-  
-  // Expense list
-  if(exp.length>0){
-    html+='<div class="sec-h">Все расходы</div>';
-    exp.slice().reverse().forEach(function(e,i){
-      var ri=exp.length-1-i;
-      html+='<div class="catch-entry"><div><div class="catch-fish">'+e.desc+'</div><div class="catch-detail">'+e.paidBy+' &bull; '+e.cat+'</div></div><div style="display:flex;align-items:center"><div style="text-align:right"><div class="catch-count" style="font-size:18px">'+Math.round(e.amount).toLocaleString()+'</div><div class="catch-unit">₽</div></div><div class="catch-delete" onclick="delExp('+ri+')">×</div></div></div>';
-    });
-  }
-  
-  el.innerHTML=html;
-}
-
-function togExpForm(){document.getElementById('expForm').classList.toggle('show');}
-function saveExp(){
-  var desc=document.getElementById('expDesc').value.trim();
-  var amt=parseFloat(document.getElementById('expAmt').value)||0;
-  var who=document.getElementById('expWho').value.trim();
-  var cat=document.getElementById('expCat').value;
-  if(!desc||!amt||!who){alert('Заполни все поля');return;}
-  if(!ST.expenses)ST.expenses=[];
-  ST.expenses.push({desc:desc,amount:amt,paidBy:who,cat:cat,date:new Date().toISOString().split('T')[0]});
-  save();
-  document.getElementById('expForm').classList.remove('show');
-  rExpenses();
-}
-function delExp(i){if(confirm('Удалить?')){ST.expenses.splice(i,1);save();rExpenses();}}
-
-else if(id==='expenses')rExpenses();
-
-// Make day timeline items clickable for rivers
-function riverLink(name) {
-  var r = RIVERS.find ? RIVERS.find(function(x){return x.name===name;}) : null;
-  if(!r) {
-    for(var i=0;i<RIVERS.length;i++){if(RIVERS[i].name===name){r=RIVERS[i];break;}}
-  }
-  if(r) return '<span onclick="showRiver(\''+r.id+'\');showPage(\'rivers\')" style="color:#1F4E79;text-decoration:underline;cursor:pointer">'+name+'</span>';
-  return name;
-}
-
-
-// ============ SHOP ADD/DELETE ============
-function addShopGroup(){
-  var name=prompt('Название группы:');
-  if(!name)return;
-  if(!ST.shopCustomGroups)ST.shopCustomGroups=[];
-  ST.shopCustomGroups.push({group:name,items:[]});
-  save();
-  rShop();
-}
-function addShopItem(groupId){
-  var name=prompt('Название позиции:');
-  if(!name)return;
-  var qty=prompt('Количество:','1 шт');
-  // Find in custom groups
-  if(!ST.shopCustomGroups)ST.shopCustomGroups=[];
-  var g=ST.shopCustomGroups.find?ST.shopCustomGroups.find(function(x){return x.group===groupId;}):null;
-  if(!g){for(var i=0;i<ST.shopCustomGroups.length;i++){if(ST.shopCustomGroups[i].group===groupId){g=ST.shopCustomGroups[i];break;}}}
-  if(g){g.items.push({id:'u'+Date.now(),name:name,qty:qty||'1 шт',pp:0,unit:'шт'});}
-  save();
-  rShop();
-}
-function delShopItem(groupName, itemId){
-  if(!ST.shopCustomGroups)return;
-  ST.shopCustomGroups.forEach(function(g){
-    if(g.group===groupName)g.items=g.items.filter(function(i){return i.id!==itemId;});
-  });
-  save();
-  rShop();
-}
-
-
-function setupQuickCatch(riverName){
-  var btn=document.getElementById('qSave');
-  if(!btn)return;
-  btn.onclick=function(){
-    var fish=document.getElementById('qFish').value;
-    var cnt=parseInt(document.getElementById('qCnt').value)||1;
-    if(!ST.catches)ST.catches=[];
-    ST.catches.push({date:new Date().toISOString().split('T')[0],river:riverName,fish:fish,count:cnt,weight:0,kept:qKept2});
-    save();
-    alert('Записано: '+cnt+' шт '+fish+(qKept2?' (взяли)':' (отпустили)'));
-  };
-}
-
-var qKept2=true;
-function setQK(v){qKept2=v;var k=document.getElementById('qKept');var r=document.getElementById('qRel');if(k)k.classList.toggle('active',v);if(r)r.classList.toggle('active',!v);}
 load();
 render('route');
 </script>
