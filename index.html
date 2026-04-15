@@ -451,11 +451,11 @@ function showRiver(id){
   +'<div class="info-card"><div class="info-title">Лучшее время</div><div style="font-size:14px;line-height:1.6">'+r.best+'</div></div>'
   +'<div class="info-card"><div class="info-title">Люди</div><div style="font-size:14px">'+r.people+'</div></div>'
   +'<div class="info-card" style="background:#fff3cd"><div class="info-title">Безопасность на реке</div><div class="bul">Фальшфейер — всегда иметь при себе у воды</div><div class="bul">Медвежий спрей на поясе при ходьбе по берегу</div><div class="bul">Колокольчик шуметь при перемещении в кустах</div><div class="bul">Не оставлять рыбу и потроха у воды</div><div class="bul">При встрече — не бежать, говорить громко, медленно отступать</div><div class="bul">Экстренный: 112</div></div>'
-++'<div class="info-card"><div class="info-title">Быстро записать улов</div>'
++'<div class="info-card"><div class="info-title">Быстро записать улов</div>'
 +'<div class="form-row-2"><div><div class="form-label">Рыба</div><select class="form-select" id="qFish"><option>Сима</option><option>Кунджа</option><option>Горбуша</option><option>Голец</option><option>Другое</option></select></div><div><div class="form-label">Кол-во</div><input class="form-input" type="number" id="qCnt" value="1" min="1"></div></div>'
 +'<div class="toggle-row" style="margin-bottom:10px"><div class="toggle-btn active" id="qKept" onclick="setQK(true)">Взяли</div><div class="toggle-btn" id="qRel" onclick="setQK(false)">Отпустили</div></div>'
 +'<button class="save-catch-btn" id="qSave">Сохранить улов</button></div>'
-++'<div class="info-card"><div class="info-title">Заметки</div><textarea class="notes-area" id="rn-'+id+'" placeholder="Что работало, где клевало...">'+note+'</textarea><button class="notes-save" onclick="saveRN(\''+id+'\')">Сохранить</button></div>';
++'<div class="info-card"><div class="info-title">Заметки</div><textarea class="notes-area" id="rn-'+id+'" placeholder="Что работало, где клевало...">'+note+'</textarea><button class="notes-save" onclick="saveRN(\''+id+'\')">Сохранить</button></div>';
   det.classList.add('show');
   setTimeout(function(){setupQuickCatch(r.name);},100);
 }
@@ -1107,6 +1107,22 @@ function delShopItem(groupName, itemId){
   rShop();
 }
 
+
+function setupQuickCatch(riverName){
+  var btn=document.getElementById('qSave');
+  if(!btn)return;
+  btn.onclick=function(){
+    var fish=document.getElementById('qFish').value;
+    var cnt=parseInt(document.getElementById('qCnt').value)||1;
+    if(!ST.catches)ST.catches=[];
+    ST.catches.push({date:new Date().toISOString().split('T')[0],river:riverName,fish:fish,count:cnt,weight:0,kept:qKept2});
+    save();
+    alert('Записано: '+cnt+' шт '+fish+(qKept2?' (взяли)':' (отпустили)'));
+  };
+}
+
+var qKept2=true;
+function setQK(v){qKept2=v;var k=document.getElementById('qKept');var r=document.getElementById('qRel');if(k)k.classList.toggle('active',v);if(r)r.classList.toggle('active',!v);}
 load();
 render('route');
 </script>
