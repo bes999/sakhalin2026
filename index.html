@@ -153,6 +153,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .more-item svg{width:24px;height:24px;stroke:#1F4E79;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .grp-hd{font-size:13px;font-weight:700;color:#1F4E79;margin:12px 0 6px 4px}
 .river-link{color:#1F4E79;text-decoration:underline;cursor:pointer}
+.meal-tag{display:inline-flex;align-items:center;gap:4px;background:#E6F1FB;color:#1F4E79;font-size:12px;padding:4px 10px;border-radius:20px;margin:2px;cursor:default}
+.meal-tag .tag-x{cursor:pointer;font-size:14px;color:#888;margin-left:2px}
+.meal-tag .tag-x:hover{color:#ff3b30}
+.constructor-section{margin-bottom:10px}
+.constructor-label{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.constructor-tags{min-height:32px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:4px;padding:2px 0}
+.constructor-opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt-btn{padding:6px 12px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:13px;cursor:pointer;background:#fff;color:#555;font-family:inherit}
+.opt-btn.sel{background:#1F4E79;color:#fff;border-color:#1F4E79}
 </style>
 </head>
 <body>
@@ -187,9 +196,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <!-- Meal constructor modal -->
 <div class="modal" id="modalMeal">
   <div class="modal-title"><span id="modalMealTitle">Выбери блюдо</span><button class="modal-close" onclick="closeModal()">&#215;</button></div>
-  <div id="modalMain"></div>
-  <div id="modalGarn"></div>
-  <div id="modalCock"></div>
+  <div id="constructorBody"></div>
   <button class="save-btn" onclick="saveMeal()" style="margin-top:12px">&#10003; Сохранить</button>
 </div>
 
@@ -256,67 +263,87 @@ function openModal(id){
 // ===== DATA =====
 var RIVERS=[
 {id:'lazovaya',name:'Река Лазовая',day:'День 1-2',dist:'160 км',time:'2.5 ч',coords:'48.364, 142.666',lat:48.364,lon:142.666,
+ parkLat:48.370,parkLon:142.651,parkNote:'Съезд с грунтовки у с. Лазо, координаты стоянки: 48.370, 142.651',
+ factory:'',
  type:'Средняя горная река',size:'Ширина 30-40 м, ямы до 3 м',bottom:'Галечное',
- access:'Грунтовка от Лазо. Координаты съезда: 48.37, 142.65. Проходимо на подготовленном авто.',
+ access:'Грунтовка от Лазо. Подготовленное авто.',
  fishing:'Нижние 5-7 км от устья. Перекаты с выходами в плёсы.',
  lures:'Колебалки 10-18 г (серебро, медь, зелёный). Воблеры минноу 7-9 см. Вращалки №2-3.',
  best:'05:00-09:00 и 16:00-21:00. После дождей волна захода.',
  people:'Есть местные в устье',warning:''},
 {id:'pugachevka',name:'Река Пугачёвка',day:'День 3 утро',dist:'+15 км',time:'20 мин',coords:'48.183, 142.535',lat:48.183,lon:142.535,
+ parkLat:48.186,parkLon:142.530,parkNote:'Стоянка у рыбзавода, координаты: 48.186, 142.530',
+ factory:'Рыбзавод в нижнем течении у с. Пугачёво — рыба концентрируется ниже завода в устьевом участке',
  type:'Нерестовая, рыбозавод',size:'Длина 47 км, ширина у устья 45 м',bottom:'Галечное, течение 0.7 м/с',
- access:'Через с. Пугачёво по главной дороге. Съезд к реке у северного края села.',
- fishing:'Нижнее течение вдоль с. Пугачёво. Ямы под обрывистыми берегами.',
+ access:'Через с. Пугачёво по главной дороге.',
+ fishing:'Нижнее течение вдоль с. Пугачёво. Ямы под обрывистыми берегами. Лучшие точки — ниже рыбзавода.',
  lures:'Те же что на Лазовой.',best:'Утро и вечер. Рыбозавод — рыба есть стабильно.',
  people:'Меньше чем на Найбе',warning:''},
 {id:'makarovka',name:'Река Макаровка',day:'День 3',dist:'+5 км',time:'10 мин',coords:'48.630, 142.780',lat:48.630,lon:142.780,
+ parkLat:48.628,parkLon:142.778,parkNote:'Парковка у моста в Макарове: 48.628, 142.778',
+ factory:'',
  type:'Крупная нерестовая река',size:'Одна из крупнейших района',bottom:'Галечное',
- access:'Через г. Макаров по главной улице до реки. Мост — отправная точка. Съезды к берегу есть с обеих сторон моста.',
+ access:'Через г. Макаров по главной улице до реки. Мост — отправная точка.',
  fishing:'Нижнее течение. Мост — ямы ниже и выше. Разведка по пути.',
  lures:'Стандартный набор.',best:'Быстрая остановка 1-2 часа.',
  people:'Городские рыболовы',warning:'⛽ ЗАПРАВИТЬСЯ В МАКАРОВЕ — обязательно!'},
 {id:'naiba',name:'Река Найба',day:'День 3 вечер',dist:'+120 км',time:'2 ч',coords:'47.220, 142.880',lat:47.220,lon:142.880,
+ parkLat:47.218,parkLon:142.875,parkNote:'Съезд к нижнему течению за 3 км от устья: 47.218, 142.875',
+ factory:'Рыбзавод в нижнем течении — крупный. Рыба скапливается у завода перед заходом на нерест. Лучшие ямы — 1-3 км выше завода',
  type:'Крупная — 3-я по длине на Сахалине',size:'Длина 119 км, бассейн 1660 км²',bottom:'Галечное, песчаные плёсы',
- access:'Через Долинск. Главная дорога вдоль реки. Несколько удобных съездов к берегу в нижнем течении — первый съезд за 3 км от устья.',
+ access:'Через Долинск. Главная дорога вдоль реки.',
  fishing:'Нижние 5-7 км от устья. Выходы из перекатов. Плёсы под нависшими берегами.',
  lures:'Колебалки 14-20 г. Воблеры 8-9 см. Нахлыст.',
  best:'Одна из лучших рек Сахалина по симе в июне.',
  people:'Популярное место',warning:'Дозакупка в Долинске по пути.'},
 {id:'busse',name:'Озеро Буссе',day:'День 4 опцион',dist:'~60 км',time:'1 ч',coords:'46.950, 143.070',lat:46.950,lon:143.070,
+ parkLat:46.948,parkLon:143.065,parkNote:'Парковка у лагуны: 46.948, 143.065',
+ factory:'',
  type:'Лагуна — памятник природы ООПТ',size:'Площадь 39 км², глубина 4.5 м',bottom:'Морское, солёная вода',
- access:'Трасса Южно-Сахалинск — Корсаков, затем поворот на Охотское. Парковка у лагуны — 46.95, 143.07.',
+ access:'Трасса Южный — Корсаков, поворот на Охотское.',
  fishing:'Устрицы, гребешки, ежи, трубач. Только с организованной экскурсией!',
  lures:'— (не рыбалка)',best:'Только при отливе. Уточнить заранее.',
  people:'Туристы с гидом',warning:'⚠️ ООПТ — самовольный сбор запрещён, штраф. Только с гидом.'},
 {id:'mereya',name:'Река Мерея',day:'День 4',dist:'~80 км',time:'1.5 ч',coords:'46.750, 142.200',lat:46.750,lon:142.200,
+ parkLat:46.752,parkLon:142.198,parkNote:'Парковка у моста: 46.752, 142.198',
+ factory:'',
  type:'Небольшая горная речка',size:'Небольшая, быстрая, прозрачная',bottom:'Галечное, чистое',
- access:'Трасса Холмск — Южный, съезд у моста через Мерею. Координаты моста: 46.75, 142.20.',
+ access:'Трасса Холмск — Южный, съезд у моста через Мерею.',
  fishing:'Рыба пугливая — тихий подход! Небольшие ямы. Хороша для нахлыста.',
  lures:'Мелкие вращалки №1-2. Воблеры 5-7 см. Мушки.',
  best:'Быстро осветляется после дождей — план Б.',
  people:'Почти никого',warning:''},
 {id:'taranay',name:'Река Таранай',day:'День 4 вечер',dist:'+15 км',time:'20 мин',coords:'46.671, 142.263',lat:46.671,lon:142.263,
+ parkLat:46.673,parkLon:142.260,parkNote:'Съезд к нижнему мосту: 46.673, 142.260',
+ factory:'',
  type:'Западная, устье у залива Анива',size:'Небольшая',bottom:'Галечное',
- access:'Трасса Южный — Холмск, поворот на Таранай. Съезд к реке у нижнего моста, координаты: 46.67, 142.26.',
+ access:'Трасса Южный — Холмск, поворот на Таранай.',
  fishing:'Нижний участок у устья. Ямы на выходах. Вечерняя зоря перед гостиницей.',
  lures:'Мелкие колебалки.',best:'Вечерняя зоря 18:00-21:00.',
  people:'Умеренно',warning:''},
 {id:'uryum',name:'Река Урюм',day:'День 5',dist:'+35 км',time:'45 мин',coords:'46.920, 142.380',lat:46.920,lon:142.380,
+ parkLat:46.921,parkLon:142.378,parkNote:'Парковка у моста: 46.921, 142.378. Съезд к берегу сразу после моста слева.',
+ factory:'Рыбзавод в 2 км выше моста — рыба концентрируется ниже завода',
  type:'Средняя река',size:'Средняя, хорошие перекаты и плёсы',bottom:'Галечное',
- access:'Трасса Южный — Холмск. Мост через Урюм — отправная точка. Съезд к берегу сразу после моста слева.',
+ access:'Трасса Южный — Холмск. Мост через Урюм.',
  fishing:'От моста вверх 1.5 км — лицензионный участок. Перекаты и ямы.',
  lures:'Колебалки, воблеры. Нахлыст на перекатах.',
  best:'Полный день. Утро и вечер.',
  people:'Есть рыболовы на лицензионном участке',warning:'⚠️ Лицензионный участок: от моста вверх 1.5 км. Путёвка обязательна.'},
 {id:'tambovka',name:'Река Тамбовка',day:'День 6',dist:'+25 км',time:'30 мин',coords:'46.780, 142.580',lat:46.780,lon:142.580,
+ parkLat:46.785,parkLon:142.572,parkNote:'Верхний мост — основная точка: 46.785, 142.572. Нижний мост закрыт — не ехать.',
+ factory:'',
  type:'Приливная — залив Анива',size:'Средняя, нижнее течение приливное',bottom:'Галечное, ил у устья',
- access:'От Анивы 15 км на север. Съезд грунтовкой к реке у верхнего моста, координаты: 46.79, 142.57. Нижний мост закрыт — не ехать.',
+ access:'От Анивы 15 км на север.',
  fishing:'2-5 км выше устья — лучшие места. Нижние 2-3 км избегать. Рыба активна при смене прилива.',
  lures:'Ваш проверенный набор с прошлой поездки.',
  best:'Следи за приливами! Прилив 0.8-1.5 м.',
  people:'Местные рыболовы',warning:'⚠️ ЛАГЕРЬ — выше линии плавника! Прилив 0.8-1.5 м.'},
 {id:'lyutoga',name:'Река Лютога',day:'День 7',dist:'+60 км',time:'1 ч',coords:'47.017, 142.292',lat:47.017,lon:142.292,
+ parkLat:47.019,parkLon:142.289,parkNote:'Парковка сразу за мостом справа: 47.019, 142.289',
+ factory:'Рыбзавод в 4 км выше моста. Лицензионный участок от моста до притока Счастье включает зону у завода',
  type:'Крупная горная река',size:'Длина 100+ км, мощное течение',bottom:'Крупный галечник, двойное дно',
- access:'Трасса Южный — Холмск, мост через Лютогу. Съезд к берегу сразу за мостом. Координаты стоянки: 47.02, 142.29.',
+ access:'Трасса Южный — Холмск, мост через Лютогу.',
  fishing:'Сима и кунджа. От моста до притока Счастье — лицензионный участок.',
  lures:'Тяжёлые колебалки 18-25 г из-за течения.',
  best:'Последний день — утро 05:00-09:00.',
@@ -335,6 +362,34 @@ var SUNTIDE=[
 ];
 
 var PANTRY={
+ // Готовые блюда целиком
+ dishes:[
+  {id:'dish1',name:'Уха рыбацкая',time:40},
+  {id:'dish2',name:'Пельмени из симы на сочнях',time:30},
+  {id:'dish3',name:'Карбонара из симы',time:25},
+  {id:'dish4',name:'Феттучини с симой',time:25},
+  {id:'dish5',name:'Рыба бабочкой на костре',time:40},
+  {id:'dish6',name:'Рыба в фольге',time:30},
+  {id:'dish7',name:'Хе из симы',time:40},
+  {id:'dish8',name:'Сугудай',time:20},
+  {id:'dish9',name:'Сашими',time:10},
+  {id:'dish10',name:'Яйца пашот + голландский + икра',time:40},
+  {id:'dish11',name:'Шакшука',time:20},
+  {id:'dish12',name:'Устрицы на костре с сыром',time:15},
+  {id:'dish13',name:'Гребешок на сковороде',time:10},
+  {id:'dish14',name:'Краб варёный',time:25},
+  {id:'dish15',name:'Морской ёж',time:5},
+  {id:'dish16',name:'Мидии на костре',time:10},
+ ],
+ // Гарниры
+ garnishes:[
+  'Гречка','Макароны','Спагетти','Рис быстрый','Хлеб + масло','Хлебцы','Картошка','Без гарнира'
+ ],
+ // Белок к гарниру
+ proteins:[
+  'Сима (стейки)','Малосольная сима','Тушняк','Буженина','Сосиски','Яйца','Без белка'
+ ],
+ // Завтраки
  breakfasts:[
   {id:'b1',name:'Омлет с бужениной',time:15},
   {id:'b2',name:'Яичница',time:10},
@@ -342,54 +397,41 @@ var PANTRY={
   {id:'b4',name:'Яйца пашот + голландский + икра',time:30},
   {id:'b5',name:'Шакшука',time:20},
   {id:'b6',name:'Каша быстрая',time:5},
-  {id:'b7',name:'Бутики с бужениной',time:5},
-  {id:'b8',name:'Бутики с малосольной симой',time:5},
-  {id:'b9',name:'Риет на хлебе + варёные яйца',time:5},
-  {id:'b10',name:'Малосольная сима + масло + хлеб',time:5},
+  {id:'b7',name:'Малосольная сима + масло + хлеб',time:5},
+  {id:'b8',name:'Риет на хлебе + варёные яйца',time:5},
  ],
- lunches:[
-  {id:'l1',name:'Орехи + сникерс + дрип',time:0},
-  {id:'l2',name:'Казинаки + батончики',time:0},
-  {id:'l3',name:'Бутики с колбасой',time:5},
-  {id:'l4',name:'Сосиски на костре + хлеб',time:15},
-  {id:'l5',name:'Устрицы на Буссе',time:0},
-  {id:'l6',name:'Перекус в дороге',time:0},
-  {id:'l7',name:'Быстрая уха',time:20},
+ // Перекусы
+ snacks:[
+  'Орехи + сникерс + дрип','Казинаки + батончики','Бутики с колбасой',
+  'Бутики с малосольной симой','Бутики с сыром','Бутики с бужениной',
+  'Сосиски на костре + хлеб','Риет на хлебе','Икра на хлебе с маслом',
+  'Перекус в дороге'
  ],
- dinners:[
-  {id:'d1',name:'Рыба бабочкой на костре',time:40},
-  {id:'d2',name:'Рыба в фольге',time:30},
-  {id:'d3',name:'Стейки из симы',time:15},
-  {id:'d4',name:'Уха рыбацкая',time:40},
-  {id:'d5',name:'Пельмени из симы на сочнях',time:30},
-  {id:'d6',name:'Хе из симы',time:40},
-  {id:'d7',name:'Сугудай',time:20},
-  {id:'d8',name:'Сашими',time:10},
-  {id:'d9',name:'Яйца пашот + голландский + икра',time:40},
-  {id:'d10',name:'Карбонара из симы',time:25},
-  {id:'d11',name:'Феттучини с симой',time:25},
-  {id:'d12',name:'Макароны по-флотски с тушняком',time:15},
-  {id:'d13',name:'Тушняк + гречка',time:15},
-  {id:'d14',name:'Макароны с бужениной',time:15},
-  {id:'d15',name:'Дошик + плавленый сырок',time:10},
-  {id:'d16',name:'Суп из пакета',time:10},
-  {id:'d17',name:'Рис с рыбой',time:25},
+ // Закуски
+ starters:[
+  'Бутерброд с малосольной симой','Бутерброд с риетом','Бутерброд с икрой',
+  'Бутерброд с сыром','Бутерброд с бужениной','Оливки','Нарезка','Без закуски'
  ],
- garnishes:['Гречка','Макароны','Спагетти','Рис быстрый','Хлеб + масло','Хлебцы','Без гарнира'],
- cocktails:['Негрони классика','Негрони Сбальято','Джин-тоник','Джин + тархун','French 75',
-  "Bee's Knees",'Том Коллинз','Московский мул','Куба либре','Мохито','Dark & Stormy',
-  'Rum Old Fashioned','Егерь сауэр','Jager тоник','Wine Spritzer','Spritz без апероля',
-  'Kir Royale','Раф с халвой','Бамбл би','Без коктейля'],
+ // Напитки
+ cocktails:[
+  'Негрони классика','Негрони Сбальято','Джин-тоник','Джин + тархун',
+  'French 75',"Bee's Knees",'Том Коллинз','Московский мул','Куба либре',
+  'Мохито','Dark & Stormy','Rum Old Fashioned','Егерь сауэр','Jager тоник',
+  'Wine Spritzer','Spritz без апероля','Kir Royale','Без алкоголя'
+ ],
+ drinks:[
+  'Кофе (дрип)','Раф с халвой','Бамбл би','Чай','Вода','Лимонад','Энергетик','Без напитка'
+ ],
 };
 
 // Load custom pantry items
 (function(){
   try{
     var c=JSON.parse(localStorage.getItem('pantryC')||'{}');
-    var keys=['breakfasts','lunches','dinners','garnishes','cocktails'];
+    var keys=['dishes','breakfasts','garnishes','proteins','starters','snacks','cocktails','drinks'];
     for(var i=0;i<keys.length;i++){
       var k=keys[i];
-      if(c[k] && c[k].length){
+      if(c[k]&&c[k].length){
         for(var j=0;j<c[k].length;j++) PANTRY[k].push(c[k][j]);
       }
     }
@@ -664,10 +706,45 @@ function showRiver(id){
   h+='<div class="stat-card"><div class="stat-label">Дно</div><div class="stat-val">'+r.bottom+'</div></div>';
   h+='<div class="stat-card"><div class="stat-label">Подъезд</div><div class="stat-val">'+r.access+'</div></div>';
   h+='</div>';
+  // Factory block
+  if(r.factory){
+    h+='<div class="info-card" style="background:#E6F1FB"><div class="info-title">&#127981; Рыбзавод</div><div style="font-size:14px;line-height:1.6">'+r.factory+'</div></div>';
+  }
+  // Parking coords
+  h+='<div class="info-card"><div class="info-title">&#128663; Подъезд и парковка</div>';
+  h+='<div style="font-size:14px;line-height:1.6;margin-bottom:8px">'+r.access+'</div>';
+  if(r.parkLat){
+    h+='<span class="coords-btn" data-plat="'+r.parkLat+'" data-plon="'+r.parkLon+'" data-type="park">&#128205; Парковка: '+r.parkLat+', '+r.parkLon+' &#8594; Навигатор</span>';
+  }
+  h+='</div>';
   h+='<div class="info-card"><div class="info-title">&#127907; Где ловить</div><div style="font-size:14px;line-height:1.6">'+r.fishing+'</div></div>';
   h+='<div class="info-card"><div class="info-title">&#128057; Приманки</div><div style="font-size:14px;line-height:1.6">'+r.lures+'</div></div>';
   h+='<div class="info-card"><div class="info-title">&#9200; Лучшее время</div><div style="font-size:14px;line-height:1.6">'+r.best+'</div></div>';
   h+='<div class="info-card"><div class="info-title">&#128101; Люди</div><div style="font-size:14px">'+r.people+'</div></div>';
+  // Custom points
+  var pts=ST.riverPoints&&ST.riverPoints[id]?ST.riverPoints[id]:[];
+  h+='<div class="info-card"><div class="info-title">&#128204; Точки на реке</div>';
+  if(pts.length>0){
+    for(var pi=0;pi<pts.length;pi++){
+      var pt=pts[pi];
+      h+='<div class="check-item" style="cursor:default">';
+      h+='<div style="flex:1"><div style="font-size:14px;font-weight:500">'+pt.name+'</div>';
+      if(pt.note) h+='<div style="font-size:12px;color:#888">'+pt.note+'</div>';
+      if(pt.lat&&pt.lon) h+='<span class="coords-btn" data-plat="'+pt.lat+'" data-plon="'+pt.lon+'" data-pname="'+pt.name+'" data-type="pt" style="margin-top:4px;font-size:11px">&#128205; '+pt.lat+', '+pt.lon+'</span>';
+      h+='</div>';
+      h+='<span class="delete-item" data-delpt="'+pi+'" data-delrid="'+id+'">&#215;</span>';
+      h+='</div>';
+    }
+  } else {
+    h+='<div style="font-size:13px;color:#aaa;padding:8px 0">Нет сохранённых точек</div>';
+  }
+  h+='<div class="add-item-btn" id="addPtBtn">+ Добавить точку</div>';
+  h+='<div class="add-item-input" id="addPtForm" style="flex-direction:column;gap:8px">';
+  h+='<input type="text" id="ptName" placeholder="Название (яма, перекат, стоянка...)">';
+  h+='<input type="text" id="ptCoords" placeholder="Координаты (47.123, 142.456) — необязательно">';
+  h+='<input type="text" id="ptNote" placeholder="Заметка — необязательно">';
+  h+='<button id="savePtBtn">Сохранить точку</button>';
+  h+='</div></div>';
   h+='<div class="info-card"><div class="info-title">&#127907; Быстро записать улов</div>';
   h+='<div class="form-row-2">';
   h+='<div><label class="form-label">Рыба</label><select class="form-select" id="qFish"><option>Сима</option><option>Кунджа</option><option>Горбуша</option><option>Голец</option><option>Другое</option></select></div>';
@@ -685,6 +762,32 @@ function showRiver(id){
   h+='<button class="notes-save" id="saveRNBtn">Сохранить</button></div>';
   det.innerHTML=h;
   det.classList.add('show');
+  det.addEventListener('click', function(e){
+    // Nav buttons
+    var navBtn=e.target.closest('[data-type]');
+    if(navBtn){
+      var lat=parseFloat(navBtn.getAttribute('data-plat'));
+      var lon=parseFloat(navBtn.getAttribute('data-plon'));
+      var nm=navBtn.getAttribute('data-pname')||('Парковка '+r.name);
+      navTo(lat,lon,nm);
+    }
+    // Delete point
+    var delBtn=e.target.closest('[data-delpt]');
+    if(delBtn){
+      var pid=parseInt(delBtn.getAttribute('data-delpt'));
+      var rid=delBtn.getAttribute('data-delrid');
+      delRiverPoint(rid,pid);
+    }
+  });
+  // Add point button
+  var addPtBtn=document.getElementById('addPtBtn');
+  if(addPtBtn) addPtBtn.onclick=function(){
+    document.getElementById('addPtForm').classList.add('show');
+    document.getElementById('ptName').focus();
+  };
+  // Save point button
+  var savePtBtn=document.getElementById('savePtBtn');
+  if(savePtBtn)(function(rid){savePtBtn.onclick=function(){addRiverPoint(rid);};})(id);
   var qb=document.getElementById('qSaveBtn');
   if(qb)(function(rid){qb.onclick=function(){saveQuickCatch(rid);};})(r.id);
   var btn=document.getElementById('saveRNBtn');
@@ -732,6 +835,183 @@ function navTo(lat,lon,name){
 }
 
 // ===== MENU =====
+// ===== MEAL CONSTRUCTOR STATE =====
+var MC = {}; // current construction: {dish, garnish, protein, starter, cocktail, snack}
+var MC_DI = 0, MC_MI = 0, MC_TYPE = 'dinner';
+
+function openMealPicker(di, mi, mType){
+  MC_DI=di; MC_MI=mi; MC_TYPE=mType;
+  // Load current state
+  MC={};
+  var base=MENU[di].meals[mi];
+  MC.dish=ST.menuOv['dish_'+di+'_'+mi]||'';
+  MC.garnish=ST.menuOv['garn_'+di+'_'+mi]||'';
+  MC.protein=ST.menuOv['prot_'+di+'_'+mi]||'';
+  MC.starter=ST.menuOv['star_'+di+'_'+mi]||'';
+  var savedCock=ST.menuOv['cock_'+di+'_'+mi];
+  MC.cocktails=savedCock?savedCock.split('|'):(base.cocktail?[base.cocktail]:[]);
+  var savedDrink=ST.menuOv['drink_'+di+'_'+mi];
+  MC.drinks=savedDrink?savedDrink.split('|'):[];
+  MC.snack=ST.menuOv['snack_'+di+'_'+mi]||'';
+  
+  var title=mType==='breakfast'?'Завтрак':mType==='lunch'?'Обед':'Ужин';
+  document.getElementById('modalMealTitle').textContent=title+' — '+MENU[di].date;
+  renderConstructor();
+  openModal('modalMeal');
+}
+
+function renderConstructor(){
+  var h='';
+  
+  if(MC_TYPE==='breakfast'){
+    h+=constructorSection('Блюдо','dish',PANTRY.breakfasts.map(function(x){return x.name;}));
+    h+=constructorSection('Закуска','starter',PANTRY.starters);
+    h+=constructorSectionMulti('Напиток (алко)','cocktails',PANTRY.cocktails);
+    h+=constructorSectionMulti('Напиток (безалко)','drinks',PANTRY.drinks);
+  } else if(MC_TYPE==='lunch'){
+    h+=constructorSection('Перекус','snack',PANTRY.snacks);
+    h+=constructorSectionMulti('Напиток (алко)','cocktails',PANTRY.cocktails);
+    h+=constructorSectionMulti('Напиток (безалко)','drinks',PANTRY.drinks);
+  } else {
+    h+=constructorSection('Готовое блюдо','dish',PANTRY.dishes.map(function(x){return x.name;}));
+    h+='<div style="text-align:center;font-size:12px;color:#aaa;margin:4px 0">— или собери сам —</div>';
+    h+=constructorSection('Гарнир','garnish',PANTRY.garnishes);
+    h+=constructorSection('Белок к гарниру','protein',PANTRY.proteins);
+    h+=constructorSection('Закуска','starter',PANTRY.starters);
+    h+=constructorSectionMulti('Алкоголь','cocktails',PANTRY.cocktails);
+    h+=constructorSectionMulti('Безалкогольное','drinks',PANTRY.drinks);
+  }
+  
+  document.getElementById('constructorBody').innerHTML=h;
+  // Wire up clicks via delegation
+  document.getElementById('constructorBody').onclick=function(e){
+    var btn=e.target.closest('.mc-opt');
+    if(btn){setMC(btn.getAttribute('data-key'),btn.getAttribute('data-val'));return;}
+    var clr=e.target.closest('.mc-clear');
+    if(clr){clearMC(clr.getAttribute('data-key'));return;}
+    var btnM=e.target.closest('.mc-opt-multi');
+    if(btnM){toggleMC(btnM.getAttribute('data-key'),btnM.getAttribute('data-val'));return;}
+    var clrM=e.target.closest('.mc-clear-multi');
+    if(clrM){removeMC(clrM.getAttribute('data-key'),clrM.getAttribute('data-val'));return;}
+  };
+}
+
+
+function constructorSectionMulti(label, key, opts){
+  var cur=MC[key]||[];
+  var del2=ST.pantryDeleted||{};
+  opts=opts.filter(function(o){
+    var nm=typeof o==='object'?o.name:o;
+    // find id
+    var found=false;
+    var allKeys=Object.keys(PANTRY);
+    for(var ki=0;ki<allKeys.length;ki++){
+      var arr=PANTRY[allKeys[ki]];
+      for(var ai=0;ai<arr.length;ai++){
+        var item=arr[ai];
+        var inm=typeof item==='object'?item.name:item;
+        if(inm===nm){
+          var iid=typeof item==='object'?item.id:(allKeys[ki]+'_'+ai);
+          if(del2[iid]) return false;
+        }
+      }
+    }
+    return true;
+  });
+  var h='<div class="constructor-section">';
+  h+='<div class="constructor-label">'+label+'</div>';h='<div class="constructor-section">';
+  h+='<div class="constructor-label">'+label+' <span style="font-size:10px;color:#aaa">(можно несколько)</span></div>';
+  h+='<div class="constructor-tags" id="ctag-'+key+'">';
+  for(var i=0;i<cur.length;i++){
+    h+='<span class="meal-tag">'+cur[i]+' <span class="tag-x mc-clear-multi" data-key="'+key+'" data-val="'+cur[i].replace(/"/g,'&quot;')+'">&#215;</span></span>';
+  }
+  h+='</div>';
+  h+='<div class="constructor-opts">';
+  for(var i=0;i<opts.length;i++){
+    var o=opts[i];
+    var sel=cur.indexOf(o)>=0;
+    h+='<div class="opt-btn'+(sel?' sel':'')+' mc-opt-multi" data-key="'+key+'" data-val="'+o.replace(/"/g,'&quot;')+'">'+o+'</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+function constructorSection(label, key, opts){
+  var cur=MC[key]||'';
+  var del2=ST.pantryDeleted||{};
+  opts=opts.filter(function(o){
+    var nm=typeof o==='object'?o.name:o;
+    // find id
+    var found=false;
+    var allKeys=Object.keys(PANTRY);
+    for(var ki=0;ki<allKeys.length;ki++){
+      var arr=PANTRY[allKeys[ki]];
+      for(var ai=0;ai<arr.length;ai++){
+        var item=arr[ai];
+        var inm=typeof item==='object'?item.name:item;
+        if(inm===nm){
+          var iid=typeof item==='object'?item.id:(allKeys[ki]+'_'+ai);
+          if(del2[iid]) return false;
+        }
+      }
+    }
+    return true;
+  });
+  var h='<div class="constructor-section">';
+  h+='<div class="constructor-label">'+label+'</div>';h='<div class="constructor-section">';
+  h+='<div class="constructor-label">'+label+'</div>';
+  h+='<div class="constructor-tags" id="ctag-'+key+'">';
+  if(cur){
+    h+='<span class="meal-tag">'+cur+' <span class="tag-x mc-clear" data-key="'+key+'">&#215;</span></span>';
+  }
+  h+='</div>';
+  h+='<div class="constructor-opts">';
+  for(var i=0;i<opts.length;i++){
+    var o=opts[i];
+    h+='<div class="opt-btn'+(cur===o?' sel':'')+' mc-opt" data-key="'+key+'" data-val="'+o.replace(/"/g,'&quot;')+'">'+o+'</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+
+function toggleMC(key, val){
+  if(!MC[key]) MC[key]=[];
+  var idx=MC[key].indexOf(val);
+  if(idx>=0) MC[key].splice(idx,1);
+  else MC[key].push(val);
+  renderConstructor();
+}
+function removeMC(key, val){
+  if(!MC[key]) return;
+  MC[key]=MC[key].filter(function(x){return x!==val;});
+  renderConstructor();
+}
+
+function setMC(key, val){
+  MC[key]=val;
+  renderConstructor();
+}
+
+function clearMC(key){
+  MC[key]='';
+  renderConstructor();
+}
+
+function saveMeal(){
+  var di=MC_DI, mi=MC_MI;
+  ST.menuOv['dish_'+di+'_'+mi]=MC.dish||'';
+  ST.menuOv['garn_'+di+'_'+mi]=MC.garnish||'';
+  ST.menuOv['prot_'+di+'_'+mi]=MC.protein||'';
+  ST.menuOv['star_'+di+'_'+mi]=MC.starter||'';
+  ST.menuOv['cock_'+di+'_'+mi]=(MC.cocktails||[]).join('|');
+  ST.menuOv['drink_'+di+'_'+mi]=(MC.drinks||[]).join('|');
+  ST.menuOv['snack_'+di+'_'+mi]=MC.snack||'';
+  save();
+  closeModal();
+  rMenu();
+}
+
 function rMenu(){
   var el=document.getElementById('p-menu');
   var tabs=[['all','Все'],['breakfast','Завтраки'],['lunch','Обеды'],['dinner','Ужины']];
@@ -755,19 +1035,29 @@ function rMenu(){
     for(var mi=0;mi<meals.length;mi++){
       var m=meals[mi];
       var origMi=d.meals.indexOf(m);
-      var mainK='main_'+di+'_'+origMi;
-      var garnK='garn_'+di+'_'+origMi;
-      var cockK='cock_'+di+'_'+origMi;
-      var mainTxt=ST.menuOv[mainK]||m.text;
-      var garnTxt=ST.menuOv[garnK]||'';
-      var cockTxt=ST.menuOv[cockK]||m.cocktail||'';
+      var mainTxt=ST.menuOv['dish_'+di+'_'+origMi]||m.text;
+      var garnTxt=ST.menuOv['garn_'+di+'_'+origMi]||'';
+      var protTxt=ST.menuOv['prot_'+di+'_'+origMi]||'';
+      var starTxt=ST.menuOv['star_'+di+'_'+origMi]||'';
+      var cockTxt=ST.menuOv['cock_'+di+'_'+origMi]||m.cocktail||'';
+      var snackTxt=ST.menuOv['snack_'+di+'_'+origMi]||'';
       var mType=m.type==='Утро'?'breakfast':m.type==='Обед'?'lunch':'dinner';
       var evtAttr=m.editable?' onclick="openMealPicker('+di+','+origMi+',\''+mType+'\')"':' style="cursor:default"';
       h+='<div class="meal-row"'+evtAttr+'>';
       h+='<span class="meal-type">'+m.type+'</span>';
-      h+='<div class="meal-text">'+mainTxt;
-      if(garnTxt && garnTxt!=='Без гарнира') h+=' <span style="color:#aaa;font-size:12px">+ '+garnTxt+'</span>';
-      if(cockTxt) h+='<div class="meal-cocktail">&#127864; '+cockTxt+'</div>';
+      h+='<div class="meal-text">';
+      if(snackTxt) h+='<div>'+snackTxt+'</div>';
+      else {
+        h+=mainTxt;
+        if(garnTxt && garnTxt!=='Без гарнира') h+=' + '+garnTxt;
+        if(protTxt && protTxt!=='Без белка') h+=' + '+protTxt;
+      }
+      if(starTxt && starTxt!=='Без закуски') h+='<div style="font-size:12px;color:#888">&#127860; '+starTxt+'</div>';
+      var drinkTxt=ST.menuOv['drink_'+di+'_'+origMi]||'';
+      var cockArr=(cockTxt?cockTxt.split('|'):[]).filter(function(x){return x&&x!=='Без алкоголя';});
+      var drinkArr=(drinkTxt?drinkTxt.split('|'):[]).filter(function(x){return x&&x!=='Без напитка';});
+      if(cockArr.length) h+='<div class="meal-cocktail">&#127864; '+cockArr.join(' + ')+'</div>';
+      if(drinkArr.length) h+='<div class="meal-cocktail">&#9749; '+drinkArr.join(' + ')+'</div>';
       h+='</div>';
       if(m.editable) h+='<span style="font-size:11px;color:#c7c7cc;flex-shrink:0">&#9998;</span>';
       h+='</div>';
@@ -778,66 +1068,16 @@ function rMenu(){
 }
 function setMF(f){mF=f;rMenu();}
 
-function openMealPicker(di,mi,mType){
-  mealPickDI=di; mealPickMI=mi; mealPickType=mType;
-  var listKey=mType==='breakfast'?'breakfasts':mType==='lunch'?'lunches':'dinners';
-  var items=PANTRY[listKey];
-  document.getElementById('modalMealTitle').textContent=mType==='breakfast'?'Выбери завтрак':mType==='lunch'?'Выбери обед':'Выбери ужин';
-  var mainK='main_'+di+'_'+mi;
-  var garnK='garn_'+di+'_'+mi;
-  var cockK='cock_'+di+'_'+mi;
-  var curMain=ST.menuOv[mainK]||'';
-  var curGarn=ST.menuOv[garnK]||'';
-  var curCock=ST.menuOv[cockK]||'';
-  var mh='<div class="ing-label">Основное блюдо</div>';
-  for(var i=0;i<items.length;i++){
-    var nm=items[i].name||items[i];
-    var tm=items[i].time;
-    mh+='<div class="picker-item'+(curMain===nm?' sel':'')+'" onclick="selMain(this)" data-val="'+nm.replace(/"/g,'&quot;')+'">'
-      +nm+(tm?' <span style="color:#aaa;font-size:12px">~'+tm+' мин</span>':'')+'</div>';
-  }
-  document.getElementById('modalMain').innerHTML=mh;
-  var gh='<div class="ing-label">Гарнир</div>';
-  for(var i=0;i<PANTRY.garnishes.length;i++){
-    var g=PANTRY.garnishes[i];
-    gh+='<div class="picker-item'+(curGarn===g?' sel':'')+'" onclick="selGarn(this)" data-val="'+g+'">'+g+'</div>';
-  }
-  document.getElementById('modalGarn').innerHTML=gh;
-  var ch='<div class="ing-label">Коктейль вечера</div>';
-  for(var i=0;i<PANTRY.cocktails.length;i++){
-    var c=PANTRY.cocktails[i];
-    ch+='<div class="picker-item'+(curCock===c?' sel':'')+'" onclick="selCock(this)" data-val="'+c+'">'+c+'</div>';
-  }
-  document.getElementById('modalCock').innerHTML=ch;
-  openModal('modalMeal');
-}
-function selMain(el){
-  var v=el.getAttribute('data-val');
-  ST.menuOv['main_'+mealPickDI+'_'+mealPickMI]=v;
-  save();
-  var items=document.getElementById('modalMain').querySelectorAll('.picker-item');
-  for(var i=0;i<items.length;i++) items[i].classList.toggle('sel', items[i].getAttribute('data-val')===v);
-}
-function selGarn(el){
-  var v=el.getAttribute('data-val');
-  ST.menuOv['garn_'+mealPickDI+'_'+mealPickMI]=v;
-  save();
-  var items=document.getElementById('modalGarn').querySelectorAll('.picker-item');
-  for(var i=0;i<items.length;i++) items[i].classList.toggle('sel', items[i].getAttribute('data-val')===v);
-}
-function selCock(el){
-  var v=el.getAttribute('data-val');
-  ST.menuOv['cock_'+mealPickDI+'_'+mealPickMI]=v;
-  save();
-  var items=document.getElementById('modalCock').querySelectorAll('.picker-item');
-  for(var i=0;i<items.length;i++) items[i].classList.toggle('sel', items[i].getAttribute('data-val')===v);
-}
-function saveMeal(){closeModal();rMenu();}
 
 // ===== SHOP =====
 function rShop(){
   var el=document.getElementById('p-shop');
-  var allGroups=SHOP.concat(ST.shopCustom||[]);
+  var deleted=ST.shopDeleted||[];
+  var allGroups=SHOP.map(function(g){
+    var extra=(ST.shopExtra&&ST.shopExtra[g.group])||[];
+    var base=g.items.filter(function(i){return deleted.indexOf(i.id)<0;});
+    return {group:g.group,items:base.concat(extra)};
+  }).concat(ST.shopCustom||[]);
   var total=0,done=0;
   for(var i=0;i<allGroups.length;i++){
     for(var j=0;j<allGroups[i].items.length;j++){
@@ -867,14 +1107,13 @@ function rShop(){
       h+='<div class="check-box'+(chk?' checked':'')+'"></div>';
       h+='<span class="check-text">'+item.name+'</span>';
       h+='<input class="check-qty-input" type="text" value="'+qty+'" onclick="event.stopPropagation()" onchange="updQ(this.dataset.id,this.value)" data-id="'+item.id+'">';
-      if(isCustom) h+='<span class="delete-item" onclick="event.stopPropagation();delShopItem('+gi+','+ii+')">&#215;</span>';
+      h+='<span class="delete-item" onclick="event.stopPropagation();delShopAny(\'' +item.id+'\','+gi+','+ii+')">&#215;</span>';
       h+='</div>';
     }
-    if(isCustom){
-      h+='<div class="add-item-btn" onclick="showAddShopItem('+gi+')">+ Добавить позицию</div>';
-      h+='<div class="add-item-input" id="addSI-'+gi+'">';
-      h+='<input type="text" id="addSN-'+gi+'" placeholder="Название..."><button onclick="addShopItem('+gi+')">OK</button></div>';
-    }
+    // Add item button for ALL groups
+    h+='<div class="add-item-btn" onclick="showAddShopItem('+gi+')">+ Добавить позицию</div>';
+    h+='<div class="add-item-input" id="addSI-'+gi+'">';
+    h+='<input type="text" id="addSN-'+gi+'" placeholder="Название..."><button onclick="addShopItem('+gi+')">OK</button></div>';
     h+='</div>';
   }
   h+='<button class="reset-btn" style="margin-bottom:4px" onclick="rstS()">Сбросить все отметки</button>';
@@ -886,7 +1125,12 @@ function togS(id,el){
   ST.shopCh[id]=!ST.shopCh[id];save();
   el.classList.toggle('done');
   el.querySelector('.check-box').classList.toggle('checked');
-  var allGroups=SHOP.concat(ST.shopCustom||[]);
+  var deleted=ST.shopDeleted||[];
+  var allGroups=SHOP.map(function(g){
+    var extra=(ST.shopExtra&&ST.shopExtra[g.group])||[];
+    var base=g.items.filter(function(i){return deleted.indexOf(i.id)<0;});
+    return {group:g.group,items:base.concat(extra)};
+  }).concat(ST.shopCustom||[]);
   var t=0,d=0;
   for(var i=0;i<allGroups.length;i++) for(var j=0;j<allGroups[i].items.length;j++){t++;if(ST.shopCh[allGroups[i].items[j].id])d++;}
   document.querySelector('.progress-bar').style.width=Math.round(d/t*100)+'%';
@@ -916,11 +1160,45 @@ function showAddShopItem(gi){
   document.getElementById('addSN-'+gi).focus();
 }
 function addShopItem(gi){
-  var idx=gi-SHOP.length;
   var name=document.getElementById('addSN-'+gi).value.trim();
   if(!name) return;
   var id='u'+Date.now();
-  ST.shopCustom[idx].items.push({id:id,name:name,qty:'1 шт',pp:0,unit:'шт'});
+  var item={id:id,name:name,qty:'1 шт',pp:0,unit:'шт'};
+  var customIdx=gi-SHOP.length;
+  if(customIdx>=0){
+    // Custom group
+    if(!ST.shopCustom) ST.shopCustom=[];
+    ST.shopCustom[customIdx].items.push(item);
+  } else {
+    // Built-in group - add to extra items
+    if(!ST.shopExtra) ST.shopExtra={};
+    var gName=SHOP[gi].group;
+    if(!ST.shopExtra[gName]) ST.shopExtra[gName]=[];
+    ST.shopExtra[gName].push(item);
+    // Also mark as deletable
+    if(!ST.shopExtra) ST.shopExtra={};
+    ST.shopExtra[id]=true;
+  }
+  save();rShop();
+}
+function delShopAny(itemId, gi, ii){
+  if(!ST.shopDeleted) ST.shopDeleted=[];
+  var customIdx=gi-SHOP.length;
+  if(customIdx>=0 && ST.shopCustom && ST.shopCustom[customIdx]){
+    // Custom group item
+    ST.shopCustom[customIdx].items.splice(ii,1);
+  } else if(itemId.indexOf('u')===0){
+    // Extra item added to built-in group - find and remove from shopExtra
+    if(ST.shopExtra){
+      var gName=gi<SHOP.length?SHOP[gi].group:'';
+      if(gName && ST.shopExtra[gName]){
+        ST.shopExtra[gName]=ST.shopExtra[gName].filter(function(x){return x.id!==itemId;});
+      }
+    }
+  } else {
+    // Base built-in item - hide it
+    if(ST.shopDeleted.indexOf(itemId)<0) ST.shopDeleted.push(itemId);
+  }
   save();rShop();
 }
 function delShopItem(gi,ii){
@@ -1007,18 +1285,33 @@ function rGear(){
   
   if(gT==='common'){
     var ci=0;
+    var gearCommonDel=ST.gearCommonDel||[];
     for(var gi=0;gi<GEAR_GROUPS.length;gi++){
       var g=GEAR_GROUPS[gi];
       h+='<div class="grp-hd">'+g.title+'</div><div class="check-group">';
       for(var ii=0;ii<g.items.length;ii++){
         var item=g.items[ii]; var idx=ci++;
+        if(gearCommonDel.indexOf(idx)>=0) continue;
         h+='<div class="check-item'+(ST.gearCC[idx]?' done':'')+'" onclick="togGC('+idx+',this)">';
         h+='<div class="check-box'+(ST.gearCC[idx]?' checked':'')+'"></div>';
-        h+='<span class="check-text">'+item+'</span></div>';
+        h+='<span class="check-text">'+item+'</span>';
+        h+='<span class="delete-item" onclick="event.stopPropagation();delGearCommon('+idx+')">&#215;</span>';
+        h+='</div>';
       }
+      var extraC=(ST.gearCommonExtra&&ST.gearCommonExtra[gi])||[];
+      for(var ei=0;ei<extraC.length;ei++){
+        var ekey='ec'+gi+'_'+ei;
+        h+='<div class="check-item'+(ST.gearCC[ekey]?' done':'')+'" onclick="togGCE('+gi+','+ei+',this)">';
+        h+='<div class="check-box'+(ST.gearCC[ekey]?' checked':'')+'"></div>';
+        h+='<span class="check-text">'+extraC[ei]+'</span>';
+        h+='<span class="delete-item" onclick="event.stopPropagation();delGearCommonExtra('+gi+','+ei+')">&#215;</span>';
+        h+='</div>';
+      }
+      h+='<div class="add-item-btn" onclick="showAddGearCommon('+gi+')">+ Добавить позицию</div>';
+      h+='<div class="add-item-input" id="addGC-'+gi+'"><input type="text" id="addGCT-'+gi+'" placeholder="Название..."><button onclick="addGearCommon('+gi+')">OK</button></div>';
       h+='</div>';
     }
-  } else {
+    } else {
     for(var gi=0;gi<GEAR_PERSONAL.length;gi++){
       var g=GEAR_PERSONAL[gi];
       h+='<div class="grp-hd">'+g.title+'</div><div class="check-group">';
@@ -1059,52 +1352,92 @@ function addGear(){var v=document.getElementById('addGT').value.trim();if(v){if(
 // ===== PANTRY =====
 function rPantry(){
   var el=document.getElementById('p-pantry');
-  var h='<div style="font-size:13px;color:#888;margin-bottom:10px">База всех блюд. Используется в Меню при выборе. Базовые позиции нельзя удалить.</div>';
+  if(!el) return;
+  var del=ST.pantryDeleted||{};
   var sections=[
-    ['Завтраки','breakfasts'],['Обеды и перекусы','lunches'],['Ужины','dinners'],
-    ['Гарниры','garnishes'],['Коктейли','cocktails']
+    {key:'dishes',label:'Готовые блюда',isObj:true},
+    {key:'breakfasts',label:'Завтраки',isObj:true},
+    {key:'snacks',label:'Перекусы',isObj:false},
+    {key:'garnishes',label:'Гарниры',isObj:false},
+    {key:'proteins',label:'Белок к гарниру',isObj:false},
+    {key:'starters',label:'Закуски',isObj:false},
+    {key:'cocktails',label:'Коктейли (алко)',isObj:false},
+    {key:'drinks',label:'Напитки (безалко)',isObj:false},
   ];
+  var h='<div style="font-size:13px;color:#888;margin-bottom:10px">База блюд и напитков — используется в конструкторе меню. Нажми &#215; чтобы скрыть, или добавь своё.</div>';
   for(var si=0;si<sections.length;si++){
-    var title=sections[si][0], key=sections[si][1];
-    var items=PANTRY[key];
-    h+='<div class="grp-hd">'+title+'</div><div class="check-group">';
+    var sec=sections[si];
+    var items=PANTRY[sec.key]||[];
+    h+='<div class="grp-hd">'+sec.label+'</div><div class="check-group">';
     for(var i=0;i<items.length;i++){
-      var name=typeof items[i]==='string'?items[i]:items[i].name;
-      var isCustom=typeof items[i]==='object'&&items[i].id&&items[i].id.indexOf('u')===0;
-      h+='<div class="check-item" style="cursor:default"><span class="check-text">'+name+'</span>';
-      if(isCustom) h+='<span class="delete-item" onclick="delPantryItem(\''+key+'\','+i+')">&#215;</span>';
+      var item=items[i];
+      var nm=typeof item==='object'?item.name:item;
+      var itemId=typeof item==='object'?item.id:(sec.key+'_'+i);
+      var isHidden=del[itemId];
+      if(isHidden) continue;
+      var tm=typeof item==='object'&&item.time?' <span style="color:#aaa;font-size:11px">~'+item.time+' мин</span>':'';
+      h+='<div class="check-item" style="cursor:default">';
+      h+='<span class="check-text">'+nm+tm+'</span>';
+      h+='<span class="delete-item pc-del" data-key="'+sec.key+'" data-id="'+itemId+'" data-idx="'+i+'">&#215;</span>';
       h+='</div>';
     }
-    h+='<div class="add-item-btn" onclick="showAddPantry(\''+key+'\')">+ Добавить своё</div>';
-    h+='<div class="add-item-input" id="addP-'+key+'"><input type="text" id="addPT-'+key+'" placeholder="Название..."><button onclick="addPantryItem(\''+key+'\')">OK</button></div>';
+    // Show hidden items count with restore option
+    var hiddenCount=0;
+    for(var i=0;i<items.length;i++){
+      var item=items[i];
+      var itemId=typeof item==='object'?item.id:(sec.key+'_'+i);
+      if(del[itemId]) hiddenCount++;
+    }
+    if(hiddenCount>0){
+      h+='<div class="add-item-btn pc-restore" data-key="'+sec.key+'" style="color:#aaa;font-size:12px">&#8635; Восстановить скрытые ('+hiddenCount+')</div>';
+    }
+    h+='<div class="add-item-btn pc-add" data-key="'+sec.key+'">+ Добавить своё</div>';
+    h+='<div class="add-item-input" id="addP-'+sec.key+'">';
+    h+='<input type="text" id="addPT-'+sec.key+'" placeholder="Название...">';
+    if(sec.isObj) h+='<input type="number" id="addPTime-'+sec.key+'" placeholder="мин" style="width:60px">';
+    h+='<button class="pc-save" data-key="'+sec.key+'">OK</button>';
     h+='</div>';
   }
   el.innerHTML=h;
 }
+
+
 function showAddPantry(key){
   document.getElementById('addP-'+key).classList.add('show');
   document.getElementById('addPT-'+key).focus();
 }
 function addPantryItem(key){
-  var v=document.getElementById('addPT-'+key).value.trim();
+  var inp=document.getElementById('addPT-'+key);
+  var v=inp?inp.value.trim():'';
   if(!v) return;
+  var tInp=document.getElementById('addPTime-'+key);
+  var t=tInp?parseInt(tInp.value)||0:0;
+  var objKeys=['dishes','breakfasts'];
+  var item=(objKeys.indexOf(key)>=0)?{id:'u'+Date.now(),name:v,time:t}:v;
   var c=JSON.parse(localStorage.getItem('pantryC')||'{}');
   if(!c[key]) c[key]=[];
-  var item=key==='garnishes'||key==='cocktails'?v:{id:'u'+Date.now(),name:v,time:0};
   c[key].push(item);
   PANTRY[key].push(item);
   localStorage.setItem('pantryC',JSON.stringify(c));
+  if(inp) inp.value='';
+  if(tInp) tInp.value='';
   rPantry();
 }
-function delPantryItem(key,idx){
-  var item=PANTRY[key][idx];
-  PANTRY[key].splice(idx,1);
-  var c=JSON.parse(localStorage.getItem('pantryC')||'{}');
-  if(c[key]){
-    var id=typeof item==='object'?item.id:item;
-    c[key]=c[key].filter(function(x){return (typeof x==='object'?x.id:x)!==id;});
-    localStorage.setItem('pantryC',JSON.stringify(c));
+function delPantryAny(key, itemId, idx){
+  if(!ST.pantryDeleted) ST.pantryDeleted={};
+  ST.pantryDeleted[itemId]=true;
+  save();
+  rPantry();
+}
+function restorePantry(key){
+  if(!ST.pantryDeleted) return;
+  var items=PANTRY[key]||[];
+  for(var i=0;i<items.length;i++){
+    var item=items[i];
+    var itemId=typeof item==='object'?item.id:(key+'_'+i);
+    delete ST.pantryDeleted[itemId];
   }
+  save();
   rPantry();
 }
 
@@ -1327,6 +1660,71 @@ function rBar(){
   el.innerHTML=h;
 }
 function setBF(f){bF=f;rBar();}
+
+
+function showAddPoint(id){
+  document.getElementById('addPtForm').classList.add('show');
+  document.getElementById('ptName').focus();
+}
+function addRiverPoint(id){
+  var name=document.getElementById('ptName').value.trim();
+  if(!name){alert('Введи название точки');return;}
+  var coords=document.getElementById('ptCoords').value.trim();
+  var note=document.getElementById('ptNote').value.trim();
+  var lat=null,lon=null;
+  if(coords){
+    var parts=coords.split(',');
+    if(parts.length===2){lat=parseFloat(parts[0].trim());lon=parseFloat(parts[1].trim());}
+  }
+  if(!ST.riverPoints) ST.riverPoints={};
+  if(!ST.riverPoints[id]) ST.riverPoints[id]=[];
+  ST.riverPoints[id].push({name:name,note:note,lat:lat,lon:lon});
+  save();
+  showRiver(id);
+}
+function delRiverPoint(id,idx){
+  if(!ST.riverPoints||!ST.riverPoints[id]) return;
+  ST.riverPoints[id].splice(idx,1);
+  save();
+  showRiver(id);
+}
+
+
+function showAddGearCommon(gi){
+  document.getElementById('addGC-'+gi).classList.add('show');
+  document.getElementById('addGCT-'+gi).focus();
+}
+function addGearCommon(gi){
+  var v=document.getElementById('addGCT-'+gi).value.trim();
+  if(!v) return;
+  if(!ST.gearCommonExtra) ST.gearCommonExtra={};
+  if(!ST.gearCommonExtra[gi]) ST.gearCommonExtra[gi]=[];
+  ST.gearCommonExtra[gi].push(v);
+  save();rGear();setGT('common');
+}
+function delGearCommon(idx){
+  if(!ST.gearCommonDel) ST.gearCommonDel=[];
+  if(ST.gearCommonDel.indexOf(idx)<0) ST.gearCommonDel.push(idx);
+  save();rGear();setGT('common');
+}
+function delGearCommonExtra(gi,idx){
+  if(!ST.gearCommonExtra||!ST.gearCommonExtra[gi]) return;
+  ST.gearCommonExtra[gi].splice(idx,1);
+  save();rGear();setGT('common');
+}
+function togGCE(gi,idx,el){
+  var key='ec'+gi+'_'+idx;
+  if(!ST.gearCC) ST.gearCC={};
+  ST.gearCC[key]=!ST.gearCC[key];
+  el.classList.toggle('done');
+  el.querySelector('.check-box').classList.toggle('checked');
+  save();
+}
+function delGearPersonalBase(idx){
+  if(!ST.gearPersonalDel) ST.gearPersonalDel=[];
+  if(ST.gearPersonalDel.indexOf(idx)<0) ST.gearPersonalDel.push(idx);
+  save();rGear();setGT('personal');
+}
 
 load();
 render('route');
