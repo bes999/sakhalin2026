@@ -1785,42 +1785,117 @@ function buildExpenseWhoOptions(selected){
   h+='<option value="__manual__">+ Вписать вручную</option>';
   return h;
 }
+function buildExpenseParticipantChecks(){
+  var members=getTripMembers();
+  var h='<div class="form-row"><label class="form-label">Участвуют в расходе</label><div class="check-group">';
+  for(var i=0;i<members.length;i++){
+    var name=members[i].displayName||'';
+    h+='<label class="check-item" style="cursor:pointer"><div class="check-box checked" data-exp-check="1"></div><input type="checkbox" class="expParticipant" value="'+name.replace(/"/g,'&quot;')+'" checked style="display:none"><span class="check-text">'+name+'</span></label>';
+  }
+  h+='</div><div style="display:flex;gap:8px;margin-top:8px"><button type="button" class="opt-btn" onclick="setAllExpenseParticipants(true)">Все</button><button type="button" class="opt-btn" onclick="setAllExpenseParticipants(false)">Снять всех</button></div></div>';
+  return h;
+}
+function wireExpenseParticipantChecks(){
+  var items=document.querySelectorAll('#p-expenses .expParticipant');
+  for(var i=0;i<items.length;i++){
+    (function(inp){
+      var row=inp.closest('.check-item');
+      if(!row) return;
+      row.addEventListener('click', function(ev){
+        if(ev.target && (ev.target.tagName==='INPUT' || ev.target.tagName==='BUTTON')) return;
+        inp.checked=!inp.checked;
+        syncExpenseCheckVisual(inp);
+      });
+      syncExpenseCheckVisual(inp);
+    })(items[i]);
+  }
+}
+function syncExpenseCheckVisual(inp){
+  var row=inp.closest('.check-item');
+  if(!row) return;
+  var box=row.querySelector('[data-exp-check]');
+  if(box) box.classList.toggle('checked', !!inp.checked);
+}
+function setAllExpenseParticipants(state){
+  var items=document.querySelectorAll('#p-expenses .expParticipant');
+  for(var i=0;i<items.length;i++){
+    items[i].checked=!!state;
+    syncExpenseCheckVisual(items[i]);
+  }
+}
+function getSelectedExpenseParticipants(){
+  var items=document.querySelectorAll('#p-expenses .expParticipant');
+  var names=[];
+  for(var i=0;i<items.length;i++) if(items[i].checked) names.push(items[i].value);
+  return names;
+}
+function computeExpenseSummary(){
+  var total=0;
+  var names=getTripMemberNames();
+  var paidByPerson={};
+  var owedByPerson={};
+  for(var i=0;i<names.length;i++){
+    paidByPerson[names[i]]=0;
+    owedByPerson[names[i]]=0;
+  }
+  for(var i=0;i<ST.expenses.length;i++){
+    var e=ST.expenses[i]||{};
+    var amount=parseFloat(e.amount)||0;
+    total+=amount;
+    if(e.paidBy){
+      if(paidByPerson[e.paidBy]===undefined) paidByPerson[e.paidBy]=0;
+      paidByPerson[e.paidBy]+=amount;
+    }
+    var participants=(e.participantNames&&e.participantNames.length)?e.participantNames.slice():names.slice();
+    if(!participants.length) participants=names.slice();
+    var share=participants.length ? amount/participants.length : 0;
+    for(var j=0;j<participants.length;j++){
+      var pname=participants[j];
+      if(owedByPerson[pname]===undefined) owedByPerson[pname]=0;
+      owedByPerson[pname]+=share;
+    }
+  }
+  var summaryNames={};
+  Object.keys(paidByPerson).forEach(function(k){summaryNames[k]=1;});
+  Object.keys(owedByPerson).forEach(function(k){summaryNames[k]=1;});
+  var rows=[];
+  Object.keys(summaryNames).sort(function(a,b){return a.localeCompare(b,'ru');}).forEach(function(name){
+    rows.push({
+      name:name,
+      paid:paidByPerson[name]||0,
+      owed:owedByPerson[name]||0,
+      diff:(paidByPerson[name]||0)-(owedByPerson[name]||0)
+    });
+  });
+  var avgShare=rows.length ? rows.reduce(function(s,r){return s+r.owed;},0)/rows.length : 0;
+  return {total:total, rows:rows, avgShare:avgShare};
+}
 function rExpenses(){
   var el=document.getElementById('p-expenses');
   if(!ST.expenses) ST.expenses=[];
-  var total=0;
-  var byPerson={};
-  var memberNames=getTripMemberNames();
-  for(var mi=0;mi<memberNames.length;mi++) byPerson[memberNames[mi]]=0;
-  for(var i=0;i<ST.expenses.length;i++){
-    var e=ST.expenses[i];
-    total+=e.amount;
-    if(!byPerson[e.paidBy]) byPerson[e.paidBy]=0;
-    byPerson[e.paidBy]+=e.amount;
-  }
-  var memberCount=getActiveTripMemberCount();
-  var perPerson=memberCount>0?Math.round(total/memberCount):0;
+  var summary=computeExpenseSummary();
+  var total=summary.total;
   var h='<div class="stat-grid">';
   h+='<div class="stat-box"><div class="stat-num">'+Math.round(total).toLocaleString()+'</div><div class="stat-lbl">Итого &#8381;</div></div>';
-  h+='<div class="stat-box"><div class="stat-num">'+perPerson.toLocaleString()+'</div><div class="stat-lbl">На человека</div></div>';
+  h+='<div class="stat-box"><div class="stat-num">'+Math.round(summary.avgShare).toLocaleString()+'</div><div class="stat-lbl">Средняя доля</div></div>';
   h+='<div class="stat-box"><div class="stat-num">'+ST.expenses.length+'</div><div class="stat-lbl">Позиций</div></div>';
   h+='</div>';
-  h+='<div style="font-size:12px;color:#888;margin:-2px 0 10px 2px">Расчёт делится на активных участников поездки: '+memberCount+'</div>';
+  h+='<div style="font-size:12px;color:#888;margin:-2px 0 10px 2px">Расход теперь делится только между выбранными участниками в каждой записи</div>';
   h+='<button class="action-btn" onclick="togExpForm()">+ Добавить расход</button>';
   h+='<div class="form-card" id="expForm">';
   h+='<div class="form-row"><label class="form-label">Описание</label><input class="form-input" type="text" id="expDesc" placeholder="Бензин, продукты..."></div>';
   h+='<div class="form-row"><label class="form-label">Сумма &#8381;</label><input class="form-input" type="number" id="expAmt" placeholder="0"></div>';
   h+='<div class="form-row"><label class="form-label">Кто платил</label><select class="form-select" id="expWhoSelect" onchange="onExpWhoChange()">'+buildExpenseWhoOptions('')+'</select></div>';
   h+='<div class="form-row" id="expWhoManualWrap" style="display:none"><label class="form-label">Новый участник</label><input class="form-input" type="text" id="expWhoManual" placeholder="Имя участника"></div>';
+  h+=buildExpenseParticipantChecks();
   h+='<div class="form-row"><label class="form-label">Категория</label><select class="form-select" id="expCat"><option>Топливо</option><option>Продукты</option><option>Алкоголь</option><option>Жильё</option><option>Снаряжение</option><option>Ресторан</option><option>Лицензии</option><option>Другое</option></select></div>';
   h+='<button class="save-btn" onclick="saveExp()">Сохранить</button></div>';
-  var names=Object.keys(byPerson);
-  if(names.length>0){
+  if(summary.rows.length>0){
     h+='<div class="sec-h">По участникам</div><div class="check-group">';
-    for(var i=0;i<names.length;i++){
-      var name=names[i], paid=byPerson[name], diff=paid-perPerson;
-      h+='<div class="check-item" style="cursor:default"><span class="check-text">'+name+' (заплатил '+Math.round(paid).toLocaleString()+'&#8381;)</span>';
-      h+='<span style="font-size:13px;font-weight:600;color:'+(diff>=0?'#34c759':'#ff3b30')+'">'
+    for(var i=0;i<summary.rows.length;i++){
+      var r=summary.rows[i], diff=r.diff;
+      h+='<div class="check-item" style="cursor:default;align-items:flex-start"><span class="check-text">'+r.name+'<div style="font-size:12px;color:#888;margin-top:2px">Заплатил '+Math.round(r.paid).toLocaleString()+' ₽ • Доля '+Math.round(r.owed).toLocaleString()+' ₽</div></span>';
+      h+='<span style="font-size:13px;font-weight:600;color:'+(diff>=0?'#34c759':'#ff3b30')+';padding-top:2px">'
       +(diff>=0?('Ему должны '+Math.abs(Math.round(diff)).toLocaleString()+' ₽'):('Должен вернуть '+Math.abs(Math.round(diff)).toLocaleString()+' ₽'))
       +'</span></div>';
     }
@@ -1830,14 +1905,16 @@ function rExpenses(){
     h+='<div class="sec-h">Все расходы</div>';
     for(var i=ST.expenses.length-1;i>=0;i--){
       var e=ST.expenses[i];
+      var participants=(e.participantNames&&e.participantNames.length)?e.participantNames.join(', '):'все активные';
       h+='<div class="entry-card"><div><div class="entry-main">'+e.desc+'</div>';
-      h+='<div class="entry-sub">'+e.paidBy+' &bull; '+e.cat+'</div></div>';
+      h+='<div class="entry-sub">'+e.paidBy+' &bull; '+e.cat+'<div style="margin-top:2px">Участвуют: '+participants+'</div></div></div>';
       h+='<div style="display:flex;align-items:center">';
       h+='<div style="text-align:right"><div class="entry-num" style="font-size:18px">'+Math.round(e.amount).toLocaleString()+'</div><div class="entry-unit">&#8381;</div></div>';
       h+='<div class="entry-del" onclick="delExp('+i+')">&#215;</div></div></div>';
     }
   }
   el.innerHTML=h;
+  wireExpenseParticipantChecks();
 }
 function togExpForm(){document.getElementById('expForm').classList.toggle('show');}
 function saveExp(){
@@ -1846,11 +1923,20 @@ function saveExp(){
   var who=getExpenseWhoValue();
   var cat=document.getElementById('expCat').value;
   var sel=document.getElementById('expWhoSelect');
+  var selectedParticipants=getSelectedExpenseParticipants();
   if(!desc||!amt||!who){alert('Заполни все поля');return;}
   var afterMemberReady = function(member){
     var whoName = member && member.displayName ? member.displayName : who;
+    var participantNames=selectedParticipants.slice();
+    if(participantNames.indexOf(whoName)===-1) participantNames.push(whoName);
+    if(!participantNames.length){alert('Выбери хотя бы одного участника расхода');return;}
+    var participantMemberIds=[];
+    for(var i=0;i<participantNames.length;i++){
+      var found=findMemberByName(participantNames[i]);
+      if(found&&found._id) participantMemberIds.push(found._id);
+    }
     if(!ST.expenses) ST.expenses=[];
-    var entry={desc:desc,amount:amt,paidBy:whoName,paidByMemberId:(member&&member._id)||null,cat:cat,date:new Date().toISOString().split('T')[0],createdAt:new Date().toISOString()};
+    var entry={desc:desc,amount:amt,paidBy:whoName,paidByMemberId:(member&&member._id)||null,participantNames:participantNames,participantMemberIds:participantMemberIds,cat:cat,date:new Date().toISOString().split('T')[0],createdAt:new Date().toISOString()};
     ST.expenses.push(entry);
     save();
     addExpenseToFirebase(entry);
