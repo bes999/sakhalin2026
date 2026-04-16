@@ -178,7 +178,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     };
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
-    var TRIP_ID = 'sakhalin2026'; // ID поездки
+
+    function getTripId() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        return params.get('trip') || 'sakhalin2026';
+      } catch (e) {
+        return 'sakhalin2026';
+      }
+    }
+
+    var TRIP_ID = getTripId();
+    var tripRef = db.collection('trips').doc(TRIP_ID);
   </script>
 </head>
 <body>
@@ -259,13 +270,13 @@ function saveToFirebase(){
     if(ST[k]!==undefined) shared[k]=ST[k];
   }
   shared.updatedAt=new Date().toISOString();
-  db.collection('trips').doc(TRIP_ID).set(shared,{merge:true})
+  tripRef.set(shared,{merge:true})
     .catch(function(e){console.log('Firebase save error:',e);});
 }
 
 function loadFromFirebase(){
   if(typeof db==='undefined') return;
-  db.collection('trips').doc(TRIP_ID).get()
+  tripRef.get()
     .then(function(doc){
       if(doc.exists){
         var data=doc.data();
@@ -297,7 +308,7 @@ function showSyncStatus(msg){
 // Subscribe to realtime updates (catches and expenses from other users)
 function subscribeFirebase(){
   if(typeof db==='undefined') return;
-  db.collection('trips').doc(TRIP_ID).onSnapshot(function(doc){
+  tripRef.onSnapshot(function(doc){
     if(doc.exists){
       var data=doc.data();
       var changed=false;
