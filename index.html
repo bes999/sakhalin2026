@@ -1790,7 +1790,7 @@ function buildExpenseParticipantChecks(){
   var h='<div class="form-row"><label class="form-label">Участвуют в расходе</label><div class="check-group">';
   for(var i=0;i<members.length;i++){
     var name=members[i].displayName||'';
-    h+='<label class="check-item" style="cursor:pointer"><div class="check-box checked" data-exp-check="1"></div><input type="checkbox" class="expParticipant" value="'+name.replace(/"/g,'&quot;')+'" checked style="display:none"><span class="check-text">'+name+'</span></label>';
+    h+='<div class="check-item exp-participant-row" data-name="'+name.replace(/"/g,'&quot;')+'" style="cursor:pointer"><div class="check-box checked" data-exp-check="1"></div><input type="checkbox" class="expParticipant" value="'+name.replace(/"/g,'&quot;')+'" checked style="display:none"><span class="check-text">'+name+'</span></div>';
   }
   h+='</div><div style="display:flex;gap:8px;margin-top:8px"><button type="button" class="opt-btn" onclick="setAllExpenseParticipants(true)">Все</button><button type="button" class="opt-btn" onclick="setAllExpenseParticipants(false)">Снять всех</button></div></div>';
   return h;
@@ -1802,7 +1802,7 @@ function wireExpenseParticipantChecks(){
       var row=inp.closest('.check-item');
       if(!row) return;
       row.addEventListener('click', function(ev){
-        if(ev.target && (ev.target.tagName==='INPUT' || ev.target.tagName==='BUTTON')) return;
+        ev.preventDefault();
         inp.checked=!inp.checked;
         syncExpenseCheckVisual(inp);
       });
