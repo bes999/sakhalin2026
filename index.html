@@ -421,12 +421,21 @@ function closeMemberForm(){
 function saveMemberForm(){
   var nameEl=document.getElementById('memberNameInput');
   var roleEl=document.getElementById('memberRoleInput');
+  var phoneEl=document.getElementById('memberPhoneInput');
+  var noteEl=document.getElementById('memberNoteInput');
+  var ecNameEl=document.getElementById('memberEmergencyNameInput');
+  var ecPhoneEl=document.getElementById('memberEmergencyPhoneInput');
   if(!nameEl||!roleEl) return;
   var name=(nameEl.value||'').trim();
   var role=(roleEl.value||'participant').trim();
+  var phone=phoneEl ? (phoneEl.value||'').trim() : '';
+  var note=noteEl ? (noteEl.value||'').trim() : '';
+  var emergencyContactName=ecNameEl ? (ecNameEl.value||'').trim() : '';
+  var emergencyContactPhone=ecPhoneEl ? (ecPhoneEl.value||'').trim() : '';
   if(!name){ alert('Введи имя участника'); return; }
+  var payload={displayName:name,tripRole:role,phone:phone,note:note,emergencyContactName:emergencyContactName,emergencyContactPhone:emergencyContactPhone};
   if(memberEditId){
-    updateMemberInFirebase(memberEditId,{displayName:name,tripRole:role});
+    updateMemberInFirebase(memberEditId,payload);
     memberEditId=null;
     memberFormOpen=false;
     render('members');
@@ -434,7 +443,7 @@ function saveMemberForm(){
   }
   addManualMemberToFirebase(name).then(function(member){
     if(!member) return;
-    updateMemberInFirebase(member._id||slugifyMemberName(name),{tripRole:role,displayName:name});
+    updateMemberInFirebase(member._id||slugifyMemberName(name),payload);
     memberFormOpen=false;
     render('members');
   });
@@ -471,13 +480,13 @@ function rMembers(){
   if(!active.length) h+='<div class="info-card">Пока нет активных участников.</div>';
   for(var j=0;j<active.length;j++){
     var m=active[j];
-    h+='<div class="member-card"><div class="member-main"><div class="member-name">'+(m.displayName||'Без имени')+'</div><div class="member-meta"><span class="pill">'+memberRoleLabel(m.tripRole||'participant')+'</span><span class="pill">'+(m.memberType==='manual'?'Вручную':'Связанный')+'</span></div></div><div class="member-actions"><button class="icon-btn" onclick="openMemberForm(\''+m._id+'\')">✎</button><button class="icon-btn danger" onclick="if(confirm(\'Убрать участника из активных?\')) deactivateMemberInFirebase(\''+m._id+'\')">⊖</button></div></div>';
+    h+='<div class="member-card"><div class="member-main"><div class="member-name">'+(m.displayName||'Без имени')+'</div><div class="member-meta"><span class="pill">'+memberRoleLabel(m.tripRole||'participant')+'</span><span class="pill">'+(m.memberType==='manual'?'Вручную':'Связанный')+'</span>'+(m.phone?'<span class="pill">'+m.phone+'</span>':'')+'</div>'+(m.emergencyContactName||m.emergencyContactPhone||m.note?'<div class="member-extra">'+(m.emergencyContactName||m.emergencyContactPhone?('SOS: '+(m.emergencyContactName||'')+(m.emergencyContactPhone?' · '+m.emergencyContactPhone:'')):'')+(m.note?((m.emergencyContactName||m.emergencyContactPhone)?'<br>':'')+'Заметка: '+m.note:'')+'</div>':'')+'</div><div class="member-actions"><button class="icon-btn" onclick="openMemberForm(\''+m._id+'\')">✎</button><button class="icon-btn danger" onclick="if(confirm(\'Убрать участника из активных?\')) deactivateMemberInFirebase(\''+m._id+'\')">⊖</button></div></div>';
   }
   if(inactive.length){
     h+='<div class="sec-h">Неактивные</div>';
     for(var k=0;k<inactive.length;k++){
       var x=inactive[k];
-      h+='<div class="member-card"><div class="member-main"><div class="member-name">'+(x.displayName||'Без имени')+'</div><div class="member-meta"><span class="pill">Неактивен</span><span class="pill">'+memberRoleLabel(x.tripRole||'participant')+'</span></div></div><div class="member-actions"><button class="icon-btn" onclick="reactivateMemberInFirebase(\''+x._id+'\')">↺</button><button class="icon-btn danger" onclick="if(confirm(\'Удалить участника полностью? Это действие необратимо.\')) deleteMemberPermanent(\''+x._id+'\')">🗑</button></div></div>';
+      h+='<div class="member-card"><div class="member-main"><div class="member-name">'+(x.displayName||'Без имени')+'</div><div class="member-meta"><span class="pill">Неактивен</span><span class="pill">'+memberRoleLabel(x.tripRole||'participant')+'</span>'+(x.phone?'<span class="pill">'+x.phone+'</span>':'')+'</div>'+(x.emergencyContactName||x.emergencyContactPhone||x.note?'<div class="member-extra">'+(x.emergencyContactName||x.emergencyContactPhone?('SOS: '+(x.emergencyContactName||'')+(x.emergencyContactPhone?' · '+x.emergencyContactPhone:'')):'')+(x.note?((x.emergencyContactName||x.emergencyContactPhone)?'<br>':'')+'Заметка: '+x.note:'')+'</div>':'')+'</div><div class="member-actions"><button class="icon-btn" onclick="reactivateMemberInFirebase(\''+x._id+'\')">↺</button><button class="icon-btn danger" onclick="if(confirm(\'Удалить участника полностью? Это действие необратимо.\')) deleteMemberPermanent(\''+x._id+'\')">🗑</button></div></div>';
     }
   }
   el.innerHTML=h;
