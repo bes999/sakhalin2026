@@ -162,6 +162,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .constructor-opts{display:flex;flex-wrap:wrap;gap:6px}
 .opt-btn{padding:6px 12px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:13px;cursor:pointer;background:#fff;color:#555;font-family:inherit}
 .opt-btn.sel{background:#1F4E79;color:#fff;border-color:#1F4E79}
+.member-card{background:#fff;border-radius:12px;padding:13px 15px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.member-main{flex:1}.member-name{font-size:15px;font-weight:600}.member-meta{font-size:12px;color:#888;margin-top:3px;display:flex;gap:6px;flex-wrap:wrap}.pill{display:inline-block;font-size:11px;padding:3px 8px;border-radius:999px;background:#E6F1FB;color:#1F4E79}.member-actions{display:flex;gap:8px;align-items:center}.icon-btn{border:none;background:#fff;color:#1F4E79;font-size:18px;cursor:pointer;padding:4px 6px}.icon-btn.danger{color:#ff3b30}.mini-note{font-size:12px;color:#888;margin:-4px 0 10px}
 </style>
 
   <!-- Firebase -->
@@ -210,6 +211,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="more-item" onclick="showPage('gear')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Снаряга</div>
     <div class="more-item" onclick="showPage('pantry')"><svg viewBox="0 0 24 24"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h18v4H3z"/></svg>Кладовая</div>
     <div class="more-item" onclick="showPage('expenses')"><svg viewBox="0 0 24 24"><path d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-3M13 3h8m0 0v8m0-8L11 13"/></svg>Расходы</div>
+    <div class="more-item" onclick="showPage('members')"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Участники</div>
     <div class="more-item" onclick="showPage('safety')"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Безопасность</div>
   </div>
 </div>
@@ -219,6 +221,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="p-gear" class="page"></div>
 <div id="p-pantry" class="page"></div>
 <div id="p-expenses" class="page"></div>
+<div id="p-members" class="page"></div>
 <div id="p-safety" class="page"></div>
 <div id="river-detail" class="river-detail"></div>
 
@@ -364,6 +367,100 @@ function addManualMemberToFirebase(name){
   });
 }
 
+
+function updateMemberInFirebase(id,payload){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  payload.updatedAt=new Date().toISOString();
+  return membersRef.doc(id).set(payload,{merge:true}).catch(function(e){
+    console.log('update member error:',e);
+  });
+}
+
+function deactivateMemberInFirebase(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return membersRef.doc(id).set({isActive:false,updatedAt:new Date().toISOString()},{merge:true}).catch(function(e){
+    console.log('deactivate member error:',e);
+  });
+}
+
+function reactivateMemberInFirebase(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return membersRef.doc(id).set({isActive:true,updatedAt:new Date().toISOString()},{merge:true}).catch(function(e){
+    console.log('reactivate member error:',e);
+  });
+}
+
+function openMemberForm(id){
+  memberEditId=id||null;
+  render('members');
+}
+
+function closeMemberForm(){
+  memberEditId=null;
+  render('members');
+}
+
+function saveMemberForm(){
+  var nameEl=document.getElementById('memberNameInput');
+  var roleEl=document.getElementById('memberRoleInput');
+  if(!nameEl||!roleEl) return;
+  var name=(nameEl.value||'').trim();
+  var role=(roleEl.value||'participant').trim();
+  if(!name){ alert('Введи имя участника'); return; }
+  if(memberEditId){
+    updateMemberInFirebase(memberEditId,{displayName:name,tripRole:role});
+    memberEditId=null;
+    return;
+  }
+  addManualMemberToFirebase(name).then(function(member){
+    if(!member) return;
+    updateMemberInFirebase(member._id||slugifyMemberName(name),{tripRole:role,displayName:name});
+  });
+}
+
+function memberRoleLabel(role){
+  if(role==='owner') return 'Владелец';
+  if(role==='editor') return 'Редактор';
+  if(role==='viewer') return 'Только просмотр';
+  return 'Участник';
+}
+
+function rMembers(){
+  var el=document.getElementById('p-members');
+  var all=(ST.members||[]).slice();
+  all=sortMembers(all);
+  var edit=null;
+  for(var i=0;i<all.length;i++){ if(all[i]._id===memberEditId){ edit=all[i]; break; } }
+  var h='<div class="shop-header"><div class="info-title">Участники поездки</div><div class="mini-note">Здесь можно добавить участника вручную, поменять имя и роль, либо деактивировать его. Деактивированные не участвуют в расчётах.</div>' +
+    '<button class="action-btn" style="margin-bottom:0" onclick="openMemberForm()">+ Добавить участника</button></div>';
+  h+='<div class="form-card'+(memberEditId!==null||all.length===0?' show':'')+'">'+
+    '<div class="form-row"><label class="form-label">Имя участника</label><input id="memberNameInput" class="form-input" placeholder="Например, Алексей" value="'+(edit?((edit.displayName||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
+    '<div class="form-row"><label class="form-label">Роль в поездке</label><select id="memberRoleInput" class="form-select">'+
+      '<option value="participant"'+(edit&&edit.tripRole==='participant'?' selected':'')+'>Участник</option>'+
+      '<option value="owner"'+(edit&&edit.tripRole==='owner'?' selected':'')+'>Владелец</option>'+
+      '<option value="editor"'+(edit&&edit.tripRole==='editor'?' selected':'')+'>Редактор</option>'+
+      '<option value="viewer"'+(edit&&edit.tripRole==='viewer'?' selected':'')+'>Только просмотр</option>'+
+    '</select></div>'+
+    '<div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="saveMemberForm()">'+(memberEditId!==null?'Сохранить':'Добавить')+'</button>'+(memberEditId!==null?'<button class="picker-cancel" style="flex:1;margin-top:0" onclick="closeMemberForm()">Отмена</button>':'')+'</div>'+
+    '</div>';
+  h+='<div class="sec-h">Активные</div>';
+  var active=all.filter(function(m){return m&&m.isActive!==false;});
+  var inactive=all.filter(function(m){return m&&m.isActive===false;});
+  if(!active.length) h+='<div class="info-card">Пока нет активных участников.</div>';
+  for(var j=0;j<active.length;j++){
+    var m=active[j];
+    h+='<div class="member-card"><div class="member-main"><div class="member-name">'+(m.displayName||'Без имени')+'</div><div class="member-meta"><span class="pill">'+memberRoleLabel(m.tripRole||'participant')+'</span><span class="pill">'+(m.memberType==='manual'?'Вручную':'Связанный')+'</span></div></div><div class="member-actions"><button class="icon-btn" onclick="openMemberForm(\''+m._id+'\')">✎</button><button class="icon-btn danger" onclick="if(confirm(\'Убрать участника из активных?\')) deactivateMemberInFirebase(\''+m._id+'\')">⊖</button></div></div>';
+  }
+  if(inactive.length){
+    h+='<div class="sec-h">Неактивные</div>';
+    for(var k=0;k<inactive.length;k++){
+      var x=inactive[k];
+      h+='<div class="member-card"><div class="member-main"><div class="member-name">'+(x.displayName||'Без имени')+'</div><div class="member-meta"><span class="pill">Неактивен</span><span class="pill">'+memberRoleLabel(x.tripRole||'participant')+'</span></div></div><div class="member-actions"><button class="icon-btn" onclick="reactivateMemberInFirebase(\''+x._id+'\')">↺</button></div></div>';
+    }
+  }
+  el.innerHTML=h;
+}
+
 function sortSharedArr(arr){
   arr.sort(function(a,b){
     var av=(a&& (a.createdAt||a.date)) || '';
@@ -454,6 +551,7 @@ var currentPage='route';
 var origShowPage=null;
 var expEditId=null;
 var expEditIndex=-1;
+var memberEditId=null;
 
 function showSyncStatus(msg){
   var el=document.getElementById('syncStatus');
@@ -489,7 +587,7 @@ function subscribeFirebase(){
     if(newVal!==oldVal){
       ST.expenses=arr;
       saveLocal();
-      if(currentPage==='expenses') render(currentPage||'route');
+      if(currentPage==='expenses' || currentPage==='members') render(currentPage||'route');
       showSyncStatus('Расходы обновлены ✓');
     }
   },function(e){console.log('expenses snapshot error:',e);});
@@ -503,7 +601,7 @@ function subscribeFirebase(){
     if(newVal!==oldVal){
       ST.members=arr;
       saveLocal();
-      if(currentPage==='expenses') render(currentPage||'route');
+      if(currentPage==='expenses' || currentPage==='members') render(currentPage||'route');
       showSyncStatus('Участники обновлены ✓');
     }
   },function(e){console.log('members snapshot error:',e);});
@@ -575,6 +673,7 @@ function render(id){
   else if(id==='gear') rGear();
   else if(id==='pantry') rPantry();
   else if(id==='expenses') rExpenses();
+  else if(id==='members') rMembers();
   else if(id==='safety') rSafety();
 }
 function toggle(c){c.classList.toggle('open');}
