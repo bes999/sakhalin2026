@@ -194,6 +194,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     var catchesRef = tripRef.collection('catches');
     var expensesRef = tripRef.collection('expenses');
     var membersRef = tripRef.collection('members');
+    var settlementsRef = tripRef.collection('settlements');
   </script>
 </head>
 <body>
@@ -243,7 +244,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <script>
 // ===== STATE =====
-var ST={people:3,menuOv:{},shopCh:{},shopQ:{},catches:[],gearPC:{},gearCC:{},riverN:{},expenses:[],shopCustom:[],gearCustom:[],members:[]};
+var ST={people:3,menuOv:{},shopCh:{},shopQ:{},catches:[],gearPC:{},gearCC:{},riverN:{},expenses:[],settlements:[],shopCustom:[],gearCustom:[],members:[]};
 var mF='all', bF='gin', gT='common', catchKept=true, mealPickDI=0, mealPickMI=0, mealPickType='dinner';
 
 // ===== SYNC =====
@@ -252,6 +253,7 @@ var PERSONAL_FIELDS = ['menuOv','shopCh','shopQ','shopCustom','shopDeleted','sho
   'riverN','riverPoints','pantryDeleted','menuOv']; // personal per device
 var catchesUnsub = null;
 var expensesUnsub = null;
+var settlementsUnsub = null;
 var membersUnsub = null;
 
 function saveLocal(){
@@ -286,6 +288,13 @@ function normalizeCatch(item,id){
 }
 
 function normalizeExpense(item,id){
+  if(!item) return null;
+  var copy=JSON.parse(JSON.stringify(item));
+  copy._id=id||copy._id||null;
+  return copy;
+}
+
+function normalizeSettlement(item,id){
   if(!item) return null;
   var copy=JSON.parse(JSON.stringify(item));
   copy._id=id||copy._id||null;
@@ -518,6 +527,11 @@ function loadSharedCollections(){
       snap.forEach(function(doc){arr.push(normalizeExpense(doc.data(),doc.id));});
       ST.expenses=sortSharedArr(arr);
     }),
+    settlementsRef.get().then(function(snap){
+      var arr=[];
+      snap.forEach(function(doc){arr.push(normalizeSettlement(doc.data(),doc.id));});
+      ST.settlements=sortSharedArr(arr);
+    }),
     membersRef.get().then(function(snap){
       var arr=[];
       snap.forEach(function(doc){arr.push(normalizeMember(doc.data(),doc.id));});
@@ -552,6 +566,7 @@ var origShowPage=null;
 var expEditId=null;
 var expEditIndex=-1;
 var memberEditId=null;
+var settlementPreset=null;
 
 function showSyncStatus(msg){
   var el=document.getElementById('syncStatus');
@@ -562,6 +577,7 @@ function subscribeFirebase(){
   if(typeof db==='undefined') return;
   if(catchesUnsub) catchesUnsub();
   if(expensesUnsub) expensesUnsub();
+  if(settlementsUnsub) settlementsUnsub();
   if(membersUnsub) membersUnsub();
 
   catchesUnsub = catchesRef.onSnapshot(function(snap){
@@ -591,6 +607,20 @@ function subscribeFirebase(){
       showSyncStatus('Расходы обновлены ✓');
     }
   },function(e){console.log('expenses snapshot error:',e);});
+
+  settlementsUnsub = settlementsRef.onSnapshot(function(snap){
+    var arr=[];
+    snap.forEach(function(doc){arr.push(normalizeSettlement(doc.data(),doc.id));});
+    arr=sortSharedArr(arr);
+    var newVal=JSON.stringify(arr);
+    var oldVal=JSON.stringify(ST.settlements||[]);
+    if(newVal!==oldVal){
+      ST.settlements=arr;
+      saveLocal();
+      if(currentPage==='expenses') render(currentPage||'route');
+      showSyncStatus('Погашения обновлены ✓');
+    }
+  },function(e){console.log('settlements snapshot error:',e);});
 
   membersUnsub = membersRef.onSnapshot(function(snap){
     var arr=[];
@@ -647,6 +677,23 @@ function updateExpenseInFirebase(id, entry){
   delete payload._id;
   return expensesRef.doc(id).set(payload,{merge:true}).catch(function(e){console.log('update expense error:',e);});
 }
+function addSettlementToFirebase(entry){
+  if(typeof db==='undefined') return Promise.resolve();
+  var payload=Object.assign({},entry);
+  delete payload._id;
+  payload.createdAt=payload.createdAt||new Date().toISOString();
+  return settlementsRef.add(payload).then(function(ref){
+    entry._id=ref.id;
+    saveLocal();
+    return ref.id;
+  }).catch(function(e){console.log('add settlement error:',e);});
+}
+
+function deleteSettlementFromFirebase(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return settlementsRef.doc(id).delete().catch(function(e){console.log('delete settlement error:',e);});
+}
+
 
 // ===== NAV =====
 function showPage(id,el){
@@ -1937,6 +1984,71 @@ function getSelectedExpenseParticipants(){
   for(var i=0;i<items.length;i++) if(items[i].checked) names.push(items[i].value);
   return names;
 }
+function buildMemberOptions(selected, includeEmpty){
+  var members=getTripMembers();
+  var h=includeEmpty?'<option value="">Выбери участника</option>':'';
+  for(var i=0;i<members.length;i++){
+    var name=members[i].displayName||'';
+    h+='<option value="'+name.replace(/"/g,'&quot;')+'"'+(selected===name?' selected':'')+'>'+name+'</option>';
+  }
+  return h;
+}
+
+function openSettlementForm(fromName,toName,amount){
+  settlementPreset={fromName:fromName||'',toName:toName||'',amount:amount||''};
+  var f=document.getElementById('settlementForm');
+  if(!f) return;
+  var fromSel=document.getElementById('settFrom');
+  var toSel=document.getElementById('settTo');
+  var amt=document.getElementById('settAmt');
+  var date=document.getElementById('settDate');
+  var note=document.getElementById('settNote');
+  if(fromSel) fromSel.value=fromName||'';
+  if(toSel) toSel.value=toName||'';
+  if(amt) amt.value=amount?Math.round(amount):'';
+  if(date && !date.value) date.value=new Date().toISOString().split('T')[0];
+  if(note) note.value='';
+  f.classList.add('show');
+}
+
+function closeSettlementForm(){
+  settlementPreset=null;
+  var f=document.getElementById('settlementForm');
+  if(!f) return;
+  f.classList.remove('show');
+  var ids=['settFrom','settTo','settAmt','settDate','settNote'];
+  for(var i=0;i<ids.length;i++){
+    var el=document.getElementById(ids[i]);
+    if(el) el.value='';
+  }
+}
+
+function saveSettlement(){
+  var fromName=(document.getElementById('settFrom').value||'').trim();
+  var toName=(document.getElementById('settTo').value||'').trim();
+  var amount=parseFloat(document.getElementById('settAmt').value)||0;
+  var date=(document.getElementById('settDate').value||new Date().toISOString().split('T')[0]);
+  var note=(document.getElementById('settNote').value||'').trim();
+  if(!fromName||!toName||fromName===toName||amount<=0){ alert('Проверь участников и сумму'); return; }
+  var fromMember=findMemberByName(fromName);
+  var toMember=findMemberByName(toName);
+  var entry={fromName:fromName,toName:toName,fromMemberId:fromMember&&fromMember._id||null,toMemberId:toMember&&toMember._id||null,amount:amount,date:date,note:note,createdAt:new Date().toISOString()};
+  if(!ST.settlements) ST.settlements=[];
+  ST.settlements.push(entry);
+  save();
+  addSettlementToFirebase(entry);
+  closeSettlementForm();
+  rExpenses();
+}
+
+function delSettlement(i){
+  var entry=ST.settlements[i];
+  ST.settlements.splice(i,1);
+  save();
+  if(entry&&entry._id) deleteSettlementFromFirebase(entry._id);
+  rExpenses();
+}
+
 function computeExpenseSummary(){
   var total=0;
   var names=getTripMemberNames();
@@ -1963,16 +2075,34 @@ function computeExpenseSummary(){
       owedByPerson[pname]+=share;
     }
   }
+  var settledOut={};
+  var settledIn={};
+  var settlementsList=Array.isArray(ST.settlements)?ST.settlements:[];
+  for(var si=0;si<settlementsList.length;si++){
+    var s=settlementsList[si]||{};
+    var sa=parseFloat(s.amount)||0;
+    if(!sa) continue;
+    if(s.fromName){ if(settledOut[s.fromName]===undefined) settledOut[s.fromName]=0; settledOut[s.fromName]+=sa; }
+    if(s.toName){ if(settledIn[s.toName]===undefined) settledIn[s.toName]=0; settledIn[s.toName]+=sa; }
+  }
   var summaryNames={};
   Object.keys(paidByPerson).forEach(function(k){summaryNames[k]=1;});
   Object.keys(owedByPerson).forEach(function(k){summaryNames[k]=1;});
+  Object.keys(settledOut).forEach(function(k){summaryNames[k]=1;});
+  Object.keys(settledIn).forEach(function(k){summaryNames[k]=1;});
   var rows=[];
   Object.keys(summaryNames).sort(function(a,b){return a.localeCompare(b,'ru');}).forEach(function(name){
+    var diff=(paidByPerson[name]||0)-(owedByPerson[name]||0);
+    var out=settledOut[name]||0;
+    var inn=settledIn[name]||0;
     rows.push({
       name:name,
       paid:paidByPerson[name]||0,
       owed:owedByPerson[name]||0,
-      diff:(paidByPerson[name]||0)-(owedByPerson[name]||0)
+      diff:diff,
+      settledOut:out,
+      settledIn:inn,
+      netDiff:diff + out - inn
     });
   });
   var avgShare=rows.length ? rows.reduce(function(s,r){return s+r.owed;},0)/rows.length : 0;
@@ -1981,30 +2111,31 @@ function computeExpenseSummary(){
   var debtors=[];
   var eps=0.01;
   for(var k=0;k<rows.length;k++){
-    var diff=rows[k].diff;
-    if(diff>eps) creditors.push({name:rows[k].name, amount:diff});
-    else if(diff<-eps) debtors.push({name:rows[k].name, amount:Math.abs(diff)});
+    var diffNet=rows[k].netDiff;
+    if(diffNet>eps) creditors.push({name:rows[k].name, amount:diffNet});
+    else if(diffNet<-eps) debtors.push({name:rows[k].name, amount:Math.abs(diffNet)});
   }
   creditors.sort(function(a,b){return b.amount-a.amount;});
   debtors.sort(function(a,b){return b.amount-a.amount;});
-  var settlements=[];
+  var suggestedTransfers=[];
   var ci=0, di=0;
   while(ci<creditors.length && di<debtors.length){
     var c=creditors[ci], d=debtors[di];
     var pay=Math.min(c.amount,d.amount);
     if(pay>eps){
-      settlements.push({from:d.name,to:c.name,amount:pay});
+      suggestedTransfers.push({from:d.name,to:c.name,amount:pay});
       c.amount-=pay;
       d.amount-=pay;
     }
     if(c.amount<=eps) ci++;
     if(d.amount<=eps) di++;
   }
-  return {total:total, rows:rows, avgShare:avgShare, settlements:settlements};
+  return {total:total, rows:rows, avgShare:avgShare, suggestedTransfers:suggestedTransfers};
 }
 function rExpenses(){
   var el=document.getElementById('p-expenses');
   if(!ST.expenses) ST.expenses=[];
+  if(!ST.settlements) ST.settlements=[];
   var summary=computeExpenseSummary();
   var total=summary.total;
   var h='<div class="stat-grid">';
@@ -2012,7 +2143,7 @@ function rExpenses(){
   h+='<div class="stat-box"><div class="stat-num">'+Math.round(summary.avgShare).toLocaleString()+'</div><div class="stat-lbl">Средняя доля</div></div>';
   h+='<div class="stat-box"><div class="stat-num">'+ST.expenses.length+'</div><div class="stat-lbl">Позиций</div></div>';
   h+='</div>';
-  h+='<div style="font-size:12px;color:#888;margin:-2px 0 10px 2px">Расход теперь делится только между выбранными участниками в каждой записи</div>';
+  h+='<div style="font-size:12px;color:#888;margin:-2px 0 10px 2px">Расходы делятся по выбранным участникам. Погашения учитываются отдельно и уменьшают остаток долга.</div>';
   h+='<button class="action-btn" onclick="openNewExpenseForm()">+ Добавить расход</button>';
   h+='<div class="form-card" id="expForm">';
   h+='<div class="info-title" id="expFormTitle" style="margin-bottom:12px">Новый расход</div>';
@@ -2023,25 +2154,46 @@ function rExpenses(){
   h+=buildExpenseParticipantChecks();
   h+='<div class="form-row"><label class="form-label">Категория</label><select class="form-select" id="expCat"><option>Топливо</option><option>Продукты</option><option>Алкоголь</option><option>Жильё</option><option>Снаряжение</option><option>Ресторан</option><option>Лицензии</option><option>Другое</option></select></div>';
   h+='<div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="saveExp()">Сохранить</button><button type="button" class="picker-cancel" style="flex:1;margin-top:0" onclick="cancelExpEdit()">Отмена</button></div></div>';
+
+  h+='<div class="sec-h">Погашения</div>';
+  h+='<button class="action-btn" style="margin-bottom:8px" onclick="openSettlementForm()">+ Добавить погашение</button>';
+  h+='<div class="form-card" id="settlementForm">';
+  h+='<div class="info-title" style="margin-bottom:12px">Погашение долга</div>';
+  h+='<div class="form-row"><label class="form-label">Кто перевёл</label><select class="form-select" id="settFrom">'+buildMemberOptions('', true)+'</select></div>';
+  h+='<div class="form-row"><label class="form-label">Кому перевёл</label><select class="form-select" id="settTo">'+buildMemberOptions('', true)+'</select></div>';
+  h+='<div class="form-row"><label class="form-label">Сумма &#8381;</label><input class="form-input" type="number" id="settAmt" placeholder="0"></div>';
+  h+='<div class="form-row"><label class="form-label">Дата</label><input class="form-input" type="date" id="settDate" value="'+new Date().toISOString().split('T')[0]+'"></div>';
+  h+='<div class="form-row"><label class="form-label">Комментарий</label><input class="form-input" type="text" id="settNote" placeholder="Перевод, наличные, частично..."></div>';
+  h+='<div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="saveSettlement()">Сохранить</button><button type="button" class="picker-cancel" style="flex:1;margin-top:0" onclick="closeSettlementForm()">Отмена</button></div></div>';
+
   if(summary.rows.length>0){
     h+='<div class="sec-h">По участникам</div><div class="check-group">';
     for(var i=0;i<summary.rows.length;i++){
-      var r=summary.rows[i], diff=r.diff;
-      h+='<div class="check-item" style="cursor:default;align-items:flex-start"><span class="check-text">'+r.name+'<div style="font-size:12px;color:#888;margin-top:2px">Заплатил '+Math.round(r.paid).toLocaleString()+' ₽ • Доля '+Math.round(r.owed).toLocaleString()+' ₽</div></span>';
+      var r=summary.rows[i], diff=r.netDiff;
+      h+='<div class="check-item" style="cursor:default;align-items:flex-start"><span class="check-text">'+r.name+
+        '<div style="font-size:12px;color:#888;margin-top:2px">Заплатил '+Math.round(r.paid).toLocaleString()+' ₽ • Доля '+Math.round(r.owed).toLocaleString()+' ₽</div>'+
+        '<div style="font-size:12px;color:#888;margin-top:2px">Погасил '+Math.round(r.settledOut).toLocaleString()+' ₽ • Получил '+Math.round(r.settledIn).toLocaleString()+' ₽</div></span>';
       h+='<span style="font-size:13px;font-weight:600;color:'+(diff>=0?'#34c759':'#ff3b30')+';padding-top:2px">'
       +(diff>=0?('К получению '+Math.abs(Math.round(diff)).toLocaleString()+' ₽'):('К оплате '+Math.abs(Math.round(diff)).toLocaleString()+' ₽'))
       +'</span></div>';
     }
     h+='</div>';
   }
-  if(summary.settlements && summary.settlements.length){
+  if(summary.suggestedTransfers && summary.suggestedTransfers.length){
     h+='<div class="sec-h">Кто кому должен</div><div class="check-group">';
-    for(var s=0;s<summary.settlements.length;s++){
-      var st=summary.settlements[s];
-      h+='<div class="check-item" style="cursor:default;align-items:flex-start"><span class="check-text">'+st.from+' → '+st.to+'<div style="font-size:12px;color:#888;margin-top:2px">Итоговый перевод</div></span>';
-      h+='<span style="font-size:13px;font-weight:600;color:#1F4E79;padding-top:2px">'+Math.round(st.amount).toLocaleString()+' ₽</span></div>';
+    for(var s=0;s<summary.suggestedTransfers.length;s++){
+      var st=summary.suggestedTransfers[s];
+      h+='<div class="check-item" style="cursor:default;align-items:flex-start"><span class="check-text">'+st.from+' → '+st.to+'<div style="font-size:12px;color:#888;margin-top:2px">Остаток после учёта погашений</div></span>';
+      h+='<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:600;color:#1F4E79;padding-top:2px">'+Math.round(st.amount).toLocaleString()+' ₽</span><button class="opt-btn debt-pay-btn" type="button" data-from="'+st.from.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-to="'+st.to.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-amount="'+Math.round(st.amount)+'">Погасить</button></div></div>';
     }
     h+='</div>';
+  }
+  if(ST.settlements.length>0){
+    h+='<div class="sec-h">История погашений</div>';
+    for(var z=ST.settlements.length-1;z>=0;z--){
+      var p=ST.settlements[z];
+      h+='<div class="entry-card"><div><div class="entry-main">'+p.fromName+' → '+p.toName+'</div><div class="entry-sub">'+(p.date||'')+(p.note?' • '+p.note:'')+'</div></div><div style="display:flex;align-items:center"><div style="text-align:right"><div class="entry-num" style="font-size:18px">'+Math.round(p.amount||0).toLocaleString()+'</div><div class="entry-unit">&#8381;</div></div><div class="entry-del" onclick="delSettlement('+z+')">&#215;</div></div></div>';
+    }
   }
   if(ST.expenses.length>0){
     h+='<div class="sec-h">Все расходы</div>';
@@ -2058,6 +2210,12 @@ function rExpenses(){
   }
   el.innerHTML=h;
   wireExpenseParticipantChecks();
+  var debtBtns=document.querySelectorAll('#p-expenses .debt-pay-btn');
+  for(var dbi=0;dbi<debtBtns.length;dbi++){
+    debtBtns[dbi].addEventListener('click', function(){
+      openSettlementForm(this.getAttribute('data-from')||'', this.getAttribute('data-to')||'', parseFloat(this.getAttribute('data-amount')||'0')||0);
+    });
+  }
 }
 function togExpForm(){document.getElementById('expForm').classList.toggle('show');}
 function resetExpForm(){
