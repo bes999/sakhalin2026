@@ -472,6 +472,10 @@ function rMembers(){
       '<option value="editor"'+(edit&&edit.tripRole==='editor'?' selected':'')+'>Редактор</option>'+
       '<option value="viewer"'+(edit&&edit.tripRole==='viewer'?' selected':'')+'>Только просмотр</option>'+
     '</select></div>'+
+    '<div class="form-row"><label class="form-label">Телефон</label><input id="memberPhoneInput" class="form-input" placeholder="+7..." value="'+(edit?((edit.phone||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
+    '<div class="form-row"><label class="form-label">Экстренный контакт — имя</label><input id="memberEmergencyNameInput" class="form-input" placeholder="Кого уведомлять" value="'+(edit?((edit.emergencyContactName||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
+    '<div class="form-row"><label class="form-label">Экстренный контакт — телефон</label><input id="memberEmergencyPhoneInput" class="form-input" placeholder="+7..." value="'+(edit?((edit.emergencyContactPhone||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
+    '<div class="form-row"><label class="form-label">Заметка</label><input id="memberNoteInput" class="form-input" placeholder="Например: аптечка у него / связь плохая / водитель" value="'+(edit?((edit.note||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
     '<div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="saveMemberForm()">'+(memberEditId!==null?'Сохранить':'Добавить')+'</button>'+((memberFormOpen||memberEditId!==null)?'<button class="picker-cancel" style="flex:1;margin-top:0" onclick="closeMemberForm()">Отмена</button>':'')+'</div>'+
     '</div>';
   h+='<div class="sec-h">Активные</div>';
