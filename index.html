@@ -163,9 +163,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .opt-btn{padding:6px 12px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:13px;cursor:pointer;background:#fff;color:#555;font-family:inherit}
 .opt-btn.sel{background:#1F4E79;color:#fff;border-color:#1F4E79}
 </style>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyB-R02M_dFIEwJlbWRCxvmIElQ2mJSGMhQ",
+      authDomain: "fuckfishing-app.firebaseapp.com",
+      projectId: "fuckfishing-app",
+      storageBucket: "fuckfishing-app.firebasestorage.app",
+      messagingSenderId: "853201391991",
+      appId: "1:853201391991:web:01f43ef8ca39db11f9d172"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.firestore();
+    var TRIP_ID = 'sakhalin2026'; // ID поездки
+  </script>
 </head>
 <body>
-<div class="topbar"><h1>&#x1F3A3; Сахалин 2026</h1><p>10&#8211;17 июня &bull; Сима &bull; Южный Сахалин</p></div>
+<div class="topbar"><h1>&#x1F3A3; Сахалин 2026</h1><p>10&#8211;17 июня &bull; Сима &bull; Южный Сахалин <span id="syncStatus" style="font-size:10px;opacity:0.7;margin-left:8px"></span></p></div>
 
 <div id="p-route" class="page show"></div>
 <div id="p-rivers" class="page"></div>
@@ -212,19 +229,98 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 var ST={people:3,menuOv:{},shopCh:{},shopQ:{},catches:[],gearPC:{},gearCC:{},riverN:{},expenses:[],shopCustom:[],gearCustom:[]};
 var mF='all', bF='gin', gT='common', catchKept=true, mealPickDI=0, mealPickMI=0, mealPickType='dinner';
 
+// ===== SYNC =====
+var SYNC_FIELDS = ['catches','expenses']; // shared between all users
+var PERSONAL_FIELDS = ['menuOv','shopCh','shopQ','shopCustom','shopDeleted','shopExtra',
+  'gearPC','gearCC','gearCommonDel','gearCommonExtra','gearPersonalDel','gearCustom',
+  'riverN','riverPoints','pantryDeleted','menuOv']; // personal per device
+
 function load(){
   try{
     var s=JSON.parse(localStorage.getItem('s26')||'{}');
     var keys=Object.keys(s);
     for(var i=0;i<keys.length;i++) ST[keys[i]]=s[keys[i]];
   }catch(e){}
+  // Load shared data from Firebase if online
+  loadFromFirebase();
 }
+
 function save(){
   try{localStorage.setItem('s26',JSON.stringify(ST));}catch(e){}
+  // Save shared fields to Firebase
+  saveToFirebase();
+}
+
+function saveToFirebase(){
+  if(typeof db==='undefined') return;
+  var shared={};
+  for(var i=0;i<SYNC_FIELDS.length;i++){
+    var k=SYNC_FIELDS[i];
+    if(ST[k]!==undefined) shared[k]=ST[k];
+  }
+  shared.updatedAt=new Date().toISOString();
+  db.collection('trips').doc(TRIP_ID).set(shared,{merge:true})
+    .catch(function(e){console.log('Firebase save error:',e);});
+}
+
+function loadFromFirebase(){
+  if(typeof db==='undefined') return;
+  db.collection('trips').doc(TRIP_ID).get()
+    .then(function(doc){
+      if(doc.exists){
+        var data=doc.data();
+        var keys=Object.keys(data);
+        for(var i=0;i<keys.length;i++){
+          if(keys[i]==='updatedAt') continue;
+          ST[keys[i]]=data[keys[i]];
+        }
+        try{localStorage.setItem('s26',JSON.stringify(ST));}catch(e){}
+        // Re-render current page
+        render(currentPage||'route');
+        showSyncStatus('Синхронизировано ✓');
+      }
+    })
+    .catch(function(e){
+      console.log('Firebase load error:',e);
+      showSyncStatus('Офлайн — данные локальные');
+    });
+}
+
+var currentPage='route';
+var origShowPage=null;
+
+function showSyncStatus(msg){
+  var el=document.getElementById('syncStatus');
+  if(el){el.textContent=msg;setTimeout(function(){el.textContent='';},3000);}
+}
+
+// Subscribe to realtime updates (catches and expenses from other users)
+function subscribeFirebase(){
+  if(typeof db==='undefined') return;
+  db.collection('trips').doc(TRIP_ID).onSnapshot(function(doc){
+    if(doc.exists){
+      var data=doc.data();
+      var changed=false;
+      for(var i=0;i<SYNC_FIELDS.length;i++){
+        var k=SYNC_FIELDS[i];
+        if(data[k]!==undefined){
+          var newVal=JSON.stringify(data[k]);
+          var oldVal=JSON.stringify(ST[k]);
+          if(newVal!==oldVal){ST[k]=data[k];changed=true;}
+        }
+      }
+      if(changed){
+        try{localStorage.setItem('s26',JSON.stringify(ST));}catch(e){}
+        render(currentPage||'route');
+        showSyncStatus('Обновлено от других участников ✓');
+      }
+    }
+  },function(e){console.log('snapshot error:',e);});
 }
 
 // ===== NAV =====
 function showPage(id,el){
+  currentPage=id;
   document.getElementById('river-detail').classList.remove('show');
   var pages=document.querySelectorAll('.page');
   for(var i=0;i<pages.length;i++) pages[i].classList.remove('show');
@@ -1728,6 +1824,7 @@ function delGearPersonalBase(idx){
 
 load();
 render('route');
+subscribeFirebase();
 </script>
 </body>
 </html>
