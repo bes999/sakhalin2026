@@ -190,6 +190,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     var TRIP_ID = getTripId();
     var tripRef = db.collection('trips').doc(TRIP_ID);
+    var catchesRef = tripRef.collection('catches');
+    var expensesRef = tripRef.collection('expenses');
   </script>
 </head>
 <body>
@@ -241,10 +243,15 @@ var ST={people:3,menuOv:{},shopCh:{},shopQ:{},catches:[],gearPC:{},gearCC:{},riv
 var mF='all', bF='gin', gT='common', catchKept=true, mealPickDI=0, mealPickMI=0, mealPickType='dinner';
 
 // ===== SYNC =====
-var SYNC_FIELDS = ['catches','expenses']; // shared between all users
 var PERSONAL_FIELDS = ['menuOv','shopCh','shopQ','shopCustom','shopDeleted','shopExtra',
   'gearPC','gearCC','gearCommonDel','gearCommonExtra','gearPersonalDel','gearCustom',
   'riverN','riverPoints','pantryDeleted','menuOv']; // personal per device
+var catchesUnsub = null;
+var expensesUnsub = null;
+
+function saveLocal(){
+  try{localStorage.setItem('s26',JSON.stringify(ST));}catch(e){}
+}
 
 function load(){
   try{
@@ -252,44 +259,108 @@ function load(){
     var keys=Object.keys(s);
     for(var i=0;i<keys.length;i++) ST[keys[i]]=s[keys[i]];
   }catch(e){}
-  // Load shared data from Firebase if online
   loadFromFirebase();
 }
 
 function save(){
-  try{localStorage.setItem('s26',JSON.stringify(ST));}catch(e){}
-  // Save shared fields to Firebase
+  saveLocal();
   saveToFirebase();
 }
 
 function saveToFirebase(){
-  if(typeof db==='undefined') return;
-  var shared={};
-  for(var i=0;i<SYNC_FIELDS.length;i++){
-    var k=SYNC_FIELDS[i];
-    if(ST[k]!==undefined) shared[k]=ST[k];
-  }
-  shared.updatedAt=new Date().toISOString();
-  tripRef.set(shared,{merge:true})
+  if(typeof tripRef==='undefined') return;
+  tripRef.set({updatedAt:new Date().toISOString()},{merge:true})
     .catch(function(e){console.log('Firebase save error:',e);});
+}
+
+function normalizeCatch(item,id){
+  if(!item) return null;
+  var copy=JSON.parse(JSON.stringify(item));
+  copy._id=id||copy._id||null;
+  return copy;
+}
+
+function normalizeExpense(item,id){
+  if(!item) return null;
+  var copy=JSON.parse(JSON.stringify(item));
+  copy._id=id||copy._id||null;
+  return copy;
+}
+
+function sortSharedArr(arr){
+  arr.sort(function(a,b){
+    var av=(a&& (a.createdAt||a.date)) || '';
+    var bv=(b&& (b.createdAt||b.date)) || '';
+    if(av<bv) return -1;
+    if(av>bv) return 1;
+    return 0;
+  });
+  return arr;
+}
+
+function migrateLegacyArraysIfNeeded(data){
+  if(typeof db==='undefined' || !data) return Promise.resolve();
+  var jobs=[];
+
+  if(Array.isArray(data.catches) && data.catches.length){
+    jobs.push(catchesRef.limit(1).get().then(function(snap){
+      if(!snap.empty) return null;
+      var batch=db.batch();
+      for(var i=0;i<data.catches.length;i++){
+        var ref=catchesRef.doc();
+        var payload=Object.assign({},data.catches[i],{createdAt:data.catches[i].createdAt||new Date().toISOString(),migratedFromLegacy:true});
+        batch.set(ref,payload);
+      }
+      return batch.commit();
+    }));
+  }
+
+  if(Array.isArray(data.expenses) && data.expenses.length){
+    jobs.push(expensesRef.limit(1).get().then(function(snap){
+      if(!snap.empty) return null;
+      var batch=db.batch();
+      for(var i=0;i<data.expenses.length;i++){
+        var ref=expensesRef.doc();
+        var payload=Object.assign({},data.expenses[i],{createdAt:data.expenses[i].createdAt||new Date().toISOString(),migratedFromLegacy:true});
+        batch.set(ref,payload);
+      }
+      return batch.commit();
+    }));
+  }
+
+  if(!jobs.length) return Promise.resolve();
+  return Promise.all(jobs);
+}
+
+function loadSharedCollections(){
+  return Promise.all([
+    catchesRef.get().then(function(snap){
+      var arr=[];
+      snap.forEach(function(doc){arr.push(normalizeCatch(doc.data(),doc.id));});
+      ST.catches=sortSharedArr(arr);
+    }),
+    expensesRef.get().then(function(snap){
+      var arr=[];
+      snap.forEach(function(doc){arr.push(normalizeExpense(doc.data(),doc.id));});
+      ST.expenses=sortSharedArr(arr);
+    })
+  ]).then(function(){
+    saveLocal();
+    render(currentPage||'route');
+  });
 }
 
 function loadFromFirebase(){
   if(typeof db==='undefined') return;
   tripRef.get()
     .then(function(doc){
-      if(doc.exists){
-        var data=doc.data();
-        var keys=Object.keys(data);
-        for(var i=0;i<keys.length;i++){
-          if(keys[i]==='updatedAt') continue;
-          ST[keys[i]]=data[keys[i]];
-        }
-        try{localStorage.setItem('s26',JSON.stringify(ST));}catch(e){}
-        // Re-render current page
-        render(currentPage||'route');
-        showSyncStatus('Синхронизировано ✓');
-      }
+      if(doc.exists) return migrateLegacyArraysIfNeeded(doc.data()||{});
+    })
+    .then(function(){
+      return loadSharedCollections();
+    })
+    .then(function(){
+      showSyncStatus('Синхронизировано ✓');
     })
     .catch(function(e){
       console.log('Firebase load error:',e);
@@ -305,28 +376,72 @@ function showSyncStatus(msg){
   if(el){el.textContent=msg;setTimeout(function(){el.textContent='';},3000);}
 }
 
-// Subscribe to realtime updates (catches and expenses from other users)
 function subscribeFirebase(){
   if(typeof db==='undefined') return;
-  tripRef.onSnapshot(function(doc){
-    if(doc.exists){
-      var data=doc.data();
-      var changed=false;
-      for(var i=0;i<SYNC_FIELDS.length;i++){
-        var k=SYNC_FIELDS[i];
-        if(data[k]!==undefined){
-          var newVal=JSON.stringify(data[k]);
-          var oldVal=JSON.stringify(ST[k]);
-          if(newVal!==oldVal){ST[k]=data[k];changed=true;}
-        }
-      }
-      if(changed){
-        try{localStorage.setItem('s26',JSON.stringify(ST));}catch(e){}
-        render(currentPage||'route');
-        showSyncStatus('Обновлено от других участников ✓');
-      }
+  if(catchesUnsub) catchesUnsub();
+  if(expensesUnsub) expensesUnsub();
+
+  catchesUnsub = catchesRef.onSnapshot(function(snap){
+    var arr=[];
+    snap.forEach(function(doc){arr.push(normalizeCatch(doc.data(),doc.id));});
+    arr=sortSharedArr(arr);
+    var newVal=JSON.stringify(arr);
+    var oldVal=JSON.stringify(ST.catches||[]);
+    if(newVal!==oldVal){
+      ST.catches=arr;
+      saveLocal();
+      if(currentPage==='catch' || document.getElementById('river-detail').classList.contains('show')) render(currentPage||'route');
+      showSyncStatus('Улов обновлён ✓');
     }
-  },function(e){console.log('snapshot error:',e);});
+  },function(e){console.log('catches snapshot error:',e);});
+
+  expensesUnsub = expensesRef.onSnapshot(function(snap){
+    var arr=[];
+    snap.forEach(function(doc){arr.push(normalizeExpense(doc.data(),doc.id));});
+    arr=sortSharedArr(arr);
+    var newVal=JSON.stringify(arr);
+    var oldVal=JSON.stringify(ST.expenses||[]);
+    if(newVal!==oldVal){
+      ST.expenses=arr;
+      saveLocal();
+      if(currentPage==='expenses') render(currentPage||'route');
+      showSyncStatus('Расходы обновлены ✓');
+    }
+  },function(e){console.log('expenses snapshot error:',e);});
+}
+
+function addCatchToFirebase(entry){
+  if(typeof db==='undefined') return Promise.resolve();
+  var payload=Object.assign({},entry);
+  delete payload._id;
+  payload.createdAt=payload.createdAt||new Date().toISOString();
+  return catchesRef.add(payload).then(function(ref){
+    entry._id=ref.id;
+    saveLocal();
+    return ref.id;
+  }).catch(function(e){console.log('add catch error:',e);});
+}
+
+function deleteCatchFromFirebase(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return catchesRef.doc(id).delete().catch(function(e){console.log('delete catch error:',e);});
+}
+
+function addExpenseToFirebase(entry){
+  if(typeof db==='undefined') return Promise.resolve();
+  var payload=Object.assign({},entry);
+  delete payload._id;
+  payload.createdAt=payload.createdAt||new Date().toISOString();
+  return expensesRef.add(payload).then(function(ref){
+    entry._id=ref.id;
+    saveLocal();
+    return ref.id;
+  }).catch(function(e){console.log('add expense error:',e);});
+}
+
+function deleteExpenseFromFirebase(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return expensesRef.doc(id).delete().catch(function(e){console.log('delete expense error:',e);});
 }
 
 // ===== NAV =====
@@ -909,8 +1024,10 @@ function saveQuickCatch(riverIdOrName){
   var fish=document.getElementById('qFish').value;
   var cnt=parseInt(document.getElementById('qCnt').value)||1;
   if(!ST.catches) ST.catches=[];
-  ST.catches.push({date:new Date().toISOString().split('T')[0],river:riverName,fish:fish,count:cnt,weight:0,kept:qKept2});
+  var entry={date:new Date().toISOString().split('T')[0],river:riverName,fish:fish,count:cnt,weight:0,kept:qKept2,createdAt:new Date().toISOString()};
+  ST.catches.push(entry);
   save();
+  addCatchToFirebase(entry);
   alert('Записано: '+cnt+' шт ' +fish+(qKept2?' (взяли)':' (отпустили)'));
 }
 function backToRivers(){
@@ -1369,11 +1486,14 @@ function saveCatch(){
     weight:parseFloat(document.getElementById('cWt').value)||0,
     kept:catchKept
   };
-  ST.catches.push(d);save();
+  d.createdAt=new Date().toISOString();
+  ST.catches.push(d);
+  save();
+  addCatchToFirebase(d);
   document.getElementById('cForm').classList.remove('show');
   rCatch();
 }
-function delCatch(i){if(confirm('Удалить?')){ST.catches.splice(i,1);save();rCatch();}}
+function delCatch(i){if(confirm('Удалить?')){var entry=ST.catches[i];ST.catches.splice(i,1);save();if(entry&&entry._id) deleteCatchFromFirebase(entry._id);rCatch();}}
 
 // ===== GEAR =====
 function rGear(){
@@ -1600,12 +1720,14 @@ function saveExp(){
   var cat=document.getElementById('expCat').value;
   if(!desc||!amt||!who){alert('Заполни все поля');return;}
   if(!ST.expenses) ST.expenses=[];
-  ST.expenses.push({desc:desc,amount:amt,paidBy:who,cat:cat,date:new Date().toISOString().split('T')[0]});
+  var entry={desc:desc,amount:amt,paidBy:who,cat:cat,date:new Date().toISOString().split('T')[0],createdAt:new Date().toISOString()};
+  ST.expenses.push(entry);
   save();
+  addExpenseToFirebase(entry);
   document.getElementById('expForm').classList.remove('show');
   rExpenses();
 }
-function delExp(i){ST.expenses.splice(i,1);save();rExpenses();}
+function delExp(i){var entry=ST.expenses[i];ST.expenses.splice(i,1);save();if(entry&&entry._id) deleteExpenseFromFirebase(entry._id);rExpenses();}
 
 // ===== SAFETY =====
 function rSafety(){
