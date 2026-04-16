@@ -452,6 +452,8 @@ function loadFromFirebase(){
 
 var currentPage='route';
 var origShowPage=null;
+var expEditId=null;
+var expEditIndex=-1;
 
 function showSyncStatus(msg){
   var el=document.getElementById('syncStatus');
@@ -539,6 +541,13 @@ function addExpenseToFirebase(entry){
 function deleteExpenseFromFirebase(id){
   if(typeof db==='undefined' || !id) return Promise.resolve();
   return expensesRef.doc(id).delete().catch(function(e){console.log('delete expense error:',e);});
+}
+
+function updateExpenseInFirebase(id, entry){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  var payload=Object.assign({},entry);
+  delete payload._id;
+  return expensesRef.doc(id).set(payload,{merge:true}).catch(function(e){console.log('update expense error:',e);});
 }
 
 // ===== NAV =====
@@ -1905,15 +1914,16 @@ function rExpenses(){
   h+='<div class="stat-box"><div class="stat-num">'+ST.expenses.length+'</div><div class="stat-lbl">Позиций</div></div>';
   h+='</div>';
   h+='<div style="font-size:12px;color:#888;margin:-2px 0 10px 2px">Расход теперь делится только между выбранными участниками в каждой записи</div>';
-  h+='<button class="action-btn" onclick="togExpForm()">+ Добавить расход</button>';
+  h+='<button class="action-btn" onclick="openNewExpenseForm()">+ Добавить расход</button>';
   h+='<div class="form-card" id="expForm">';
+  h+='<div class="info-title" id="expFormTitle" style="margin-bottom:12px">Новый расход</div>';
   h+='<div class="form-row"><label class="form-label">Описание</label><input class="form-input" type="text" id="expDesc" placeholder="Бензин, продукты..."></div>';
   h+='<div class="form-row"><label class="form-label">Сумма &#8381;</label><input class="form-input" type="number" id="expAmt" placeholder="0"></div>';
   h+='<div class="form-row"><label class="form-label">Кто платил</label><select class="form-select" id="expWhoSelect" onchange="onExpWhoChange()">'+buildExpenseWhoOptions('')+'</select></div>';
   h+='<div class="form-row" id="expWhoManualWrap" style="display:none"><label class="form-label">Новый участник</label><input class="form-input" type="text" id="expWhoManual" placeholder="Имя участника"></div>';
   h+=buildExpenseParticipantChecks();
   h+='<div class="form-row"><label class="form-label">Категория</label><select class="form-select" id="expCat"><option>Топливо</option><option>Продукты</option><option>Алкоголь</option><option>Жильё</option><option>Снаряжение</option><option>Ресторан</option><option>Лицензии</option><option>Другое</option></select></div>';
-  h+='<button class="save-btn" onclick="saveExp()">Сохранить</button></div>';
+  h+='<div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="saveExp()">Сохранить</button><button type="button" class="picker-cancel" style="flex:1;margin-top:0" onclick="cancelExpEdit()">Отмена</button></div></div>';
   if(summary.rows.length>0){
     h+='<div class="sec-h">По участникам</div><div class="check-group">';
     for(var i=0;i<summary.rows.length;i++){
@@ -1943,6 +1953,7 @@ function rExpenses(){
       h+='<div class="entry-sub">'+e.paidBy+' &bull; '+e.cat+'<div style="margin-top:2px">Участвуют: '+participants+'</div></div></div>';
       h+='<div style="display:flex;align-items:center">';
       h+='<div style="text-align:right"><div class="entry-num" style="font-size:18px">'+Math.round(e.amount).toLocaleString()+'</div><div class="entry-unit">&#8381;</div></div>';
+      h+='<div class="entry-del" style="color:#1F4E79" onclick="editExp('+i+')">&#9998;</div>';
       h+='<div class="entry-del" onclick="delExp('+i+')">&#215;</div></div></div>';
     }
   }
@@ -1950,6 +1961,50 @@ function rExpenses(){
   wireExpenseParticipantChecks();
 }
 function togExpForm(){document.getElementById('expForm').classList.toggle('show');}
+function resetExpForm(){
+  expEditId=null; expEditIndex=-1;
+  var t=document.getElementById('expFormTitle'); if(t) t.textContent='Новый расход';
+  var ids=['expDesc','expAmt','expWhoManual'];
+  for(var i=0;i<ids.length;i++){ var el=document.getElementById(ids[i]); if(el) el.value=''; }
+  var whoSel=document.getElementById('expWhoSelect'); if(whoSel) whoSel.value='';
+  var cat=document.getElementById('expCat'); if(cat) cat.value='Топливо';
+  onExpWhoChange();
+  setAllExpenseParticipants(true);
+}
+function openNewExpenseForm(){
+  resetExpForm();
+  var f=document.getElementById('expForm');
+  if(f) f.classList.add('show');
+}
+function cancelExpEdit(){
+  resetExpForm();
+  var f=document.getElementById('expForm');
+  if(f) f.classList.remove('show');
+}
+function editExp(i){
+  if(!ST.expenses || !ST.expenses[i]) return;
+  var e=ST.expenses[i];
+  expEditIndex=i; expEditId=e._id||null;
+  var f=document.getElementById('expForm');
+  if(f) f.classList.add('show');
+  var t=document.getElementById('expFormTitle'); if(t) t.textContent='Редактировать расход';
+  document.getElementById('expDesc').value=e.desc||'';
+  document.getElementById('expAmt').value=e.amount||'';
+  document.getElementById('expCat').value=e.cat||'Другое';
+  var whoSel=document.getElementById('expWhoSelect');
+  var whoManual=document.getElementById('expWhoManual');
+  var member=findMemberByName(e.paidBy||'');
+  if(member){ whoSel.value=member.displayName||''; whoManual.value=''; }
+  else { whoSel.value='__manual__'; whoManual.value=e.paidBy||''; }
+  onExpWhoChange();
+  setAllExpenseParticipants(false);
+  var names=(e.participantNames&&e.participantNames.length)?e.participantNames:[];
+  var items=document.querySelectorAll('#p-expenses .expParticipant');
+  for(var j=0;j<items.length;j++){
+    items[j].checked = names.indexOf(items[j].value)>=0;
+    syncExpenseCheckVisual(items[j]);
+  }
+}
 function saveExp(){
   var desc=document.getElementById('expDesc').value.trim();
   var amt=parseFloat(document.getElementById('expAmt').value)||0;
@@ -1969,11 +2024,20 @@ function saveExp(){
       if(found&&found._id) participantMemberIds.push(found._id);
     }
     if(!ST.expenses) ST.expenses=[];
-    var entry={desc:desc,amount:amt,paidBy:whoName,paidByMemberId:(member&&member._id)||null,participantNames:participantNames,participantMemberIds:participantMemberIds,cat:cat,date:new Date().toISOString().split('T')[0],createdAt:new Date().toISOString()};
-    ST.expenses.push(entry);
-    save();
-    addExpenseToFirebase(entry);
-    document.getElementById('expForm').classList.remove('show');
+    var base=(expEditIndex>=0 && ST.expenses[expEditIndex]) ? ST.expenses[expEditIndex] : {};
+    var entry={desc:desc,amount:amt,paidBy:whoName,paidByMemberId:(member&&member._id)||null,participantNames:participantNames,participantMemberIds:participantMemberIds,cat:cat,date:base.date||new Date().toISOString().split('T')[0],createdAt:base.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+    if(base._id) entry._id=base._id;
+    if(expEditIndex>=0){
+      ST.expenses[expEditIndex]=entry;
+      save();
+      if(entry._id) updateExpenseInFirebase(entry._id, entry);
+      else addExpenseToFirebase(entry);
+    } else {
+      ST.expenses.push(entry);
+      save();
+      addExpenseToFirebase(entry);
+    }
+    cancelExpEdit();
     rExpenses();
   };
   if(sel && sel.value==='__manual__'){
