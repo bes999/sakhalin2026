@@ -223,6 +223,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="p-pantry" class="page"></div>
 <div id="p-expenses" class="page"></div>
 <div id="p-members" class="page"></div>
+<div id="p-medkit" class="page"></div>
 <div id="p-safety" class="page"></div>
 <div id="river-detail" class="river-detail"></div>
 
@@ -244,7 +245,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <script>
 // ===== STATE =====
-var ST={people:3,menuOv:{},shopCh:{},shopQ:{},catches:[],gearPC:{},gearCC:{},riverN:{},expenses:[],settlements:[],shopCustom:[],gearCustom:[],members:[]};
+var ST={people:3,menuOv:{},shopCh:{},shopQ:{},catches:[],gearPC:{},gearCC:{},riverN:{},expenses:[],settlements:[],shopCustom:[],gearCustom:[],members:[],medkitCommon:{},medkitPersonal:{},medkitCustom:[]};
 var mF='all', bF='gin', gT='common', catchKept=true, mealPickDI=0, mealPickMI=0, mealPickType='dinner';
 
 // ===== SYNC =====
@@ -496,6 +497,119 @@ function rMembers(){
   el.innerHTML=h;
 }
 
+
+var MEDKIT_BASE=[
+ {group:'Обезбол / температура',items:[
+  {id:'pain_ibuprofen',name:'Ибупрофен / Нурофен',qty:'1 уп'},
+  {id:'pain_paracetamol',name:'Парацетамол',qty:'1 уп'},
+  {id:'pain_ketanov',name:'Кетанов',qty:'1 уп'},
+  {id:'pain_nimesulide',name:'Нимесулид',qty:'1 уп'}
+ ]},
+ {group:'ЖКТ',items:[
+  {id:'gi_smecta',name:'Смекта',qty:'1 уп'},
+  {id:'gi_loperamide',name:'Лоперамид',qty:'1 уп'},
+  {id:'gi_maalox',name:'Маалокс',qty:'1 уп'},
+  {id:'gi_pancreatin',name:'Панкреатин',qty:'1 уп'}
+ ]},
+ {group:'Аллергия / простуда',items:[
+  {id:'cold_suprastin',name:'Супрастин',qty:'1 уп'},
+  {id:'cold_ingavirin',name:'Ингавирин',qty:'1 уп'},
+  {id:'cold_aciclovir',name:'Ацикловир',qty:'1 уп'},
+  {id:'cold_furacilin',name:'Фурацилин',qty:'1 уп'}
+ ]},
+ {group:'Раны / перевязка',items:[
+  {id:'wound_peroxide',name:'Перекись водорода',qty:'1 фл'},
+  {id:'wound_iodine',name:'Йод / зелёнка',qty:'1 шт'},
+  {id:'wound_patch',name:'Пластыри',qty:'1 уп'},
+  {id:'wound_bandage',name:'Бинт / перевязка',qty:'2 шт'},
+  {id:'wound_voltaren',name:'Вольтарен / гель',qty:'1 шт'}
+ ]},
+ {group:'Глаза / нос / сон',items:[
+  {id:'eye_visine',name:'Визин',qty:'1 фл'},
+  {id:'nose_naftizin',name:'Нафтизин',qty:'1 фл'},
+  {id:'sleep_melaxen',name:'Мелаксен',qty:'1 уп'},
+  {id:'sleep_velson',name:'Вэлсон',qty:'1 уп'}
+ ]}
+];
+
+function getActiveMembers(){
+  return (ST.members||[]).filter(function(m){return m && m.isActive!==false;});
+}
+function getMemberDisplayNameById(id){
+  var arr=ST.members||[];
+  for(var i=0;i<arr.length;i++) if(arr[i]._id===id) return arr[i].displayName||id;
+  return id||'Участник';
+}
+function escHtml(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function medkitStore(mode,memberId){
+  if(mode==='personal'){
+    if(!ST.medkitPersonal) ST.medkitPersonal={};
+    if(!ST.medkitPersonal[memberId||'']) ST.medkitPersonal[memberId||'']={};
+    return ST.medkitPersonal[memberId||''];
+  }
+  if(!ST.medkitCommon) ST.medkitCommon={};
+  return ST.medkitCommon;
+}
+function medkitProgress(mode,memberId){
+  var items=[];
+  for(var g=0;g<MEDKIT_BASE.length;g++){
+    for(var i=0;i<MEDKIT_BASE[g].items.length;i++) items.push(MEDKIT_BASE[g].items[i]);
+  }
+  var store=medkitStore(mode,memberId);
+  var done=0;
+  for(var j=0;j<items.length;j++) if(store[items[j].id] && store[items[j].id].checked) done++;
+  return {done:done,total:items.length,pct:items.length?Math.round(done/items.length*100):0};
+}
+function setMedkitMode(mode){ medkitMode=mode; if(mode==='personal' && !medkitMemberId){ var m=getActiveMembers(); medkitMemberId=m.length?m[0]._id:''; } rMedkit(); }
+function setMedkitMember(id){ medkitMemberId=id||''; rMedkit(); }
+function toggleMedkitItem(mode,memberId,itemId){
+  var store=medkitStore(mode,memberId);
+  if(!store[itemId]) store[itemId]={checked:false,qty:''};
+  store[itemId].checked=!store[itemId].checked;
+  saveLocal();
+  rMedkit();
+}
+function updateMedkitQty(mode,memberId,itemId,val){
+  var store=medkitStore(mode,memberId);
+  if(!store[itemId]) store[itemId]={checked:false,qty:''};
+  store[itemId].qty=val;
+  saveLocal();
+}
+function rMedkit(){
+  var el=document.getElementById('p-medkit');
+  var members=getActiveMembers();
+  if(medkitMode==='personal' && !medkitMemberId && members.length) medkitMemberId=members[0]._id;
+  var progress=medkitProgress(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  var h='<div class="shop-header"><div class="info-title">Аптечка</div><div class="mini-note">Общая аптечка — для лагеря и машины. Личная аптечка — для конкретного участника.</div>'+
+    '<div class="subtabs" style="margin-top:10px"><div class="stab'+(medkitMode==='common'?' active':'')+'" onclick="setMedkitMode(\'common\')">Общая</div><div class="stab'+(medkitMode==='personal'?' active':'')+'" onclick="setMedkitMode(\'personal\')">Личная</div></div>';
+  if(medkitMode==='personal'){
+    h+='<div class="form-row" style="margin-top:8px"><label class="form-label">Участник</label><select class="form-select" onchange="setMedkitMember(this.value)">';
+    for(var m=0;m<members.length;m++) h+='<option value="'+members[m]._id+'"'+(members[m]._id===medkitMemberId?' selected':'')+'>'+escHtml(members[m].displayName||members[m]._id)+'</option>';
+    h+='</select></div>';
+  }
+  h+='<div class="progress-text"><span>Собрано</span><span>'+progress.done+' / '+progress.total+'</span></div><div class="progress-bar-wrap"><div class="progress-bar" style="width:'+progress.pct+'%"></div></div></div>';
+  if(medkitMode==='personal' && !members.length){
+    h+='<div class="info-card">Нет активных участников. Сначала добавь участника в разделе «Участники».</div>';
+    el.innerHTML=h; return;
+  }
+  for(var g=0;g<MEDKIT_BASE.length;g++){
+    var group=MEDKIT_BASE[g];
+    h+='<div class="check-group"><div class="check-group-title">'+group.group+'</div>';
+    var store=medkitStore(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+    for(var i=0;i<group.items.length;i++){
+      var item=group.items[i];
+      var state=store[item.id]||{checked:false,qty:''};
+      var qty=state.qty || item.qty || '';
+      h+='<div class="check-item'+(state.checked?' done':'')+'" onclick="toggleMedkitItem(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\')"><div class="check-box'+(state.checked?' checked':'')+'"></div><span class="check-text">'+item.name+'</span><input class="check-qty-input" type="text" value="'+escHtml(qty)+'" onclick="event.stopPropagation()" onchange="updateMedkitQty(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"></div>';
+    }
+    h+='</div>';
+  }
+  h+='<div class="info-card"><div class="info-title">Подсказка</div><div class="bul">На этом этапе аптечка хранится локально на устройстве и не синхронизируется между участниками.</div><div class="bul">Дальше можно добавить справочник «что делать если», личные стеки, ампулы и сценарии.</div></div>';
+  el.innerHTML=h;
+}
+
 function sortSharedArr(arr){
   arr.sort(function(a,b){
     var av=(a&& (a.createdAt||a.date)) || '';
@@ -594,6 +708,8 @@ var expEditIndex=-1;
 var memberEditId=null;
 var memberFormOpen=false;
 var settlementPreset=null;
+var medkitMode='common';
+var medkitMemberId='';
 
 function showSyncStatus(msg){
   var el=document.getElementById('syncStatus');
@@ -748,6 +864,7 @@ function render(id){
   else if(id==='pantry') rPantry();
   else if(id==='expenses') rExpenses();
   else if(id==='members') rMembers();
+  else if(id==='medkit') rMedkit();
   else if(id==='safety') rSafety();
 }
 function toggle(c){c.classList.toggle('open');}
