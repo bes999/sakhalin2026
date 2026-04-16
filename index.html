@@ -246,6 +246,64 @@ var mF='all', bF='gin', gT='common', catchKept=true, mealPickDI=0, mealPickMI=0,
 var PERSONAL_FIELDS = ['menuOv','shopCh','shopQ','shopCustom','shopDeleted','shopExtra',
   'gearPC','gearCC','gearCommonDel','gearCommonExtra','gearPersonalDel','gearCustom',
   'riverN','riverPoints','pantryDeleted','menuOv']; // personal per device
+
+var TRIP_MEMBERS = [];
+var EXP_MANUAL_MODE = false;
+
+function sanitizeMemberId(name){
+  return String(name||'').toLowerCase().trim().replace(/[^a-zа-яё0-9]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,40) || ('member_'+Date.now());
+}
+function getActiveTripMembers(){
+  return (TRIP_MEMBERS||[]).filter(function(m){ return m && m.isActive!==false; });
+}
+function getExpenseParticipantCount(){
+  var count=getActiveTripMembers().length;
+  return count>0 ? count : Math.max(1, ST.people||1);
+}
+function getMemberOptionsHtml(selected){
+  var arr=getActiveTripMembers();
+  var h='<option value="">Выбрать участника</option>';
+  for(var i=0;i<arr.length;i++){
+    var m=arr[i];
+    var sel=selected===m.id?' selected':'';
+    h+='<option value="'+m.id+'"'+sel+'>'+m.displayName+'</option>';
+  }
+  h+='<option value="__manual__">+ Вписать вручную</option>';
+  return h;
+}
+function ensureTripMemberManual(name, cb){
+  var displayName=(name||'').trim();
+  if(!displayName){ if(cb) cb(null); return; }
+  for(var i=0;i<TRIP_MEMBERS.length;i++){
+    if((TRIP_MEMBERS[i].displayName||'').toLowerCase()===displayName.toLowerCase()){
+      if(cb) cb(TRIP_MEMBERS[i]);
+      return;
+    }
+  }
+  var id=sanitizeMemberId(displayName);
+  var member={id:id,displayName:displayName,tripRole:'participant',isActive:true,memberType:'manual'};
+  TRIP_MEMBERS.push(member);
+  if(typeof db!=='undefined'){
+    tripRef.collection('members').doc(id).set({displayName:displayName,tripRole:'participant',isActive:true,memberType:'manual'},{merge:true})
+      .then(function(){ if(cb) cb(member); })
+      .catch(function(){ if(cb) cb(member); });
+  } else {
+    if(cb) cb(member);
+  }
+}
+function loadTripMembers(cb){
+  if(typeof db==='undefined') { if(cb) cb(); return; }
+  tripRef.collection('members').get().then(function(snapshot){
+    var arr=[];
+    snapshot.forEach(function(doc){
+      var d=doc.data()||{};
+      d.id=doc.id;
+      arr.push(d);
+    });
+    TRIP_MEMBERS=arr;
+    if(cb) cb(arr);
+  }).catch(function(){ if(cb) cb(TRIP_MEMBERS); });
+}
 var catchesUnsub = null;
 var expensesUnsub = null;
 
@@ -442,6 +500,20 @@ function addExpenseToFirebase(entry){
 function deleteExpenseFromFirebase(id){
   if(typeof db==='undefined' || !id) return Promise.resolve();
   return expensesRef.doc(id).delete().catch(function(e){console.log('delete expense error:',e);});
+}
+
+function subscribeTripMembers(){
+  if(typeof db==='undefined') return;
+  tripRef.collection('members').onSnapshot(function(snapshot){
+    var arr=[];
+    snapshot.forEach(function(doc){
+      var d=doc.data()||{};
+      d.id=doc.id;
+      arr.push(d);
+    });
+    TRIP_MEMBERS=arr;
+    if(currentPage==='expenses') rExpenses();
+  }, function(e){ console.log('members snapshot error:', e); });
 }
 
 // ===== NAV =====
@@ -1671,20 +1743,24 @@ function rExpenses(){
   for(var i=0;i<ST.expenses.length;i++){
     var e=ST.expenses[i];
     total+=e.amount;
-    if(!byPerson[e.paidBy]) byPerson[e.paidBy]=0;
-    byPerson[e.paidBy]+=e.amount;
+    var payerName=e.paidByName || e.paidBy || 'Без имени';
+    if(!byPerson[payerName]) byPerson[payerName]=0;
+    byPerson[payerName]+=e.amount;
   }
-  var perPerson=ST.people>0?Math.round(total/ST.people):0;
+  var expenseCount=getExpenseParticipantCount();
+  var perPerson=expenseCount>0?Math.round(total/expenseCount):0;
   var h='<div class="stat-grid">';
   h+='<div class="stat-box"><div class="stat-num">'+Math.round(total).toLocaleString()+'</div><div class="stat-lbl">Итого &#8381;</div></div>';
   h+='<div class="stat-box"><div class="stat-num">'+perPerson.toLocaleString()+'</div><div class="stat-lbl">На человека</div></div>';
   h+='<div class="stat-box"><div class="stat-num">'+ST.expenses.length+'</div><div class="stat-lbl">Позиций</div></div>';
   h+='</div>';
+  h+='<div class="info-card" style="padding:10px 15px"><div style="font-size:13px;color:#666">Расходы сейчас делятся на <b>'+expenseCount+'</b> активных участников поездки</div></div>';
   h+='<button class="action-btn" onclick="togExpForm()">+ Добавить расход</button>';
   h+='<div class="form-card" id="expForm">';
   h+='<div class="form-row"><label class="form-label">Описание</label><input class="form-input" type="text" id="expDesc" placeholder="Бензин, продукты..."></div>';
   h+='<div class="form-row"><label class="form-label">Сумма &#8381;</label><input class="form-input" type="number" id="expAmt" placeholder="0"></div>';
-  h+='<div class="form-row"><label class="form-label">Кто платил</label><input class="form-input" type="text" id="expWho" placeholder="Имя"></div>';
+  h+='<div class="form-row"><label class="form-label">Кто платил</label><select class="form-select" id="expWhoSelect" onchange="onExpensePayerChange()">'+getMemberOptionsHtml('')+'</select></div>';
+  h+='<div class="form-row" id="expWhoManualWrap" style="display:none"><label class="form-label">Имя участника</label><input class="form-input" type="text" id="expWhoManual" placeholder="Вписать вручную"></div>';
   h+='<div class="form-row"><label class="form-label">Категория</label><select class="form-select" id="expCat"><option>Топливо</option><option>Продукты</option><option>Алкоголь</option><option>Жильё</option><option>Снаряжение</option><option>Ресторан</option><option>Лицензии</option><option>Другое</option></select></div>';
   h+='<button class="save-btn" onclick="saveExp()">Сохранить</button></div>';
   var names=Object.keys(byPerson);
@@ -1703,8 +1779,9 @@ function rExpenses(){
     h+='<div class="sec-h">Все расходы</div>';
     for(var i=ST.expenses.length-1;i>=0;i--){
       var e=ST.expenses[i];
+      var payerName=e.paidByName || e.paidBy || 'Без имени';
       h+='<div class="entry-card"><div><div class="entry-main">'+e.desc+'</div>';
-      h+='<div class="entry-sub">'+e.paidBy+' &bull; '+e.cat+'</div></div>';
+      h+='<div class="entry-sub">'+payerName+' &bull; '+e.cat+'</div></div>';
       h+='<div style="display:flex;align-items:center">';
       h+='<div style="text-align:right"><div class="entry-num" style="font-size:18px">'+Math.round(e.amount).toLocaleString()+'</div><div class="entry-unit">&#8381;</div></div>';
       h+='<div class="entry-del" onclick="delExp('+i+')">&#215;</div></div></div>';
@@ -1712,20 +1789,46 @@ function rExpenses(){
   }
   el.innerHTML=h;
 }
-function togExpForm(){document.getElementById('expForm').classList.toggle('show');}
+function onExpensePayerChange(){
+  var sel=document.getElementById('expWhoSelect');
+  var wrap=document.getElementById('expWhoManualWrap');
+  if(!sel||!wrap) return;
+  var isManual=sel.value==='__manual__';
+  wrap.style.display=isManual?'block':'none';
+}
+function togExpForm(){
+  var el=document.getElementById('expForm');
+  el.classList.toggle('show');
+  if(el.classList.contains('show')) setTimeout(onExpensePayerChange, 0);
+}
 function saveExp(){
   var desc=document.getElementById('expDesc').value.trim();
   var amt=parseFloat(document.getElementById('expAmt').value)||0;
-  var who=document.getElementById('expWho').value.trim();
+  var sel=document.getElementById('expWhoSelect');
+  var whoId=sel ? sel.value : '';
+  var whoManual=document.getElementById('expWhoManual') ? document.getElementById('expWhoManual').value.trim() : '';
   var cat=document.getElementById('expCat').value;
-  if(!desc||!amt||!who){alert('Заполни все поля');return;}
-  if(!ST.expenses) ST.expenses=[];
-  var entry={desc:desc,amount:amt,paidBy:who,cat:cat,date:new Date().toISOString().split('T')[0],createdAt:new Date().toISOString()};
-  ST.expenses.push(entry);
-  save();
-  addExpenseToFirebase(entry);
-  document.getElementById('expForm').classList.remove('show');
-  rExpenses();
+  if(!desc||!amt){alert('Заполни описание и сумму');return;}
+  if(!whoId){alert('Выбери кто платил');return;}
+  if(whoId==='__manual__' && !whoManual){alert('Впиши имя участника');return;}
+  function persist(member){
+    var payerName=member ? member.displayName : whoManual;
+    var payerId=member ? member.id : sanitizeMemberId(whoManual);
+    if(!ST.expenses) ST.expenses=[];
+    var entry={desc:desc,amount:amt,paidBy:payerId,paidByName:payerName,cat:cat,date:new Date().toISOString().split('T')[0],createdAt:new Date().toISOString()};
+    ST.expenses.push(entry);
+    save();
+    addExpenseToFirebase(entry);
+    document.getElementById('expForm').classList.remove('show');
+    rExpenses();
+  }
+  if(whoId==='__manual__') ensureTripMemberManual(whoManual, persist);
+  else {
+    var member=null;
+    for(var i=0;i<TRIP_MEMBERS.length;i++) if(TRIP_MEMBERS[i].id===whoId) { member=TRIP_MEMBERS[i]; break; }
+    if(!member) member={id:whoId,displayName:whoId};
+    persist(member);
+  }
 }
 function delExp(i){var entry=ST.expenses[i];ST.expenses.splice(i,1);save();if(entry&&entry._id) deleteExpenseFromFirebase(entry._id);rExpenses();}
 
@@ -1952,6 +2055,7 @@ function delGearPersonalBase(idx){
 load();
 render('route');
 subscribeFirebase();
+subscribeTripMembers();
 </script>
 </body>
 </html>
