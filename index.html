@@ -51,10 +51,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .river-hero{background:#1F4E79;border-radius:12px;padding:16px;margin-bottom:12px;color:#fff}
 .river-hero h2{font-size:22px;font-weight:700;margin-bottom:4px}
 .river-hero p{font-size:13px;opacity:0.8}
-.river-stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.river-stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.river-stat .stat-card:nth-child(3),.river-stat .stat-card:nth-child(4){grid-column:span 1}
 .stat-card{background:#fff;border-radius:10px;padding:10px 12px}
 .stat-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px}
-.stat-val{font-size:13px;font-weight:600;line-height:1.4}
+.stat-val{font-size:12px;font-weight:500;line-height:1.4;color:#1c1c1e}
 .warn-card{background:#fff3cd;border-left:4px solid #ffc107;border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:14px;color:#533f03;line-height:1.5}
 .trow{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f2f2f7}
 .trow:last-child{border-bottom:none}
@@ -798,25 +798,29 @@ function showRiver(id){
   h+='<span class="coords-btn" style="display:inline-flex;margin-bottom:12px" onclick="navToR(\''+r.id+'\')">&#128205; '+r.coords+' &#8594; Яндекс Навигатор</span>';
   h+='<div class="river-stat">';
   h+='<div class="stat-card"><div class="stat-label">Тип</div><div class="stat-val">'+r.type+'</div></div>';
-  h+='<div class="stat-card"><div class="stat-label">Размер</div><div class="stat-val">'+r.size+'</div></div>';
   h+='<div class="stat-card"><div class="stat-label">Дно</div><div class="stat-val">'+r.bottom+'</div></div>';
-  h+='<div class="stat-card"><div class="stat-label">Подъезд</div><div class="stat-val">'+r.access+'</div></div>';
+  h+='<div class="stat-card"><div class="stat-label">Где ловить</div><div class="stat-val">'+r.fishing+'</div></div>';
+  h+='<div class="stat-card"><div class="stat-label">Лучшее время</div><div class="stat-val">'+r.best+'</div></div>';
   h+='</div>';
-  // Factory block
   if(r.factory){
     h+='<div class="info-card" style="background:#E6F1FB"><div class="info-title">&#127981; Рыбзавод</div><div style="font-size:14px;line-height:1.6">'+r.factory+'</div></div>';
   }
-  // Parking coords
   h+='<div class="info-card"><div class="info-title">&#128663; Подъезд и парковка</div>';
   h+='<div style="font-size:14px;line-height:1.6;margin-bottom:8px">'+r.access+'</div>';
   if(r.parkLat){
     h+='<span class="coords-btn" data-plat="'+r.parkLat+'" data-plon="'+r.parkLon+'" data-type="park">&#128205; Парковка: '+r.parkLat+', '+r.parkLon+' &#8594; Навигатор</span>';
   }
   h+='</div>';
-  h+='<div class="info-card"><div class="info-title">&#127907; Где ловить</div><div style="font-size:14px;line-height:1.6">'+r.fishing+'</div></div>';
-  h+='<div class="info-card"><div class="info-title">&#128057; Приманки</div><div style="font-size:14px;line-height:1.6">'+r.lures+'</div></div>';
-  h+='<div class="info-card"><div class="info-title">&#9200; Лучшее время</div><div style="font-size:14px;line-height:1.6">'+r.best+'</div></div>';
-  h+='<div class="info-card"><div class="info-title">&#128101; Люди</div><div style="font-size:14px">'+r.people+'</div></div>';
+  h+='<div class="info-card"><div class="info-title">&#127907; Быстро записать улов</div>';
+  h+='<div class="form-row-2">';
+  h+='<div><label class="form-label">Рыба</label><select class="form-select" id="qFish"><option>Сима</option><option>Кунджа</option><option>Горбуша</option><option>Голец</option><option>Другое</option></select></div>';
+  h+='<div><label class="form-label">Кол-во</label><input class="form-input" type="number" id="qCnt" value="1" min="1"></div>';
+  h+='</div>';
+  h+='<div class="toggle-row" style="margin-bottom:10px">';
+  h+='<div class="toggle-btn active" id="qKept" onclick="setQK(true)">Взяли</div>';
+  h+='<div class="toggle-btn" id="qRel" onclick="setQK(false)">Отпустили</div>';
+  h+='</div>';
+  h+='<button class="save-btn" id="qSaveBtn">Сохранить улов</button></div>';
   // Custom points
   var pts=ST.riverPoints&&ST.riverPoints[id]?ST.riverPoints[id]:[];
   h+='<div class="info-card"><div class="info-title">&#128204; Точки на реке</div>';
@@ -841,17 +845,7 @@ function showRiver(id){
   h+='<input type="text" id="ptNote" placeholder="Заметка — необязательно">';
   h+='<button id="savePtBtn">Сохранить точку</button>';
   h+='</div></div>';
-  h+='<div class="info-card"><div class="info-title">&#127907; Быстро записать улов</div>';
-  h+='<div class="form-row-2">';
-  h+='<div><label class="form-label">Рыба</label><select class="form-select" id="qFish"><option>Сима</option><option>Кунджа</option><option>Горбуша</option><option>Голец</option><option>Другое</option></select></div>';
-  h+='<div><label class="form-label">Кол-во</label><input class="form-input" type="number" id="qCnt" value="1" min="1"></div>';
-  h+='</div>';
-  h+='<div class="toggle-row" style="margin-bottom:10px">';
-  h+='<div class="toggle-btn active" id="qKept" onclick="setQK(true)">Взяли</div>';
-  h+='<div class="toggle-btn" id="qRel" onclick="setQK(false)">Отпустили</div>';
-  h+='</div>';
-  h+='<button class="save-btn" id="qSaveBtn">Сохранить улов</button></div>';
-  h+='<div class="warn-card"><div class="warn-title">&#9888;&#65039; Безопасность</div>';
+    h+='<div class="warn-card"><div class="warn-title">&#9888;&#65039; Безопасность</div>';
   h+='Фальшфейер при себе у воды. Медвежий спрей на поясе. Колокольчик при ходьбе по берегу. Не оставлять рыбу у воды. При встрече с медведем — не бежать, говорить громко. Экстренный: 112.</div>';
   h+='<div class="info-card"><div class="info-title">&#128221; Заметки</div>';
   h+='<textarea class="notes-area" id="rn-'+id+'" placeholder="Что работало, где клевало...">'+note+'</textarea>';
