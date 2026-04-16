@@ -399,13 +399,22 @@ function reactivateMemberInFirebase(id){
   });
 }
 
+function deleteMemberPermanent(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return membersRef.doc(id).delete().catch(function(e){
+    console.log('delete member error:',e);
+  });
+}
+
 function openMemberForm(id){
   memberEditId=id||null;
+  memberFormOpen=true;
   render('members');
 }
 
 function closeMemberForm(){
   memberEditId=null;
+  memberFormOpen=false;
   render('members');
 }
 
@@ -419,11 +428,15 @@ function saveMemberForm(){
   if(memberEditId){
     updateMemberInFirebase(memberEditId,{displayName:name,tripRole:role});
     memberEditId=null;
+    memberFormOpen=false;
+    render('members');
     return;
   }
   addManualMemberToFirebase(name).then(function(member){
     if(!member) return;
     updateMemberInFirebase(member._id||slugifyMemberName(name),{tripRole:role,displayName:name});
+    memberFormOpen=false;
+    render('members');
   });
 }
 
@@ -440,9 +453,9 @@ function rMembers(){
   all=sortMembers(all);
   var edit=null;
   for(var i=0;i<all.length;i++){ if(all[i]._id===memberEditId){ edit=all[i]; break; } }
-  var h='<div class="shop-header"><div class="info-title">Участники поездки</div><div class="mini-note">Здесь можно добавить участника вручную, поменять имя и роль, либо деактивировать его. Деактивированные не участвуют в расчётах.</div>' +
+  var h='<div class="shop-header"><div class="info-title">Участники поездки</div><div class="mini-note">Здесь можно добавить участника вручную, поменять имя и роль, либо деактивировать его. Деактивированные не участвуют в расчётах. Неактивного участника можно удалить полностью.</div>' +
     '<button class="action-btn" style="margin-bottom:0" onclick="openMemberForm()">+ Добавить участника</button></div>';
-  h+='<div class="form-card'+(memberEditId!==null||all.length===0?' show':'')+'">'+
+  h+='<div class="form-card'+((memberFormOpen||memberEditId!==null||all.length===0)?' show':'')+'">'+
     '<div class="form-row"><label class="form-label">Имя участника</label><input id="memberNameInput" class="form-input" placeholder="Например, Алексей" value="'+(edit?((edit.displayName||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
     '<div class="form-row"><label class="form-label">Роль в поездке</label><select id="memberRoleInput" class="form-select">'+
       '<option value="participant"'+(edit&&edit.tripRole==='participant'?' selected':'')+'>Участник</option>'+
@@ -450,7 +463,7 @@ function rMembers(){
       '<option value="editor"'+(edit&&edit.tripRole==='editor'?' selected':'')+'>Редактор</option>'+
       '<option value="viewer"'+(edit&&edit.tripRole==='viewer'?' selected':'')+'>Только просмотр</option>'+
     '</select></div>'+
-    '<div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="saveMemberForm()">'+(memberEditId!==null?'Сохранить':'Добавить')+'</button>'+(memberEditId!==null?'<button class="picker-cancel" style="flex:1;margin-top:0" onclick="closeMemberForm()">Отмена</button>':'')+'</div>'+
+    '<div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="saveMemberForm()">'+(memberEditId!==null?'Сохранить':'Добавить')+'</button>'+((memberFormOpen||memberEditId!==null)?'<button class="picker-cancel" style="flex:1;margin-top:0" onclick="closeMemberForm()">Отмена</button>':'')+'</div>'+
     '</div>';
   h+='<div class="sec-h">Активные</div>';
   var active=all.filter(function(m){return m&&m.isActive!==false;});
@@ -464,7 +477,7 @@ function rMembers(){
     h+='<div class="sec-h">Неактивные</div>';
     for(var k=0;k<inactive.length;k++){
       var x=inactive[k];
-      h+='<div class="member-card"><div class="member-main"><div class="member-name">'+(x.displayName||'Без имени')+'</div><div class="member-meta"><span class="pill">Неактивен</span><span class="pill">'+memberRoleLabel(x.tripRole||'participant')+'</span></div></div><div class="member-actions"><button class="icon-btn" onclick="reactivateMemberInFirebase(\''+x._id+'\')">↺</button></div></div>';
+      h+='<div class="member-card"><div class="member-main"><div class="member-name">'+(x.displayName||'Без имени')+'</div><div class="member-meta"><span class="pill">Неактивен</span><span class="pill">'+memberRoleLabel(x.tripRole||'participant')+'</span></div></div><div class="member-actions"><button class="icon-btn" onclick="reactivateMemberInFirebase(\''+x._id+'\')">↺</button><button class="icon-btn danger" onclick="if(confirm(\'Удалить участника полностью? Это действие необратимо.\')) deleteMemberPermanent(\''+x._id+'\')">🗑</button></div></div>';
     }
   }
   el.innerHTML=h;
@@ -566,6 +579,7 @@ var origShowPage=null;
 var expEditId=null;
 var expEditIndex=-1;
 var memberEditId=null;
+var memberFormOpen=false;
 var settlementPreset=null;
 
 function showSyncStatus(msg){
