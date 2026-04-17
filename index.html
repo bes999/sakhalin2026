@@ -736,7 +736,12 @@ function medkitPlaceSelectHtml(mode,memberId,itemId,state){
   return h;
 }
 function updateMedkitPlaceSelect(mode,memberId,itemId,val){
-  if(val==='__other__'){ medkitEnsureState(mode,memberId,itemId).place=''; saveLocal(); return; }
+  if(val==='__other__'){
+    medkitEnsureState(mode,memberId,itemId).place='';
+    saveLocal();
+    render('medkit');
+    return;
+  }
   updateMedkitPlace(mode,memberId,itemId,val);
 }
 function updateMedkitNote(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).note=val; saveLocal(); }
