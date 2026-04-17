@@ -598,10 +598,13 @@ function ensureMedkitMeta(mode,memberId){
   if(!ST.medkitPersonalCustom || typeof ST.medkitPersonalCustom!=='object') ST.medkitPersonalCustom={};
   if(!ST.medkitCommonDeleted || typeof ST.medkitCommonDeleted!=='object') ST.medkitCommonDeleted={};
   if(!ST.medkitPersonalDeleted || typeof ST.medkitPersonalDeleted!=='object') ST.medkitPersonalDeleted={};
+  if(!ST.medkitCommonGroupHidden || typeof ST.medkitCommonGroupHidden!=='object') ST.medkitCommonGroupHidden={};
+  if(!ST.medkitPersonalGroupHidden || typeof ST.medkitPersonalGroupHidden!=='object') ST.medkitPersonalGroupHidden={};
   var id=memberId||'';
   if(mode==='personal'){
     if(!ST.medkitPersonalCustom[id] || !Array.isArray(ST.medkitPersonalCustom[id])) ST.medkitPersonalCustom[id]=[];
     if(!ST.medkitPersonalDeleted[id] || typeof ST.medkitPersonalDeleted[id] !== 'object') ST.medkitPersonalDeleted[id]={};
+    if(!ST.medkitPersonalGroupHidden[id] || typeof ST.medkitPersonalGroupHidden[id] !== 'object') ST.medkitPersonalGroupHidden[id]={};
   }
 }
 function getMedkitCustomList(mode,memberId){
@@ -614,13 +617,20 @@ function getMedkitDeletedMap(mode,memberId){
   if(mode==='personal') return ST.medkitPersonalDeleted[memberId||''] || {};
   return ST.medkitCommonDeleted || {};
 }
+function getMedkitHiddenGroupsMap(mode,memberId){
+  ensureMedkitMeta(mode,memberId);
+  if(mode==='personal') return ST.medkitPersonalGroupHidden[memberId||''] || {};
+  return ST.medkitCommonGroupHidden || {};
+}
 function getMedkitGroups(mode,memberId){
   ensureMedkitMeta(mode,memberId);
   var deleted=getMedkitDeletedMap(mode,memberId);
+  var hiddenGroups=getMedkitHiddenGroupsMap(mode,memberId);
   var custom=getMedkitCustomList(mode,memberId);
   var map={}, order=[];
   for(var g=0;g<MEDKIT_BASE.length;g++){
     var baseGroup=MEDKIT_BASE[g];
+    if(hiddenGroups[baseGroup.group]) continue;
     map[baseGroup.group]={group:baseGroup.group,items:[]};
     order.push(baseGroup.group);
     for(var i=0;i<baseGroup.items.length;i++){
@@ -631,6 +641,7 @@ function getMedkitGroups(mode,memberId){
   for(var c=0;c<custom.length;c++){
     var item=custom[c];
     if(deleted[item.id]) continue;
+    if(hiddenGroups[item.group]) continue;
     if(!map[item.group]){
       map[item.group]={group:item.group,items:[]};
       order.push(item.group);
@@ -761,6 +772,22 @@ function restoreMedkitItem(itemId){
   snapshotMedkitOpenState();
   rMedkit();
 }
+function hideMedkitGroup(groupName){
+  ensureMedkitMeta(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  var hidden=getMedkitHiddenGroupsMap(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  hidden[groupName]=true;
+  saveLocal();
+  snapshotMedkitOpenState();
+  rMedkit();
+}
+function restoreMedkitGroup(groupName){
+  ensureMedkitMeta(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  var hidden=getMedkitHiddenGroupsMap(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  delete hidden[groupName];
+  saveLocal();
+  snapshotMedkitOpenState();
+  rMedkit();
+}
 function rMedkit(){
   var el=document.getElementById('p-medkit');
   var members=getActiveMembers();
@@ -798,7 +825,8 @@ function rMedkit(){
   var dayLabels=[['Пн','mon'],['Вт','tue'],['Ср','wed'],['Чт','thu'],['Пт','fri'],['Сб','sat'],['Вс','sun']];
   for(var g=0;g<MEDKIT_RENDER_GROUPS.length;g++){
     var group=MEDKIT_RENDER_GROUPS[g];
-    h+='<details class="check-group" data-group="'+escHtml(group.group)+'"'+(isMedkitOpen(medkitMode,currentMemberId,group.group,g)?' open':'')+'><summary class="check-group-title" style="cursor:pointer">'+group.group+'</summary>';
+    var groupJs=JSON.stringify(group.group);
+    h+='<details class="check-group" data-group="'+escHtml(group.group)+'"'+(isMedkitOpen(medkitMode,currentMemberId,group.group,g)?' open':'')+'><summary class="check-group-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><span>'+group.group+'</span><button type="button" class="opt-btn" style="padding:3px 10px;font-size:12px" onclick="event.preventDefault();event.stopPropagation();hideMedkitGroup('+groupJs+')">Скрыть</button></summary>';
     var store=medkitStore(medkitMode, currentMemberId);
     for(var i=0;i<group.items.length;i++){
       var item=group.items[i];
@@ -840,6 +868,20 @@ function rMedkit(){
     h+='<details class="check-group"><summary class="check-group-title" style="cursor:pointer">Скрытые позиции</summary>';
     for(var k=0;k<hidden.length;k++){
       h+='<div class="contact-item"><div><div class="contact-name">'+escHtml(hidden[k].name)+'</div><div class="contact-sub">'+escHtml(hidden[k].group)+'</div></div><button class="opt-btn" onclick="restoreMedkitItem(\''+hidden[k].id+'\')">Вернуть</button></div>';
+    }
+    h+='</details>';
+  }
+  var hiddenGroupsMap=getMedkitHiddenGroupsMap(medkitMode, currentMemberId);
+  var hiddenGroupsList=[];
+  for(var hg=0;hg<MEDKIT_BASE.length;hg++){
+    if(hiddenGroupsMap[MEDKIT_BASE[hg].group]) hiddenGroupsList.push(MEDKIT_BASE[hg].group);
+  }
+  if(hiddenGroupsList.length){
+    h+='<details class="check-group"><summary class="check-group-title" style="cursor:pointer">Скрытые разделы</summary>';
+    for(var hr=0;hr<hiddenGroupsList.length;hr++){
+      var hiddenGroup=hiddenGroupsList[hr];
+      var hiddenGroupJs=JSON.stringify(hiddenGroup);
+      h+='<div class="contact-item"><div><div class="contact-name">'+escHtml(hiddenGroup)+'</div><div class="contact-sub">'+(medkitMode==='personal'?'Личная аптечка':'Общая аптечка')+'</div></div><button class="opt-btn" onclick="restoreMedkitGroup('+hiddenGroupJs+')">Вернуть</button></div>';
     }
     h+='</details>';
   }
