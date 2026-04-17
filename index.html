@@ -588,6 +588,38 @@ var MEDKIT_INFO={
   supp_electrolytes:{purpose:'Восполнение солей и жидкости.',symptoms:'Обезвоживание, жара, активная нагрузка, ЖКТ.',how:'Разводить в воде по инструкции.',replace:'Регидрон и аналоги.',warn:'Не игнорировать серьёзное обезвоживание.'}
 };
 
+var MEDKIT_UNIT_OPTIONS=['таб','капс','амп','шт','мл','мг','г','пак','саше','тюб','фл'];
+var MEDKIT_HOW_OPTIONS=['натощак','до еды','во время еды','после еды','с едой','утром','днём','вечером','перед сном','по необходимости'];
+
+function medkitSelectHtml(kind, mode, memberId, itemId, value){
+  var opts = kind==='unit' ? MEDKIT_UNIT_OPTIONS : MEDKIT_HOW_OPTIONS;
+  var current=(value||'');
+  var inList=false;
+  for(var i=0;i<opts.length;i++){ if(opts[i]===current){ inList=true; break; } }
+  var selected = inList ? current : (current ? '__other__' : '');
+  var html='<select class="form-select" onchange="handleMedkitSelectChange(\''+kind+'\',\''+mode+'\',\''+memberId+'\',\''+itemId+'\',this)">';
+  html+='<option value="">'+(kind==='unit'?'Ед.':'Как принимать')+'</option>';
+  for(var j=0;j<opts.length;j++) html+='<option value="'+escHtml(opts[j])+'"'+(selected===opts[j]?' selected':'')+'>'+escHtml(opts[j])+'</option>';
+  html+='<option value="__other__"'+(selected==='__other__'?' selected':'')+'>Другое</option>';
+  html+='</select>';
+  html+='<input type="text" data-medkit-'+kind+'-other="1" style="display:'+(selected==='__other__'?'block':'none')+'" placeholder="'+(kind==='unit'?'Своя единица':'Свой вариант')+'" value="'+escHtml(selected==='__other__'?current:'')+'" onchange="'+(kind==='unit'?'updateMedkitUnit':'updateMedkitHow')+'(\''+mode+'\',\''+memberId+'\',\''+itemId+'\',this.value)">';
+  return html;
+}
+function handleMedkitSelectChange(kind, mode, memberId, itemId, sel){
+  if(window.event && window.event.stopPropagation) window.event.stopPropagation();
+  var wrap = sel.parentNode;
+  var other = wrap ? wrap.querySelector('[data-medkit-'+kind+'-other="1"]') : null;
+  var fn = kind==='unit' ? updateMedkitUnit : updateMedkitHow;
+  if(sel.value==='__other__'){
+    if(other){ other.style.display='block'; other.focus(); }
+    fn(mode, memberId, itemId, other ? other.value : '');
+  } else {
+    if(other){ other.style.display='none'; }
+    fn(mode, memberId, itemId, sel.value||'');
+  }
+}
+
+
 function getMedkitInfo(item){
   if(!item || !item.id) return null;
   return MEDKIT_INFO[item.id] || null;
