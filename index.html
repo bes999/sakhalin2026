@@ -771,6 +771,18 @@ function rMedkit(){
       var note=state.note || '';
       h+='<div class="check-item'+(state.checked?' done':'')+'" onclick="toggleMedkitItem(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\')"><div class="check-box'+(state.checked?' checked':'')+'"></div><span class="check-text">'+item.name+'</span><input class="check-qty-input" type="text" value="'+escHtml(qty)+'" onclick="event.stopPropagation()" onchange="updateMedkitQty(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"><span class="delete-item" onclick="event.stopPropagation();removeMedkitItem(\''+item.id+'\','+(item.custom?'true':'false')+')">&times;</span></div>';
       h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Где лежит" value="'+escHtml(place)+'" onchange="updateMedkitPlace(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Комментарий" value="'+escHtml(note)+'" onchange="updateMedkitNote(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"></div>';
+      if(MEDKIT_INFO[item.id]){
+        var info=MEDKIT_INFO[item.id];
+        h+='<details class="info-card" style="margin:0 10px 10px 10px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:#1F4E79">Карточка препарата</summary>'+
+          '<div class="bul"><b>Для чего:</b> '+escHtml(info.purpose||'')+'</div>'+
+          '<div class="bul"><b>При симптомах:</b> '+escHtml(info.symptoms||'')+'</div>'+
+          '<div class="bul"><b>Как принимать:</b> '+escHtml(info.how||'')+'</div>'+
+          '<div class="bul"><b>Чем заменить:</b> '+escHtml(info.replace||'')+'</div>'+
+          '<div class="bul"><b>Важно:</b> '+escHtml(info.warn||'')+'</div>'+
+        '</details>';
+      } else if(item.custom){
+        h+='<details class="info-card" style="margin:0 10px 10px 10px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:#1F4E79">Карточка препарата</summary><div class="bul">Для добавленного вручную препарата подробную карточку сделаем следующим слоем.</div></details>';
+      }
     }
     h+='<div class="add-item-btn" onclick="toggleMedkitAddRow('+g+')">＋ Добавить препарат</div>';
     h+='<div class="add-item-input" id="medkitAddRow_'+g+'"><input type="text" placeholder="Название препарата"><button onclick="addMedkitItem('+g+')">Добавить</button></div>';
