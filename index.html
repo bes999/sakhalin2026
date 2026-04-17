@@ -534,11 +534,17 @@ function rMembers(){
 
 
 var MEDKIT_BASE=[
- {group:'Обезбол / температура',items:[
+ {group:'Обезбол',items:[
   {id:'pain_ibuprofen',name:'Ибупрофен / Нурофен',qty:'1 уп'},
-  {id:'pain_paracetamol',name:'Парацетамол',qty:'1 уп'},
   {id:'pain_ketanov',name:'Кетанов',qty:'1 уп'},
-  {id:'pain_nimesulide',name:'Нимесулид',qty:'1 уп'}
+  {id:'pain_nimesulide',name:'Нимесулид',qty:'1 уп'},
+  {id:'wound_voltaren',name:'Вольтарен / гель',qty:'1 шт'}
+ ]},
+ {group:'Простуда / температура',items:[
+  {id:'pain_paracetamol',name:'Парацетамол',qty:'1 уп'},
+  {id:'cold_ingavirin',name:'Ингавирин',qty:'1 уп'},
+  {id:'cold_aciclovir',name:'Ацикловир',qty:'1 уп'},
+  {id:'cold_furacilin',name:'Фурацилин',qty:'1 уп'}
  ]},
  {group:'ЖКТ',items:[
   {id:'gi_smecta',name:'Смекта',qty:'1 уп'},
@@ -546,22 +552,20 @@ var MEDKIT_BASE=[
   {id:'gi_maalox',name:'Маалокс',qty:'1 уп'},
   {id:'gi_pancreatin',name:'Панкреатин',qty:'1 уп'}
  ]},
- {group:'Аллергия / простуда',items:[
-  {id:'cold_suprastin',name:'Супрастин',qty:'1 уп'},
-  {id:'cold_ingavirin',name:'Ингавирин',qty:'1 уп'},
-  {id:'cold_aciclovir',name:'Ацикловир',qty:'1 уп'},
-  {id:'cold_furacilin',name:'Фурацилин',qty:'1 уп'}
+ {group:'Аллергия',items:[
+  {id:'cold_suprastin',name:'Супрастин',qty:'1 уп'}
  ]},
  {group:'Раны / перевязка',items:[
   {id:'wound_peroxide',name:'Перекись водорода',qty:'1 фл'},
   {id:'wound_iodine',name:'Йод / зелёнка',qty:'1 шт'},
   {id:'wound_patch',name:'Пластыри',qty:'1 уп'},
-  {id:'wound_bandage',name:'Бинт / перевязка',qty:'2 шт'},
-  {id:'wound_voltaren',name:'Вольтарен / гель',qty:'1 шт'}
+  {id:'wound_bandage',name:'Бинт / перевязка',qty:'2 шт'}
  ]},
- {group:'Глаза / нос / сон',items:[
+ {group:'Глаза / нос',items:[
   {id:'eye_visine',name:'Визин',qty:'1 фл'},
-  {id:'nose_naftizin',name:'Нафтизин',qty:'1 фл'},
+  {id:'nose_naftizin',name:'Нафтизин',qty:'1 фл'}
+ ]},
+ {group:'Сон',items:[
   {id:'sleep_melaxen',name:'Мелаксен',qty:'1 уп'},
   {id:'sleep_velson',name:'Вэлсон',qty:'1 уп'}
  ]},
@@ -958,11 +962,11 @@ function rMedkit(){
     h+='</details>';
   }
   h+='<div class="info-card"><div class="info-title">Что делать если…</div><div class="mini-note">Ниже — быстрые походные подсказки. Для серьёзных симптомов, ухудшения состояния или сомнений — 112 / врач.</div>'+
-    '<div class="bul"><b>Головная боль / температура:</b> проверь раздел «Обезбол / температура», смотри, что отмечено как взято.</div>'+
+    '<div class="bul"><b>Головная боль / температура:</b> проверь раздел «Обезбол» или «Простуда / температура», смотри, что отмечено как взято.</div>'+
     '<div class="bul"><b>ЖКТ / отравление:</b> сначала открой раздел «ЖКТ», там должны быть Смекта, Лоперамид, Церукал, Маалокс, Панкреатин.</div>'+
     '<div class="bul"><b>Аллергия / простуда:</b> проверь одноимённый раздел и посмотри, где лежит препарат у нужной позиции.</div>'+
     '<div class="bul"><b>Порез / рана:</b> открой «Раны / перевязка» и смотри поле «Где лежит» у перевязочных и антисептиков.</div>'+
-    '<div class="bul"><b>Глаза / нос / сон:</b> смотри последний раздел, там же можно указать, в какой сумке лежит конкретное средство.</div></div>';
+    '<div class="bul"><b>Глаза / нос / сон:</b> смотри разделы «Глаза / нос» и «Сон», там же можно указать, в какой сумке лежит конкретное средство.</div></div>';
   h+='<div class="info-card"><div class="info-title">Подсказка</div><div class="bul">Теперь у каждой позиции можно указать, где она лежит, сколько было, сколько осталось и в какой фасовке. Для БАДов и витаминов появился более удобный стек: Утро / День / Вечер с трекером по дням недели.</div><div class="bul">Категории аптечки теперь можно сворачивать и разворачивать как аккордеон.</div><div class="bul">Карточки не заменяют врача и не отменяют инструкцию из упаковки — это полевой ориентир.</div></div>';
   el.innerHTML=h;
   var hideBtns=el.querySelectorAll('.hide-group-btn');
