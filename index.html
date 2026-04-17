@@ -727,6 +727,7 @@ function toggleMedkitTakenDay(mode,memberId,itemId,dayKey){
   var state=medkitEnsureState(mode,memberId,itemId);
   state.taken[dayKey]=!state.taken[dayKey];
   saveLocal();
+  snapshotMedkitOpenState();
   rMedkit();
 }
 function medkitStackSummary(mode,memberId){
