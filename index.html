@@ -645,6 +645,69 @@ function getMedkitHiddenGroupsMap(mode,memberId){
   if(mode==='personal') return ST.medkitPersonalGroupHidden[memberId||''] || {};
   return ST.medkitCommonGroupHidden || {};
 }
+function ensureMedkitPlaces(mode,memberId){
+  if(!ST.medkitCommonPlaces || !Array.isArray(ST.medkitCommonPlaces)) ST.medkitCommonPlaces=[];
+  if(!ST.medkitPersonalPlaces || typeof ST.medkitPersonalPlaces!=='object') ST.medkitPersonalPlaces={};
+  if(mode==='personal'){
+    var id=memberId||'';
+    if(!ST.medkitPersonalPlaces[id] || !Array.isArray(ST.medkitPersonalPlaces[id])) ST.medkitPersonalPlaces[id]=[];
+  }
+}
+function getMedkitPlaces(mode,memberId){
+  ensureMedkitPlaces(mode,memberId);
+  var custom=mode==='personal' ? (ST.medkitPersonalPlaces[memberId||'']||[]) : (ST.medkitCommonPlaces||[]);
+  var seen={}, out=[];
+  var all=MEDKIT_PLACE_DEFAULTS.concat(custom);
+  for(var i=0;i<all.length;i++){
+    var v=(all[i]||'').trim();
+    if(!v || seen[v]) continue;
+    seen[v]=true;
+    out.push(v);
+  }
+  return out;
+}
+function addMedkitPlace(mode,memberId,name){
+  name=(name||'').trim();
+  if(!name) return false;
+  ensureMedkitPlaces(mode,memberId);
+  var list=mode==='personal' ? ST.medkitPersonalPlaces[memberId||''] : ST.medkitCommonPlaces;
+  for(var i=0;i<list.length;i++) if((list[i]||'').trim().toLowerCase()===name.toLowerCase()) return false;
+  for(var j=0;j<MEDKIT_PLACE_DEFAULTS.length;j++) if(MEDKIT_PLACE_DEFAULTS[j].toLowerCase()===name.toLowerCase()) return false;
+  list.push(name);
+  saveLocal();
+  return true;
+}
+function removeMedkitPlace(mode,memberId,name){
+  ensureMedkitPlaces(mode,memberId);
+  if(MEDKIT_PLACE_DEFAULTS.indexOf(name)!==-1) return;
+  if(mode==='personal') ST.medkitPersonalPlaces[memberId||'']=(ST.medkitPersonalPlaces[memberId||'']||[]).filter(function(v){ return v!==name; });
+  else ST.medkitCommonPlaces=(ST.medkitCommonPlaces||[]).filter(function(v){ return v!==name; });
+  var store=medkitStore(mode,memberId);
+  var keys=Object.keys(store||{});
+  for(var i=0;i<keys.length;i++) if((store[keys[i]].place||'')===name) store[keys[i]].place='';
+  saveLocal();
+}
+function getMedkitPlaceFilter(mode,memberId){
+  if(mode==='personal') return medkitPlaceFilterPersonal[memberId||''] || '';
+  return medkitPlaceFilterCommon || '';
+}
+function setMedkitPlaceFilter(mode,memberId,val){
+  if(mode==='personal') medkitPlaceFilterPersonal[memberId||'']=val||'';
+  else medkitPlaceFilterCommon=val||'';
+  snapshotMedkitOpenState();
+  rMedkit();
+}
+function addMedkitPlaceFromUi(){
+  var mode=medkitMode;
+  var memberId=(mode==='personal'?medkitMemberId:'');
+  var input=document.getElementById('medkitPlaceNewInput');
+  if(!input) return;
+  var name=(input.value||'').trim();
+  if(!name) return;
+  addMedkitPlace(mode,memberId,name);
+  input.value='';
+  setMedkitPlaceFilter(mode,memberId,name);
+}
 function getMedkitGroups(mode,memberId){
   ensureMedkitMeta(mode,memberId);
   var deleted=getMedkitDeletedMap(mode,memberId);
@@ -717,33 +780,6 @@ function toggleMedkitItem(mode,memberId,itemId){
   rMedkit();
 }
 function updateMedkitPlace(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).place=val; saveLocal(); }
-function medkitPlaceOptions(){ return ['Красная аптечка','Аптечка в машине','Личный несессер','Рюкзак','Гермосумка','Лагерь']; }
-function medkitPlaceSelectHtml(mode,memberId,itemId,state){
-  var place=(state.place||'');
-  var opts=medkitPlaceOptions().slice();
-  var inList=false;
-  for(var i=0;i<opts.length;i++){ if(opts[i]===place) inList=true; }
-  var current = (!place||inList)?place:'__other__';
-  var h='';
-  h+='<select class="form-select" onchange="updateMedkitPlaceSelect(\''+mode+'\',\''+memberId+'\',\''+itemId+'\',this.value)">';
-  h+='<option value=""'+(!place?' selected':'')+'>Где лежит</option>';
-  for(var i=0;i<opts.length;i++){ h+='<option value="'+escHtml(opts[i])+'"'+(place===opts[i]?' selected':'')+'>'+escHtml(opts[i])+'</option>'; }
-  h+='<option value="__other__"'+(current==='__other__'?' selected':'')+'>другое</option>';
-  h+='</select>';
-  if(current==='__other__'){
-    h+='<input type="text" placeholder="Свое место" value="'+escHtml(place)+'" onchange="updateMedkitPlace(\''+mode+'\',\''+memberId+'\',\''+itemId+'\',this.value)">';
-  }
-  return h;
-}
-function updateMedkitPlaceSelect(mode,memberId,itemId,val){
-  if(val==='__other__'){
-    medkitEnsureState(mode,memberId,itemId).place='';
-    saveLocal();
-    render('medkit');
-    return;
-  }
-  updateMedkitPlace(mode,memberId,itemId,val);
-}
 function updateMedkitNote(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).note=val; saveLocal(); }
 function updateMedkitTotal(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).total=val; saveLocal(); }
 function updateMedkitLeft(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).left=val; saveLocal(); }
@@ -845,6 +881,7 @@ function rMedkit(){
   if(medkitMode==='personal' && !medkitMemberId && members.length) medkitMemberId=members[0]._id;
   MEDKIT_RENDER_GROUPS=getMedkitGroups(medkitMode, medkitMode==='personal'?medkitMemberId:'');
   var currentMemberId=(medkitMode==='personal'?medkitMemberId:'');
+  var activePlaceFilter=getMedkitPlaceFilter(medkitMode,currentMemberId);
   var progress=medkitProgress(medkitMode, currentMemberId);
   var h='<div class="shop-header"><div class="info-title">Аптечка</div><div class="mini-note">Общая аптечка — для лагеря и машины. Личная аптечка — для конкретного участника.</div>'+
     '<div class="subtabs" style="margin-top:10px"><div class="stab'+(medkitMode==='common'?' active':'')+'" onclick="setMedkitMode(\'common\')">Общая</div><div class="stab'+(medkitMode==='personal'?' active':'')+'" onclick="setMedkitMode(\'personal\')">Личная</div></div>';
@@ -854,6 +891,23 @@ function rMedkit(){
     h+='</select></div>';
   }
   h+='<div class="progress-text"><span>Собрано</span><span>'+progress.done+' / '+progress.total+'</span></div><div class="progress-bar-wrap"><div class="progress-bar" style="width:'+progress.pct+'%"></div></div></div>';
+  var placeFilter=getMedkitPlaceFilter(medkitMode,currentMemberId);
+  var medkitPlaces=getMedkitPlaces(medkitMode,currentMemberId);
+  h+='<div class="info-card"><div class="info-title">Места хранения</div><div class="mini-note">Добавляй свои места хранения и выбирай их у препаратов. Для общей и личной аптечки списки отдельные.</div>';
+  h+='<div class="add-item-input show" style="padding:0;border-top:none;margin-top:8px"><select class="form-select" onchange="setMedkitPlaceFilter(''+medkitMode+'',''+currentMemberId+'',this.value)"><option value="">Все места</option>';
+  for(var mp=0;mp<medkitPlaces.length;mp++){ var pv=medkitPlaces[mp]; h+='<option value="'+escHtml(pv)+'"'+(placeFilter===pv?' selected':'')+'>'+escHtml(pv)+'</option>'; }
+  h+='</select></div>';
+  h+='<div class="add-item-input show" style="padding:0;border-top:none;margin-top:8px"><input id="medkitPlaceNewInput" type="text" placeholder="Новое место хранения"><button onclick="addMedkitPlaceFromUi()">Добавить место</button></div>';
+  var customPlaces=(medkitMode==='personal'?(ST.medkitPersonalPlaces[currentMemberId||'']||[]):(ST.medkitCommonPlaces||[]));
+  if(customPlaces.length){
+    h+='<div class="constructor-tags" style="margin-top:8px">';
+    for(var cp=0;cp<customPlaces.length;cp++){
+      var cpv=customPlaces[cp];
+      h+='<span class="meal-tag">'+escHtml(cpv)+'<span class="tag-x" onclick="event.stopPropagation();removeMedkitPlace(''+medkitMode+'',''+currentMemberId+'',''+String(cpv).replace(/'/g,'\\'')+'');rMedkit()">×</span></span>';
+    }
+    h+='</div>';
+  }
+  h+='</div>';
   if(medkitMode==='personal'){
     var stack=medkitStackSummary('personal',medkitMemberId||'');
     var ordered=['Утро','День','Вечер'];
@@ -876,15 +930,22 @@ function rMedkit(){
   var dayLabels=[['Пн','mon'],['Вт','tue'],['Ср','wed'],['Чт','thu'],['Пт','fri'],['Сб','sat'],['Вс','sun']];
   for(var g=0;g<MEDKIT_RENDER_GROUPS.length;g++){
     var group=MEDKIT_RENDER_GROUPS[g];
+    var filteredItems=[];
+    for(var fi=0;fi<group.items.length;fi++){
+      var fit=group.items[fi];
+      var fst=medkitEnsureState(medkitMode,currentMemberId,fit.id);
+      if(!activePlaceFilter || (fst.place||'')===activePlaceFilter) filteredItems.push(fit);
+    }
+    if(activePlaceFilter && !filteredItems.length) continue;
     var groupJs=JSON.stringify(group.group);
     h+='<details class="check-group" data-group="'+escHtml(group.group)+'"'+(isMedkitOpen(medkitMode,currentMemberId,group.group,g)?' open':'')+'><summary class="check-group-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="medkit-summary-main"><span class="medkit-summary-arrow">▸</span><span>'+group.group+'</span></span><span class="medkit-summary-actions"><button type="button" class="hide-group-btn" data-hide-group="'+escHtml(group.group)+'" title="Скрыть раздел" aria-label="Скрыть раздел" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:none;background:transparent;padding:0;cursor:pointer"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button></span></summary>';
     var store=medkitStore(medkitMode, currentMemberId);
-    for(var i=0;i<group.items.length;i++){
-      var item=group.items[i];
+    for(var i=0;i<filteredItems.length;i++){
+      var item=filteredItems[i];
       var state=medkitEnsureState(medkitMode,currentMemberId,item.id);
       h+='<div class="check-item'+(state.checked?' done':'')+'" onclick="toggleMedkitItem(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\')"><div class="check-box'+(state.checked?' checked':'')+'"></div><span class="check-text">'+item.name+'</span><span class="delete-item" onclick="event.stopPropagation();removeMedkitItem(\''+item.id+'\','+(item.custom?'true':'false')+')">&times;</span></div>';
       h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Было" value="'+escHtml(state.total||'')+'" onchange="updateMedkitTotal(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Осталось" value="'+escHtml(state.left||'')+'" onchange="updateMedkitLeft(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><select class="form-select" onchange="updateMedkitUnit(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><option value=""'+(!(state.unit||'')?' selected':'')+'>ед.</option><option value="таб"'+((state.unit||'')==='таб'?' selected':'')+'>таб</option><option value="капс"'+((state.unit||'')==='капс'?' selected':'')+'>капс</option><option value="амп"'+((state.unit||'')==='амп'?' selected':'')+'>амп</option><option value="шт"'+((state.unit||'')==='шт'?' selected':'')+'>шт</option><option value="мл"'+((state.unit||'')==='мл'?' selected':'')+'>мл</option><option value="мг"'+((state.unit||'')==='мг'?' selected':'')+'>мг</option><option value="г"'+((state.unit||'')==='г'?' selected':'')+'>г</option><option value="пак"'+((state.unit||'')==='пак'?' selected':'')+'>пак</option><option value="саше"'+((state.unit||'')==='саше'?' selected':'')+'>саше</option><option value="тюб"'+((state.unit||'')==='тюб'?' selected':'')+'>тюб</option><option value="фл"'+((state.unit||'')==='фл'?' selected':'')+'>фл</option></select></div>';
-      h+='<div class="add-item-input show" style="padding-top:0;border-top:none">'+medkitPlaceSelectHtml(medkitMode,currentMemberId,item.id,state)+'<input type="text" placeholder="Комментарий" value="'+escHtml(state.note||'')+'" onchange="updateMedkitNote(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"></div>';
+      h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Где лежит" value="'+escHtml(state.place||'')+'" onchange="updateMedkitPlace(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Комментарий" value="'+escHtml(state.note||'')+'" onchange="updateMedkitNote(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"></div>';
       if(group.group==='БАДы / витамины'){
         h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><select class="form-select" onchange="updateMedkitSlot(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><option value="Утро"'+((state.slot||'Утро')==='Утро'?' selected':'')+'>Утро</option><option value="День"'+((state.slot||'')==='День'?' selected':'')+'>День</option><option value="Вечер"'+((state.slot||'')==='Вечер'?' selected':'')+'>Вечер</option></select><select class="form-select" onchange="updateMedkitHow(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><option value="">Как принимать</option><option value="натощак"'+((state.how||'')==='натощак'?' selected':'')+'>натощак</option><option value="до еды"'+((state.how||'')==='до еды'?' selected':'')+'>до еды</option><option value="во время еды"'+((state.how||'')==='во время еды'?' selected':'')+'>во время еды</option><option value="после еды"'+((state.how||'')==='после еды'?' selected':'')+'>после еды</option><option value="с едой"'+((state.how||'')==='с едой'?' selected':'')+'>с едой</option><option value="перед сном"'+((state.how||'')==='перед сном'?' selected':'')+'>перед сном</option><option value="по необходимости"'+((state.how||'')==='по необходимости'?' selected':'')+'>по необходимости</option></select></div>';
         if(medkitMode==='personal'){
