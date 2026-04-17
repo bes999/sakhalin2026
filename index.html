@@ -904,7 +904,7 @@ function rMedkit(){
     for(var hr=0;hr<hiddenGroupsList.length;hr++){
       var hiddenGroup=hiddenGroupsList[hr];
       var hiddenGroupJs=JSON.stringify(hiddenGroup);
-      h+='<div class="contact-item"><div><div class="contact-name">'+escHtml(hiddenGroup)+'</div><div class="contact-sub">'+(medkitMode==='personal'?'Личная аптечка':'Общая аптечка')+'</div></div><button class="opt-btn" onclick="restoreMedkitGroup('+hiddenGroupJs+')" title="Вернуть раздел" aria-label="Вернуть раздел"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:middle;margin-right:4px" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 20L20 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Вернуть</button></div>';
+      h+='<div class="contact-item"><div><div class="contact-name">'+escHtml(hiddenGroup)+'</div><div class="contact-sub">'+(medkitMode==='personal'?'Личная аптечка':'Общая аптечка')+'</div></div><button type="button" class="opt-btn restore-group-btn" data-restore-group="'+escHtml(hiddenGroup)+'" title="Вернуть раздел" aria-label="Вернуть раздел"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:middle;margin-right:4px" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 20L20 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Вернуть</button></div>';
     }
     h+='</details>';
   }
@@ -927,6 +927,15 @@ function rMedkit(){
         hideMedkitGroup(btn.getAttribute('data-hide-group'));
       });
     })(hideBtns[hb]);
+  }
+  var restoreBtns=el.querySelectorAll('.restore-group-btn');
+  for(var rb=0;rb<restoreBtns.length;rb++){
+    (function(btn){
+      btn.addEventListener('click', function(e){
+        if(e){ e.preventDefault(); e.stopPropagation(); }
+        restoreMedkitGroup(btn.getAttribute('data-restore-group'));
+      });
+    })(restoreBtns[rb]);
   }
 }
 
