@@ -755,6 +755,21 @@ function rMedkit(){
     h+='</select></div>';
   }
   h+='<div class="progress-text"><span>Собрано</span><span>'+progress.done+' / '+progress.total+'</span></div><div class="progress-bar-wrap"><div class="progress-bar" style="width:'+progress.pct+'%"></div></div></div>';
+  if(medkitMode==='personal'){
+    var stack=medkitStackSummary('personal',medkitMemberId||'');
+    var stackKeys=Object.keys(stack);
+    if(stackKeys.length){
+      h+='<div class="info-card"><div class="info-title">Стек / режим приёма</div><div class="mini-note">Для БАДов и витаминов можно указать, когда и как пить. Ниже — краткая сводка по выбранному участнику.</div>';
+      for(var sk=0;sk<stackKeys.length;sk++){
+        h+='<div class="grp-hd">'+escHtml(stackKeys[sk])+'</div>';
+        for(var si=0;si<stack[stackKeys[sk]].length;si++){
+          var srow=stack[stackKeys[sk]][si];
+          h+='<div class="bul">'+(srow.taken?'✅ ':'')+escHtml(srow.name)+(srow.how?' — '+escHtml(srow.how):'')+'</div>';
+        }
+      }
+      h+='</div>';
+    }
+  }
   if(medkitMode==='personal' && !members.length){
     h+='<div class="info-card">Нет активных участников. Сначала добавь участника в разделе «Участники».</div>';
     el.innerHTML=h; return;
@@ -771,6 +786,12 @@ function rMedkit(){
       var note=state.note || '';
       h+='<div class="check-item'+(state.checked?' done':'')+'" onclick="toggleMedkitItem(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\')"><div class="check-box'+(state.checked?' checked':'')+'"></div><span class="check-text">'+item.name+'</span><input class="check-qty-input" type="text" value="'+escHtml(qty)+'" onclick="event.stopPropagation()" onchange="updateMedkitQty(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"><span class="delete-item" onclick="event.stopPropagation();removeMedkitItem(\''+item.id+'\','+(item.custom?'true':'false')+')">&times;</span></div>';
       h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Где лежит" value="'+escHtml(place)+'" onchange="updateMedkitPlace(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Комментарий" value="'+escHtml(note)+'" onchange="updateMedkitNote(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"></div>';
+      if(group.group==='БАДы / витамины'){
+        var btime=state.btime||'';
+        var bhow=state.bhow||'';
+        h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Во сколько / когда пить" value="'+escHtml(btime)+'" onchange="updateMedkitBTime(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Как пить: после еды / натощак / с едой" value="'+escHtml(bhow)+'" onchange="updateMedkitBHow(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"></div>';
+        h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><button class="opt-btn'+(state.btaken?' sel':'')+'" onclick="event.stopPropagation();toggleMedkitBTaken(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\')">'+(state.btaken?'Принято сегодня':'Отметить как принято')+'</button></div>';
+      }
       if(MEDKIT_INFO[item.id]){
         var info=MEDKIT_INFO[item.id];
         h+='<details class="info-card" style="margin:0 10px 10px 10px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:#1F4E79">Карточка препарата</summary>'+
@@ -781,7 +802,7 @@ function rMedkit(){
           '<div class="bul"><b>Важно:</b> '+escHtml(info.warn||'')+'</div>'+
         '</details>';
       } else if(item.custom){
-        h+='<details class="info-card" style="margin:0 10px 10px 10px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:#1F4E79">Карточка препарата</summary><div class="bul">Для добавленного вручную препарата подробную карточку сделаем следующим слоем.</div></details>';
+        h+='<details class="info-card" style="margin:0 10px 10px 10px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:#1F4E79">Карточка препарата</summary><div class="bul">Для добавленного вручную препарата позже добавим подробную карточку. Для БАДов уже можно указать, когда и как пить.</div></details>';
       }
     }
     h+='<div class="add-item-btn" onclick="toggleMedkitAddRow('+g+')">＋ Добавить препарат</div>';
@@ -802,7 +823,7 @@ function rMedkit(){
     '<div class="bul"><b>Аллергия / простуда:</b> проверь одноимённый раздел и посмотри, где лежит препарат у нужной позиции.</div>'+
     '<div class="bul"><b>Порез / рана:</b> открой «Раны / перевязка» и смотри поле «Где лежит» у перевязочных и антисептиков.</div>'+
     '<div class="bul"><b>Глаза / нос / сон:</b> смотри последний раздел, там же можно указать, в какой сумке лежит конкретное средство.</div></div>';
-  h+='<div class="info-card"><div class="info-title">Подсказка</div><div class="bul">Теперь у каждой позиции можно указать, где она лежит, оставить комментарий и открыть карточку препарата с краткой памяткой.</div><div class="bul">Карточки не заменяют врача и не отменяют инструкцию из упаковки — это полевой ориентир.</div><div class="bul">На этом этапе аптечка хранится локально на устройстве и не синхронизируется между участниками.</div></div>';
+  h+='<div class="info-card"><div class="info-title">Подсказка</div><div class="bul">Теперь у каждой позиции можно указать, где она лежит, оставить комментарий и открыть карточку препарата с краткой памяткой. Для БАДов и витаминов появился режим приёма: когда и как пить.</div><div class="bul">Карточки не заменяют врача и не отменяют инструкцию из упаковки — это полевой ориентир.</div><div class="bul">На этом этапе аптечка хранится локально на устройстве и не синхронизируется между участниками.</div></div>';
   el.innerHTML=h;
 }
 
