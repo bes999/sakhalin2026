@@ -159,9 +159,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .check-group[open] .medkit-summary-arrow{transform:rotate(90deg)}
 .medkit-summary-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .hide-group-btn{appearance:none;-webkit-appearance:none;border:none;background:transparent;color:#888;font-size:16px;line-height:1;cursor:pointer;padding:2px 4px;display:inline-flex;align-items:center;justify-content:center}
-.hide-group-btn:hover{color:#ff3b30}
+.hide-group-btn:hover{color:#1F4E79}
 .hide-group-btn{border:none;background:transparent;color:#888;font-size:16px;line-height:1;cursor:pointer;padding:4px 6px;border-radius:8px}
-.hide-group-btn:hover{background:#f2f2f7;color:#ff3b30}
+.hide-group-btn:hover{background:#f2f2f7;color:#1F4E79}
 .river-link{color:#1F4E79;text-decoration:underline;cursor:pointer}
 .meal-tag{display:inline-flex;align-items:center;gap:4px;background:#E6F1FB;color:#1F4E79;font-size:12px;padding:4px 10px;border-radius:20px;margin:2px;cursor:default}
 .meal-tag .tag-x{cursor:pointer;font-size:14px;color:#888;margin-left:2px}
@@ -836,7 +836,7 @@ function rMedkit(){
   for(var g=0;g<MEDKIT_RENDER_GROUPS.length;g++){
     var group=MEDKIT_RENDER_GROUPS[g];
     var groupJs=JSON.stringify(group.group);
-    h+='<details class="check-group" data-group="'+escHtml(group.group)+'"'+(isMedkitOpen(medkitMode,currentMemberId,group.group,g)?' open':'')+'><summary class="check-group-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="medkit-summary-main"><span class="medkit-summary-arrow">▸</span><span>'+group.group+'</span></span><span class="medkit-summary-actions"><button type="button" class="hide-group-btn" title="Скрыть раздел" onmousedown="event.preventDefault();event.stopPropagation();" ontouchstart="event.preventDefault();event.stopPropagation();" onclick="event.preventDefault();event.stopPropagation();hideMedkitGroup('+groupJs+');return false;">✕</button></span></summary>';
+    h+='<details class="check-group" data-group="'+escHtml(group.group)+'"'+(isMedkitOpen(medkitMode,currentMemberId,group.group,g)?' open':'')+'><summary class="check-group-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px" onclick="if(event.target.closest(\'.hide-group-btn\')){event.preventDefault();event.stopPropagation();return false;}"><span class="medkit-summary-main"><span class="medkit-summary-arrow">▸</span><span>'+group.group+'</span></span><span class="medkit-summary-actions"><span role="button" tabindex="0" class="hide-group-btn" title="Скрыть раздел" aria-label="Скрыть раздел" onmousedown="event.preventDefault();event.stopPropagation();" ontouchstart="event.preventDefault();event.stopPropagation();" onclick="event.preventDefault();event.stopPropagation();hideMedkitGroup('+groupJs+');return false;">👁</span></span></summary>';
     var store=medkitStore(medkitMode, currentMemberId);
     for(var i=0;i<group.items.length;i++){
       var item=group.items[i];
