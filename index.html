@@ -496,6 +496,14 @@ function rMembers(){
     }
   }
   el.innerHTML=h;
+  var accs=el.querySelectorAll('details.medkit-acc');
+  for(var ai=0;ai<accs.length;ai++){
+    (function(d){
+      d.addEventListener('toggle', function(){
+        setMedkitGroupOpen(medkitMode, currentMemberId, d.getAttribute('data-group')||'', d.open);
+      });
+    })(accs[ai]);
+  }
 }
 
 
@@ -667,6 +675,21 @@ function medkitProgress(mode,memberId){
   for(var j=0;j<items.length;j++) if(store[items[j].id] && store[items[j].id].checked) done++;
   return {done:done,total:items.length,pct:items.length?Math.round(done/items.length*100):0};
 }
+function ensureMedkitAccordionState(mode, memberId){
+  if(!ST.medkitAccordion || typeof ST.medkitAccordion!=='object') ST.medkitAccordion={};
+  var key=mode+'::'+(memberId||'common');
+  if(!ST.medkitAccordion[key] || typeof ST.medkitAccordion[key] !== 'object') ST.medkitAccordion[key]={};
+  return ST.medkitAccordion[key];
+}
+function getMedkitGroupOpen(mode, memberId, groupName, defaultOpen){
+  var state=ensureMedkitAccordionState(mode, memberId);
+  if(state[groupName]===undefined) return !!defaultOpen;
+  return !!state[groupName];
+}
+function setMedkitGroupOpen(mode, memberId, groupName, open){
+  ensureMedkitAccordionState(mode, memberId)[groupName]=!!open;
+  saveLocal();
+}
 function setMedkitMode(mode){ medkitMode=mode; if(mode==='personal' && !medkitMemberId){ var m=getActiveMembers(); medkitMemberId=m.length?m[0]._id:''; } rMedkit(); }
 function setMedkitMember(id){ medkitMemberId=id||''; rMedkit(); }
 function medkitEnsureState(mode,memberId,itemId){
@@ -795,7 +818,8 @@ function rMedkit(){
   var dayLabels=[['Пн','mon'],['Вт','tue'],['Ср','wed'],['Чт','thu'],['Пт','fri'],['Сб','sat'],['Вс','sun']];
   for(var g=0;g<MEDKIT_RENDER_GROUPS.length;g++){
     var group=MEDKIT_RENDER_GROUPS[g];
-    h+='<details class="check-group"'+(g===0?' open':'')+'><summary class="check-group-title" style="cursor:pointer">'+group.group+'</summary>';
+    var groupOpen=getMedkitGroupOpen(medkitMode, currentMemberId, group.group, g===0);
+    h+='<details class="check-group medkit-acc" data-group="'+escAttr(group.group)+'"'+(groupOpen?' open':'')+'><summary class="check-group-title" style="cursor:pointer">'+group.group+'</summary>';
     var store=medkitStore(medkitMode, currentMemberId);
     for(var i=0;i<group.items.length;i++){
       var item=group.items[i];
@@ -828,13 +852,13 @@ function rMedkit(){
         h+='<details class="info-card" style="margin:0 10px 10px 10px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:#1F4E79">Карточка препарата</summary><div class="bul">Для добавленного вручную препарата позже добавим подробную карточку.</div></details>';
       }
     }
-    h+='<div class="add-item-btn" onclick="toggleMedkitAddRow('+g+')">＋ Добавить препарат</div>';
-    h+='<div class="add-item-input" id="medkitAddRow_'+g+'"><input type="text" placeholder="Название препарата"><button onclick="addMedkitItem('+g+')">Добавить</button></div>';
+    h+='<div class="add-item-btn" onclick="event.stopPropagation();toggleMedkitAddRow('+g+')">＋ Добавить препарат</div>';
+    h+='<div class="add-item-input" id="medkitAddRow_'+g+'"><input type="text" placeholder="Название препарата"><button onclick="event.stopPropagation();addMedkitItem('+g+')">Добавить</button></div>';
     h+='</details>';
   }
   var hidden=getHiddenMedkitBaseItems(medkitMode, currentMemberId);
   if(hidden.length){
-    h+='<details class="check-group"><summary class="check-group-title" style="cursor:pointer">Скрытые позиции</summary>';
+    h+='<details class="check-group medkit-acc" data-group="Скрытые позиции"><summary class="check-group-title" style="cursor:pointer">Скрытые позиции</summary>';
     for(var k=0;k<hidden.length;k++){
       h+='<div class="contact-item"><div><div class="contact-name">'+escHtml(hidden[k].name)+'</div><div class="contact-sub">'+escHtml(hidden[k].group)+'</div></div><button class="opt-btn" onclick="restoreMedkitItem(\''+hidden[k].id+'\')">Вернуть</button></div>';
     }
