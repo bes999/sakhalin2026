@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Medkit Dev автономный v2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f2f2f7;color:#1c1c1e}
+.topbar{background:#1F4E79;color:#fff;padding:14px 16px 10px;position:sticky;top:0;z-index:50}
+.topbar h1{font-size:18px;font-weight:700}
+.topbar p{font-size:12px;opacity:.78;margin-top:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:12px}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:12px}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.seg button,.tiny-btn,.chip,.ghost-btn{
+  border:none;border-radius:10px;padding:10px 12px;font:inherit;cursor:pointer
+}
+.seg button{background:#e9eef5;color:#1F4E79;font-weight:600}
+.seg button.active{background:#1F4E79;color:#fff}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.field{flex:1 1 140px;min-width:0}
+.field.sm{flex:0 0 96px}
+.label{font-size:12px;color:#6b7280;margin-bottom:4px}
+.select,input,textarea{
+  width:100%;padding:10px 12px;border:1px solid #d9dde3;border-radius:10px;background:#fff;font:inherit;color:#1c1c1e
+}
+textarea{min-height:70px;resize:vertical}
+.section{background:#fff;border-radius:14px;margin-bottom:10px;overflow:hidden;border:1px solid #e9edf3}
+.section summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #f1f3f5;font-weight:700;color:#1F4E79}
+.section summary::-webkit-details-marker{display:none}
+.summary-left{display:flex;align-items:center;gap:10px}
+.summary-right{display:flex;align-items:center;gap:8px}
+.arrow{display:inline-block;transition:transform .18s ease}
+details[open] .arrow{transform:rotate(90deg)}
+.section-body{padding:12px 12px 2px}
+.item{border:1px solid #eceff3;border-radius:12px;padding:10px;margin-bottom:10px}
+.item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.item-top-left{display:flex;align-items:flex-start;gap:10px;flex:1}
+.item-check{margin-top:2px;width:22px;height:22px}
+.item-name{font-weight:700}
+.item-tag{font-size:12px;color:#6b7280;margin-top:3px}
+.item-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tiny-btn{background:#e9eef5;color:#1F4E79;font-size:13px;padding:8px 10px}
+.ghost-btn{background:#fff;border:1px solid #e5e7eb;color:#1F4E79;font-size:13px;padding:7px 10px}
+.muted{font-size:12px;color:#6b7280}
+.hidden-block{background:#fff;border-radius:14px;padding:12px;margin-top:10px}
+.hidden-chip{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f1f3f5}
+.hidden-chip:last-child{border-bottom:none}
+.storage-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.storage-chip{display:inline-flex;align-items:center;gap:8px;background:#eef4ff;color:#1F4E79;border-radius:999px;padding:7px 10px;font-size:13px}
+.storage-chip button{border:none;background:none;color:#b91c1c;cursor:pointer;font:inherit}
+.info{font-size:13px;color:#4b5563;line-height:1.45}
+h3{font-size:15px;color:#1F4E79;margin-bottom:8px}
+.filter-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{background:#eef4ff;color:#1F4E79;font-size:13px;padding:8px 11px;border-radius:999px}
+.chip.active{background:#1F4E79;color:#fff}
+.item-grid-top{display:grid;grid-template-columns:1fr 1fr 110px;gap:10px}
+.item-grid-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.group-hide-btn{background:none;border:none;color:#64748b;cursor:pointer;font-size:13px;padding:6px 8px;border-radius:8px}
+.group-hide-btn:hover{background:#f3f4f6}
+.progress{height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:8px}
+.progress > div{height:100%;background:#22c55e}
+@media (max-width: 700px){
+  .item-grid-top{grid-template-columns:1fr 1fr 92px}
+  .item-grid-bottom{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>Аптечка — dev v2</h1>
+  <p>Автономный тестовый файл: чекбокс слева, короткие поля в ряд, фильтр по местам чипами.</p>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="seg" id="scopeSeg">
+      <button data-scope="common" class="active">Общая</button>
+      <button data-scope="personal">Личная</button>
+    </div>
+    <div class="row" id="memberRow" style="display:none">
+      <div class="field">
+        <div class="label">Участник</div>
+        <select class="select" id="memberSelect"></select>
+      </div>
+    </div>
+    <div class="info" style="margin-top:8px">Тут тестируем только аптечку и места хранения, без общего каркаса сайта.</div>
+    <div class="row" style="margin-top:10px;justify-content:space-between">
+      <div class="muted">Собрано</div>
+      <div class="muted" id="progressText"></div>
+    </div>
+    <div class="progress"><div id="progressBar" style="width:0%"></div></div>
+  </div>
+
+  <div class="card">
+    <h3>Места хранения</h3>
+    <div class="row">
+      <div class="field">
+        <div class="label">Новое место хранения</div>
+        <input id="newStorageInput" class="select" placeholder="Например: Красная аптечка / Поясная сумка" />
+      </div>
+      <div style="align-self:flex-end">
+        <button class="tiny-btn" id="addStorageBtn">Добавить</button>
+      </div>
+    </div>
+    <div class="storage-list" id="storageList"></div>
+  </div>
+
+  <div class="card">
+    <h3>Фильтр по месту хранения</h3>
+    <div class="filter-chips" id="storageFilterChips"></div>
+  </div>
+
+  <div id="medkitRoot"></div>
+  <div id="hiddenRoot"></div>
+</div>
+
+<script>
+const BASE = {
+  groups: [
+    {key:'pain', title:'Обезбол', items:[
+      {id:'ibuprofen', name:'Ибупрофен', tag:'боль / температура'},
+      {id:'ketanov', name:'Кетанов', tag:'сильная боль'},
+      {id:'nimesulide', name:'Нимесулид', tag:'боль / воспаление'}
+    ]},
+    {key:'cold', title:'Простуда / температура', items:[
+      {id:'paracetamol', name:'Парацетамол', tag:'жар / температура'},
+      {id:'ingavirin', name:'Ингавирин', tag:'простуда / вирусное'},
+      {id:'remantadin', name:'Ремантадин', tag:'простуда / вирусное'}
+    ]},
+    {key:'gut', title:'ЖКТ', items:[
+      {id:'smecta', name:'Смекта', tag:'ЖКТ / сорбент'},
+      {id:'loperamide', name:'Лоперамид', tag:'диарея'},
+      {id:'cerucal', name:'Церукал', tag:'тошнота / рвота'}
+    ]},
+    {key:'allergy', title:'Аллергия', items:[
+      {id:'suprastin_tabs', name:'Супрастин', tag:'аллергия'}
+    ]},
+    {key:'wounds', title:'Раны / перевязка', items:[
+      {id:'peroxide', name:'Перекись', tag:'обработка'},
+      {id:'plaster', name:'Пластырь', tag:'перевязка'}
+    ]},
+    {key:'eyesnose', title:'Глаза / нос', items:[
+      {id:'vizin', name:'Визин', tag:'глаза'},
+      {id:'naftizin', name:'Нафтизин', tag:'нос'}
+    ]},
+    {key:'sleep', title:'Сон', items:[
+      {id:'melaxen', name:'Мелаксен', tag:'сон'},
+      {id:'velson', name:'Вэлсон', tag:'сон'}
+    ]},
+    {key:'supplements', title:'БАДы / витамины', items:[
+      {id:'d3', name:'D3', tag:'витамин'},
+      {id:'omega', name:'Омега 950', tag:'омега'},
+      {id:'k2', name:'K2', tag:'витамин'},
+      {id:'astax', name:'Астаксантин', tag:'антиоксидант'}
+    ]},
+    {key:'ampules', title:'Ампулы / уколы', items:[
+      {id:'dexa_amp', name:'Дексаметазон (амп.)', tag:'отёк / аллергия'},
+      {id:'ketorol_amp', name:'Кеторол (амп.)', tag:'сильный обезбол'},
+      {id:'suprastin_amp', name:'Супрастин (амп.)', tag:'аллергия'},
+      {id:'cerucal_amp', name:'Церукал (амп.)', tag:'тошнота / рвота'}
+    ]}
+  ],
+  members:[{id:'dmitry',name:'Дмитрий'},{id:'member2',name:'Участник 2'},{id:'member3',name:'Участник 3'}],
+  units:['','таб','капс','амп','шт','мл','мг','г','пак','саше','тюб','фл'],
+  how:['','натощак','до еды','во время еды','после еды','с едой','перед сном','по необходимости'],
+  commonStorageDefaults:['Красная аптечка','Аптечка в машине','Лагерь'],
+  personalStorageDefaults:['Личный несессер','Рюкзак','Карман вейдерсов','Гермосумка']
+};
+
+const LS_KEY = 'medkit_dev_autonomous_v2';
+
+let state = {
+  scope:'common',
+  memberId:'dmitry',
+  commonStorage:[...BASE.commonStorageDefaults],
+  personalStorage:{dmitry:[...BASE.personalStorageDefaults],member2:[...BASE.personalStorageDefaults],member3:[...BASE.personalStorageDefaults]},
+  filter:{common:'', personal:{dmitry:'',member2:'',member3:''}},
+  common:{},
+  personal:{dmitry:{},member2:{},member3:{}},
+  hiddenCommon:{},
+  hiddenPersonal:{dmitry:{},member2:{},member3:{}},
+  hiddenGroupsCommon:{},
+  hiddenGroupsPersonal:{dmitry:{},member2:{},member3:{}},
+  openCommon:{},
+  openPersonal:{dmitry:{},member2:{},member3:{}}
+};
+
+function load(){ try{ const s=JSON.parse(localStorage.getItem(LS_KEY)||'null'); if(s) state=Object.assign(state,s); }catch(e){} }
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+function currentStorageList(){ return state.scope==='common' ? state.commonStorage : (state.personalStorage[state.memberId]||[]); }
+function currentFilter(){ return state.scope==='common' ? (state.filter.common||'') : ((state.filter.personal&&state.filter.personal[state.memberId])||''); }
+function setCurrentFilter(v){ if(state.scope==='common') state.filter.common=v; else state.filter.personal[state.memberId]=v; }
+function currentDataBucket(){ return state.scope==='common' ? state.common : state.personal[state.memberId]; }
+function currentHiddenBucket(){ return state.scope==='common' ? state.hiddenCommon : state.hiddenPersonal[state.memberId]; }
+function currentHiddenGroupsBucket(){ return state.scope==='common' ? state.hiddenGroupsCommon : state.hiddenGroupsPersonal[state.memberId]; }
+function currentOpenBucket(){ return state.scope==='common' ? state.openCommon : state.openPersonal[state.memberId]; }
+function itemKey(groupKey,itemId){ return groupKey+'::'+itemId; }
+function ensureEntry(bucket,key){ if(!bucket[key]) bucket[key]={checked:false,had:'',left:'',unit:'',place:'',comment:'',slot:'',how:''}; return bucket[key]; }
+
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escAttr(s){ return esc(s); }
+
+function renderScope(){
+  document.querySelectorAll('#scopeSeg button').forEach(btn=>btn.classList.toggle('active', btn.dataset.scope===state.scope));
+  document.getElementById('memberRow').style.display=state.scope==='personal'?'flex':'none';
+}
+function renderMemberSelect(){
+  const sel=document.getElementById('memberSelect');
+  sel.innerHTML=BASE.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  sel.value=state.memberId;
+}
+function renderStorageBlock(){
+  const arr=currentStorageList();
+  document.getElementById('storageList').innerHTML = arr.map((name,i)=>`<div class="storage-chip"><span>${esc(name)}</span><button data-del-storage="${i}" title="Удалить">×</button></div>`).join('') || '<span class="muted">Пока нет мест хранения.</span>';
+
+  const filter = currentFilter();
+  const chips = ['<button class="chip '+(!filter?'active':'')+'" data-filter="">Все</button>']
+    .concat(arr.map(v=>`<button class="chip ${filter===v?'active':''}" data-filter="${escAttr(v)}">${esc(v)}</button>`));
+  document.getElementById('storageFilterChips').innerHTML = chips.join('');
+}
+function renderProgress(){
+  const data=currentDataBucket();
+  const hidden=currentHiddenBucket();
+  let total=0, done=0;
+  BASE.groups.forEach(g=>g.items.forEach(i=>{
+    const key=itemKey(g.key,i.id);
+    if(hidden[key]) return;
+    total++;
+    if(ensureEntry(data,key).checked) done++;
+  }));
+  document.getElementById('progressText').textContent = `${done} / ${total}`;
+  document.getElementById('progressBar').style.width = total ? `${(done/total)*100}%` : '0%';
+}
+
+function renderMedkit(){
+  const root=document.getElementById('medkitRoot');
+  const data=currentDataBucket();
+  const hidden=currentHiddenBucket();
+  const hiddenGroups=currentHiddenGroupsBucket();
+  const open=currentOpenBucket();
+  const filter=currentFilter();
+
+  root.innerHTML = BASE.groups.filter(g=>!hiddenGroups[g.key]).map(group=>{
+    const visible = group.items.filter(item=>{
+      const key=itemKey(group.key,item.id);
+      if(hidden[key]) return false;
+      const e=ensureEntry(data,key);
+      return !filter || e.place===filter;
+    });
+
+    const itemsHtml = visible.map(item=>{
+      const key=itemKey(group.key,item.id);
+      const e=ensureEntry(data,key);
+      return `
+      <div class="item">
+        <div class="item-top">
+          <div class="item-top-left">
+            <input class="item-check" type="checkbox" data-check="${escAttr(key)}" ${e.checked?'checked':''}>
+            <div>
+              <div class="item-name">${esc(item.name)}</div>
+              <div class="item-tag">${esc(item.tag)}</div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="tiny-btn" data-hide-item="${escAttr(key)}">Скрыть</button>
+          </div>
+        </div>
+
+        <div class="item-grid-top">
+          <div class="field sm"><div class="label">Было</div><input class="select" data-had="${escAttr(key)}" value="${escAttr(e.had)}"></div>
+          <div class="field sm"><div class="label">Осталось</div><input class="select" data-left="${escAttr(key)}" value="${escAttr(e.left)}"></div>
+          <div class="field sm"><div class="label">Ед.</div><select class="select" data-unit="${escAttr(key)}">${BASE.units.map(v=>`<option value="${escAttr(v)}" ${v===e.unit?'selected':''}>${esc(v||'—')}</option>`).join('')}</select></div>
+        </div>
+
+        <div class="item-grid-bottom">
+          <div class="field"><div class="label">Где лежит</div><select class="select" data-place="${escAttr(key)}"><option value="">—</option>${currentStorageList().map(v=>`<option value="${escAttr(v)}" ${v===e.place?'selected':''}>${esc(v)}</option>`).join('')}</select></div>
+          <div class="field"><div class="label">Комментарий</div><input class="select" data-comment="${escAttr(key)}" value="${escAttr(e.comment)}"></div>
+        </div>
+
+        ${group.key==='supplements' && state.scope==='personal' ? `
+        <div class="item-grid-bottom">
+          <div class="field"><div class="label">Когда</div><select class="select" data-slot="${escAttr(key)}">${['','Утро','День','Вечер'].map(v=>`<option value="${escAttr(v)}" ${v===e.slot?'selected':''}>${esc(v||'—')}</option>`).join('')}</select></div>
+          <div class="field"><div class="label">Как принимать</div><select class="select" data-how="${escAttr(key)}">${BASE.how.map(v=>`<option value="${escAttr(v)}" ${v===e.how?'selected':''}>${esc(v||'—')}</option>`).join('')}</select></div>
+        </div>` : ''}
+      </div>`;
+    }).join('') || '<div class="muted">В этом разделе сейчас нет позиций по выбранному фильтру.</div>';
+
+    return `<details class="section" ${open[group.key]?'open':''}>
+      <summary data-toggle-group="${escAttr(group.key)}">
+        <div class="summary-left"><span>${esc(group.title)}</span></div>
+        <div class="summary-right">
+          <button class="group-hide-btn" type="button" data-hide-group="${escAttr(group.key)}">Скрыть</button>
+          <span class="arrow">▸</span>
+        </div>
+      </summary>
+      <div class="section-body">${itemsHtml}</div>
+    </details>`;
+  }).join('');
+
+  const hiddenItems = Object.keys(hidden).map(key=>{
+    const [gk,iid]=key.split('::');
+    const group=BASE.groups.find(g=>g.key===gk);
+    const item=group && group.items.find(i=>i.id===iid);
+    if(!group||!item) return '';
+    return `<div class="hidden-chip"><div><div>${esc(item.name)}</div><div class="muted">${esc(group.title)}</div></div><button class="tiny-btn" data-restore-item="${escAttr(key)}">Показать</button></div>`;
+  }).join('');
+
+  const hiddenGroupsHtml = Object.keys(hiddenGroups).map(gk=>{
+    const group=BASE.groups.find(g=>g.key===gk);
+    if(!group) return '';
+    return `<div class="hidden-chip"><div>${esc(group.title)}</div><button class="tiny-btn" data-restore-group="${escAttr(gk)}">Вернуть</button></div>`;
+  }).join('');
+
+  document.getElementById('hiddenRoot').innerHTML = (hiddenItems || hiddenGroupsHtml)
+    ? `<div class="hidden-block">${hiddenItems?`<h3>Скрытые позиции</h3>${hiddenItems}`:''}${hiddenGroupsHtml?`<h3 style="margin-top:${hiddenItems?'14px':'0'}">Скрытые разделы</h3>${hiddenGroupsHtml}`:''}</div>`
+    : '';
+}
+
+function renderAll(){ renderScope(); renderMemberSelect(); renderStorageBlock(); renderProgress(); renderMedkit(); }
+
+function addStorage(name){
+  const clean=(name||'').trim();
+  if(!clean) return;
+  const arr=currentStorageList();
+  if(arr.includes(clean)) return;
+  arr.push(clean);
+  save(); renderAll();
+}
+function deleteStorage(idx){
+  const arr=currentStorageList();
+  const removed=arr[idx];
+  if(typeof removed==='undefined') return;
+  arr.splice(idx,1);
+  const bucket=currentDataBucket();
+  Object.keys(bucket).forEach(k=>{ if(bucket[k] && bucket[k].place===removed) bucket[k].place=''; });
+  if(currentFilter()===removed) setCurrentFilter('');
+  save(); renderAll();
+}
+function hideItem(key){ currentHiddenBucket()[key]=true; save(); renderAll(); }
+function restoreItem(key){ delete currentHiddenBucket()[key]; save(); renderAll(); }
+function hideGroup(key){ currentHiddenGroupsBucket()[key]=true; save(); renderAll(); }
+function restoreGroup(key){ delete currentHiddenGroupsBucket()[key]; save(); renderAll(); }
+
+document.addEventListener('click', (e)=>{
+  const scopeBtn=e.target.closest('#scopeSeg button[data-scope]');
+  if(scopeBtn){ state.scope=scopeBtn.dataset.scope; save(); renderAll(); return; }
+  if(e.target.id==='addStorageBtn'){ addStorage(document.getElementById('newStorageInput').value); document.getElementById('newStorageInput').value=''; return; }
+  const delStorage=e.target.closest('[data-del-storage]');
+  if(delStorage){ deleteStorage(Number(delStorage.dataset.delStorage)); return; }
+  const hideBtn=e.target.closest('[data-hide-item]');
+  if(hideBtn){ hideItem(hideBtn.dataset.hideItem); return; }
+  const restoreBtn=e.target.closest('[data-restore-item]');
+  if(restoreBtn){ restoreItem(restoreBtn.dataset.restoreItem); return; }
+  const hideGroupBtn=e.target.closest('[data-hide-group]');
+  if(hideGroupBtn){ e.preventDefault(); e.stopPropagation(); hideGroup(hideGroupBtn.dataset.hideGroup); return; }
+  const restoreGroupBtn=e.target.closest('[data-restore-group]');
+  if(restoreGroupBtn){ restoreGroup(restoreGroupBtn.dataset.restoreGroup); return; }
+  const filterBtn=e.target.closest('[data-filter]');
+  if(filterBtn){ setCurrentFilter(filterBtn.dataset.filter); save(); renderAll(); return; }
+});
+
+document.addEventListener('change', (e)=>{
+  const bucket=currentDataBucket();
+  if(e.target.id==='memberSelect'){ state.memberId=e.target.value; save(); renderAll(); return; }
+
+  const map = [
+    ['data-check','checked', el=>!!el.checked],
+    ['data-had','had', el=>el.value],
+    ['data-left','left', el=>el.value],
+    ['data-unit','unit', el=>el.value],
+    ['data-place','place', el=>el.value],
+    ['data-comment','comment', el=>el.value],
+    ['data-slot','slot', el=>el.value],
+    ['data-how','how', el=>el.value]
+  ];
+  for(const [attr, field, getter] of map){
+    if(e.target.hasAttribute(attr)){
+      const key=e.target.getAttribute(attr);
+      const entry=ensureEntry(bucket,key);
+      entry[field]=getter(e.target);
+      save();
+      if(attr==='data-place'||attr==='data-slot'||attr==='data-how'||attr==='data-check'){ renderAll(); }
+      return;
+    }
+  }
+});
+
+document.addEventListener('toggle', (e)=>{
+  if(e.target.matches('details.section')){
+    const summary=e.target.querySelector('summary[data-toggle-group]');
+    if(summary){ currentOpenBucket()[summary.dataset.toggleGroup]=e.target.open; save(); }
+  }
+});
+
+load();
+renderAll();
+</script>
+</body>
+</html>
