@@ -723,29 +723,6 @@ function updateMedkitLeft(mode,memberId,itemId,val){ medkitEnsureState(mode,memb
 function updateMedkitUnit(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).unit=val; saveLocal(); }
 function updateMedkitSlot(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).slot=val; saveLocal(); snapshotMedkitOpenState(); rMedkit(); }
 function updateMedkitHow(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).how=val; saveLocal(); }
-function buildUnitSelect(mode,memberId,itemId,current){
-  var opts=['','таб','капс','амп','шт','мл','мг','г','пак','саше','тюб','фл','другое'];
-  var h='<select class="form-select" onchange="handleMedkitUnitSelect(\''+mode+'\',\''+memberId+'\',\''+itemId+'\',this.value)">';
-  for(var i=0;i<opts.length;i++){ var v=opts[i]; h+='<option value="'+v+'"'+(current===v?' selected':'')+'>'+(v||'Ед.')+'</option>'; }
-  h+='</select>';
-  return h;
-}
-function buildHowSelect(mode,memberId,itemId,current){
-  var opts=['','натощак','до еды','во время еды','после еды','с едой','утром','днём','вечером','перед сном','по необходимости','другое'];
-  var h='<select class="form-select" onchange="handleMedkitHowSelect(\''+mode+'\',\''+memberId+'\',\''+itemId+'\',this.value)">';
-  for(var i=0;i<opts.length;i++){ var v=opts[i]; h+='<option value="'+v+'"'+(current===v?' selected':'')+'>'+(v||'Как принимать')+'</option>'; }
-  h+='</select>';
-  return h;
-}
-function handleMedkitUnitSelect(mode,memberId,itemId,val){
-  if(val==='другое'){ updateMedkitUnit(mode,memberId,itemId,''); saveLocal(); renderMedkit(); return; }
-  updateMedkitUnit(mode,memberId,itemId,val);
-}
-function handleMedkitHowSelect(mode,memberId,itemId,val){
-  if(val==='другое'){ updateMedkitHow(mode,memberId,itemId,''); saveLocal(); renderMedkit(); return; }
-  updateMedkitHow(mode,memberId,itemId,val);
-}
-
 function toggleMedkitTakenDay(mode,memberId,itemId,dayKey){
   var state=medkitEnsureState(mode,memberId,itemId);
   state.taken[dayKey]=!state.taken[dayKey];
@@ -879,10 +856,10 @@ function rMedkit(){
       var item=group.items[i];
       var state=medkitEnsureState(medkitMode,currentMemberId,item.id);
       h+='<div class="check-item'+(state.checked?' done':'')+'" onclick="toggleMedkitItem(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\')"><div class="check-box'+(state.checked?' checked':'')+'"></div><span class="check-text">'+item.name+'</span><span class="delete-item" onclick="event.stopPropagation();removeMedkitItem(\''+item.id+'\','+(item.custom?'true':'false')+')">&times;</span></div>';
-      h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Было" value="'+escHtml(state.total||'')+'" onchange="updateMedkitTotal(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Осталось" value="'+escHtml(state.left||'')+'" onchange="updateMedkitLeft(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)">'+buildUnitSelect(medkitMode,currentMemberId,item.id,(['таб','капс','амп','шт','мл','мг','г','пак','саше','тюб','фл'].indexOf(state.unit||'')!==-1?state.unit:'другое'))+'+(state.unit && ['таб','капс','амп','шт','мл','мг','г','пак','саше','тюб','фл'].indexOf(state.unit)===-1 ? '<input type="text" placeholder="Свой вариант" value="'+escHtml(state.unit)+'" onchange="updateMedkitUnit(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)">' : '')+'</div>';
+      h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Было" value="'+escHtml(state.total||'')+'" onchange="updateMedkitTotal(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Осталось" value="'+escHtml(state.left||'')+'" onchange="updateMedkitLeft(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><select class="form-select" onchange="updateMedkitUnit(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><option value=""'+(!(state.unit||'')?' selected':'')+'>ед.</option><option value="таб"'+((state.unit||'')==='таб'?' selected':'')+'>таб</option><option value="капс"'+((state.unit||'')==='капс'?' selected':'')+'>капс</option><option value="амп"'+((state.unit||'')==='амп'?' selected':'')+'>амп</option><option value="шт"'+((state.unit||'')==='шт'?' selected':'')+'>шт</option><option value="мл"'+((state.unit||'')==='мл'?' selected':'')+'>мл</option><option value="мг"'+((state.unit||'')==='мг'?' selected':'')+'>мг</option><option value="г"'+((state.unit||'')==='г'?' selected':'')+'>г</option><option value="пак"'+((state.unit||'')==='пак'?' selected':'')+'>пак</option><option value="саше"'+((state.unit||'')==='саше'?' selected':'')+'>саше</option><option value="тюб"'+((state.unit||'')==='тюб'?' selected':'')+'>тюб</option><option value="фл"'+((state.unit||'')==='фл'?' selected':'')+'>фл</option></select></div>';
       h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Где лежит" value="'+escHtml(state.place||'')+'" onchange="updateMedkitPlace(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Комментарий" value="'+escHtml(state.note||'')+'" onchange="updateMedkitNote(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"></div>';
       if(group.group==='БАДы / витамины'){
-        h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><select class="form-select" onchange="updateMedkitSlot(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><option value="Утро"'+((state.slot||'Утро')==='Утро'?' selected':'')+'>Утро</option><option value="День"'+((state.slot||'')==='День'?' selected':'')+'>День</option><option value="Вечер"'+((state.slot||'')==='Вечер'?' selected':'')+'>Вечер</option></select>'+buildHowSelect(medkitMode,currentMemberId,item.id,state.how||'')+'+(state.how && ['натощак','до еды','во время еды','после еды','с едой','утром','днём','вечером','перед сном','по необходимости'].indexOf(state.how)===-1 ? '<input type="text" placeholder="Свой вариант" value="'+escHtml(state.how)+'" onchange="updateMedkitHow(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)">' : '')+'</div>';
+        h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><select class="form-select" onchange="updateMedkitSlot(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><option value="Утро"'+((state.slot||'Утро')==='Утро'?' selected':'')+'>Утро</option><option value="День"'+((state.slot||'')==='День'?' selected':'')+'>День</option><option value="Вечер"'+((state.slot||'')==='Вечер'?' selected':'')+'>Вечер</option></select><input type="text" placeholder="Как принимать: натощак / после еды / перед сном" value="'+escHtml(state.how||'')+'" onchange="updateMedkitHow(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"></div>';
         if(medkitMode==='personal'){
           h+='<div style="padding:0 15px 10px"><div class="constructor-label">Трекер приёма</div><div class="constructor-opts">';
           for(var di=0;di<dayLabels.length;di++){
