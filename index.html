@@ -667,8 +667,8 @@ function medkitProgress(mode,memberId){
   for(var j=0;j<items.length;j++) if(store[items[j].id] && store[items[j].id].checked) done++;
   return {done:done,total:items.length,pct:items.length?Math.round(done/items.length*100):0};
 }
-function setMedkitMode(mode){ medkitMode=mode; if(mode==='personal' && !medkitMemberId){ var m=getActiveMembers(); medkitMemberId=m.length?m[0]._id:''; } rMedkit(); }
-function setMedkitMember(id){ medkitMemberId=id||''; rMedkit(); }
+function setMedkitMode(mode){ snapshotMedkitOpenState(); medkitMode=mode; if(mode==='personal' && !medkitMemberId){ var m=getActiveMembers(); medkitMemberId=m.length?m[0]._id:''; } rMedkit(); }
+function setMedkitMember(id){ snapshotMedkitOpenState(); medkitMemberId=id||''; rMedkit(); }
 function medkitEnsureState(mode,memberId,itemId){
   var store=medkitStore(mode,memberId);
   if(!store[itemId]) store[itemId]={checked:false,place:'',note:'',total:'',left:'',unit:'',slot:'',how:'',taken:{}};
@@ -679,6 +679,7 @@ function toggleMedkitItem(mode,memberId,itemId){
   var state=medkitEnsureState(mode,memberId,itemId);
   state.checked=!state.checked;
   saveLocal();
+  snapshotMedkitOpenState();
   rMedkit();
 }
 function updateMedkitPlace(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).place=val; saveLocal(); }
@@ -686,7 +687,7 @@ function updateMedkitNote(mode,memberId,itemId,val){ medkitEnsureState(mode,memb
 function updateMedkitTotal(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).total=val; saveLocal(); }
 function updateMedkitLeft(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).left=val; saveLocal(); }
 function updateMedkitUnit(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).unit=val; saveLocal(); }
-function updateMedkitSlot(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).slot=val; saveLocal(); rMedkit(); }
+function updateMedkitSlot(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).slot=val; saveLocal(); snapshotMedkitOpenState(); rMedkit(); }
 function updateMedkitHow(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).how=val; saveLocal(); }
 function toggleMedkitTakenDay(mode,memberId,itemId,dayKey){
   var state=medkitEnsureState(mode,memberId,itemId);
@@ -749,6 +750,7 @@ function removeMedkitItem(itemId,isCustom){
     deleted[itemId]=true;
   }
   saveLocal();
+  snapshotMedkitOpenState();
   rMedkit();
 }
 function restoreMedkitItem(itemId){
@@ -756,6 +758,7 @@ function restoreMedkitItem(itemId){
   var deleted=getMedkitDeletedMap(medkitMode, medkitMode==='personal'?medkitMemberId:'');
   delete deleted[itemId];
   saveLocal();
+  snapshotMedkitOpenState();
   rMedkit();
 }
 function rMedkit(){
@@ -795,7 +798,7 @@ function rMedkit(){
   var dayLabels=[['Пн','mon'],['Вт','tue'],['Ср','wed'],['Чт','thu'],['Пт','fri'],['Сб','sat'],['Вс','sun']];
   for(var g=0;g<MEDKIT_RENDER_GROUPS.length;g++){
     var group=MEDKIT_RENDER_GROUPS[g];
-    h+='<details class="check-group"'+(g===0?' open':'')+'><summary class="check-group-title" style="cursor:pointer">'+group.group+'</summary>';
+    h+='<details class="check-group" data-group="'+escHtml(group.group)+'"'+(isMedkitOpen(medkitMode,currentMemberId,group.group,g)?' open':'')+'><summary class="check-group-title" style="cursor:pointer">'+group.group+'</summary>';
     var store=medkitStore(medkitMode, currentMemberId);
     for(var i=0;i<group.items.length;i++){
       var item=group.items[i];
@@ -951,6 +954,22 @@ var memberFormOpen=false;
 var settlementPreset=null;
 var medkitMode='common';
 var medkitMemberId='';
+var MEDKIT_OPEN_STATE={};
+function medkitOpenKey(mode,memberId,group){ return [mode||'',memberId||'',group||''].join('||'); }
+function snapshotMedkitOpenState(){
+  try{
+    var root=document.getElementById('p-medkit'); if(!root) return;
+    var nodes=root.querySelectorAll('details.check-group[data-group]');
+    for(var i=0;i<nodes.length;i++){
+      var g=nodes[i].getAttribute('data-group')||'';
+      MEDKIT_OPEN_STATE[medkitOpenKey(medkitMode,medkitMemberId,g)] = !!nodes[i].open;
+    }
+  }catch(e){}
+}
+function isMedkitOpen(mode,memberId,group,idx){
+  var key=medkitOpenKey(mode,memberId,group);
+  return Object.prototype.hasOwnProperty.call(MEDKIT_OPEN_STATE,key) ? !!MEDKIT_OPEN_STATE[key] : idx===0;
+}
 
 function showSyncStatus(msg){
   var el=document.getElementById('syncStatus');
