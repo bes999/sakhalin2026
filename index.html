@@ -559,12 +559,31 @@ function medkitStore(mode,memberId){
   if(!ST.medkitCommon) ST.medkitCommon={};
   return ST.medkitCommon;
 }
-function ensureMedkitMeta(){
-  if(!ST.medkitCustom || !Array.isArray(ST.medkitCustom)) ST.medkitCustom=[];
-  if(!ST.medkitDeleted) ST.medkitDeleted={};
+function ensureMedkitMeta(mode,memberId){
+  if(!ST.medkitCommonCustom || !Array.isArray(ST.medkitCommonCustom)) ST.medkitCommonCustom=[];
+  if(!ST.medkitPersonalCustom || typeof ST.medkitPersonalCustom!=='object') ST.medkitPersonalCustom={};
+  if(!ST.medkitCommonDeleted || typeof ST.medkitCommonDeleted!=='object') ST.medkitCommonDeleted={};
+  if(!ST.medkitPersonalDeleted || typeof ST.medkitPersonalDeleted!=='object') ST.medkitPersonalDeleted={};
+  var id=memberId||'';
+  if(mode==='personal'){
+    if(!ST.medkitPersonalCustom[id] || !Array.isArray(ST.medkitPersonalCustom[id])) ST.medkitPersonalCustom[id]=[];
+    if(!ST.medkitPersonalDeleted[id] || typeof ST.medkitPersonalDeleted[id] !== 'object') ST.medkitPersonalDeleted[id]={};
+  }
 }
-function getMedkitGroups(){
-  ensureMedkitMeta();
+function getMedkitCustomList(mode,memberId){
+  ensureMedkitMeta(mode,memberId);
+  if(mode==='personal') return ST.medkitPersonalCustom[memberId||''] || [];
+  return ST.medkitCommonCustom || [];
+}
+function getMedkitDeletedMap(mode,memberId){
+  ensureMedkitMeta(mode,memberId);
+  if(mode==='personal') return ST.medkitPersonalDeleted[memberId||''] || {};
+  return ST.medkitCommonDeleted || {};
+}
+function getMedkitGroups(mode,memberId){
+  ensureMedkitMeta(mode,memberId);
+  var deleted=getMedkitDeletedMap(mode,memberId);
+  var custom=getMedkitCustomList(mode,memberId);
   var map={}, order=[];
   for(var g=0;g<MEDKIT_BASE.length;g++){
     var baseGroup=MEDKIT_BASE[g];
@@ -572,12 +591,12 @@ function getMedkitGroups(){
     order.push(baseGroup.group);
     for(var i=0;i<baseGroup.items.length;i++){
       var baseItem=baseGroup.items[i];
-      if(!ST.medkitDeleted[baseItem.id]) map[baseGroup.group].items.push(baseItem);
+      if(!deleted[baseItem.id]) map[baseGroup.group].items.push(baseItem);
     }
   }
-  for(var c=0;c<ST.medkitCustom.length;c++){
-    var item=ST.medkitCustom[c];
-    if(ST.medkitDeleted[item.id]) continue;
+  for(var c=0;c<custom.length;c++){
+    var item=custom[c];
+    if(deleted[item.id]) continue;
     if(!map[item.group]){
       map[item.group]={group:item.group,items:[]};
       order.push(item.group);
@@ -591,19 +610,20 @@ function getMedkitGroups(){
   }
   return groups;
 }
-function getHiddenMedkitBaseItems(){
-  ensureMedkitMeta();
+function getHiddenMedkitBaseItems(mode,memberId){
+  ensureMedkitMeta(mode,memberId);
+  var deleted=getMedkitDeletedMap(mode,memberId);
   var hidden=[];
   for(var g=0;g<MEDKIT_BASE.length;g++){
     for(var i=0;i<MEDKIT_BASE[g].items.length;i++){
       var item=MEDKIT_BASE[g].items[i];
-      if(ST.medkitDeleted[item.id]) hidden.push({id:item.id,name:item.name,group:MEDKIT_BASE[g].group});
+      if(deleted[item.id]) hidden.push({id:item.id,name:item.name,group:MEDKIT_BASE[g].group});
     }
   }
   return hidden;
 }
 function medkitProgress(mode,memberId){
-  var groups=getMedkitGroups();
+  var groups=getMedkitGroups(mode,memberId);
   var items=[];
   for(var g=0;g<groups.length;g++){
     for(var i=0;i<groups[g].items.length;i++) items.push(groups[g].items[i]);
@@ -638,7 +658,7 @@ function toggleMedkitAddRow(groupIdx){
   }
 }
 function addMedkitItem(groupIdx){
-  ensureMedkitMeta();
+  ensureMedkitMeta(medkitMode, medkitMode==='personal'?medkitMemberId:'');
   var row=document.getElementById('medkitAddRow_'+groupIdx);
   if(!row) return;
   var input=row.querySelector('input');
@@ -646,25 +666,33 @@ function addMedkitItem(groupIdx){
   if(!name) return;
   var group=MEDKIT_RENDER_GROUPS[groupIdx];
   if(!group) return;
-  var id='custom_'+Date.now()+'_'+Math.floor(Math.random()*1000);
-  ST.medkitCustom.push({id:id,group:group.group,name:name,qty:'1 уп',custom:true});
+  var id=(medkitMode==='personal'?'pcustom_':'ccustom_')+Date.now()+'_'+Math.floor(Math.random()*1000);
+  var list=getMedkitCustomList(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  list.push({id:id,group:group.group,name:name,qty:'1 уп',custom:true});
   input.value='';
   saveLocal();
   rMedkit();
 }
 function removeMedkitItem(itemId,isCustom){
-  ensureMedkitMeta();
+  ensureMedkitMeta(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  var memberId=(medkitMode==='personal'?medkitMemberId:'');
   if(isCustom){
-    ST.medkitCustom=(ST.medkitCustom||[]).filter(function(it){ return it.id!==itemId; });
+    if(medkitMode==='personal'){
+      ST.medkitPersonalCustom[memberId]=(ST.medkitPersonalCustom[memberId]||[]).filter(function(it){ return it.id!==itemId; });
+    }else{
+      ST.medkitCommonCustom=(ST.medkitCommonCustom||[]).filter(function(it){ return it.id!==itemId; });
+    }
   }else{
-    ST.medkitDeleted[itemId]=true;
+    var deleted=getMedkitDeletedMap(medkitMode, memberId);
+    deleted[itemId]=true;
   }
   saveLocal();
   rMedkit();
 }
 function restoreMedkitItem(itemId){
-  ensureMedkitMeta();
-  delete ST.medkitDeleted[itemId];
+  ensureMedkitMeta(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  var deleted=getMedkitDeletedMap(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  delete deleted[itemId];
   saveLocal();
   rMedkit();
 }
@@ -672,7 +700,7 @@ function rMedkit(){
   var el=document.getElementById('p-medkit');
   var members=getActiveMembers();
   if(medkitMode==='personal' && !medkitMemberId && members.length) medkitMemberId=members[0]._id;
-  MEDKIT_RENDER_GROUPS=getMedkitGroups();
+  MEDKIT_RENDER_GROUPS=getMedkitGroups(medkitMode, medkitMode==='personal'?medkitMemberId:'');
   var progress=medkitProgress(medkitMode, medkitMode==='personal'?medkitMemberId:'');
   var h='<div class="shop-header"><div class="info-title">Аптечка</div><div class="mini-note">Общая аптечка — для лагеря и машины. Личная аптечка — для конкретного участника.</div>'+
     '<div class="subtabs" style="margin-top:10px"><div class="stab'+(medkitMode==='common'?' active':'')+'" onclick="setMedkitMode(\'common\')">Общая</div><div class="stab'+(medkitMode==='personal'?' active':'')+'" onclick="setMedkitMode(\'personal\')">Личная</div></div>';
@@ -700,7 +728,7 @@ function rMedkit(){
     h+='<div class="add-item-input" id="medkitAddRow_'+g+'"><input type="text" placeholder="Название препарата"><button onclick="addMedkitItem('+g+')">Добавить</button></div>';
     h+='</div>';
   }
-  var hidden=getHiddenMedkitBaseItems();
+  var hidden=getHiddenMedkitBaseItems(medkitMode, medkitMode==='personal'?medkitMemberId:'');
   if(hidden.length){
     h+='<div class="check-group"><div class="check-group-title">Скрытые позиции</div>';
     for(var k=0;k<hidden.length;k++){
