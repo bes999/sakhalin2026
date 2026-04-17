@@ -644,8 +644,20 @@ function toggleMedkitItem(mode,memberId,itemId){
 }
 function updateMedkitQty(mode,memberId,itemId,val){
   var store=medkitStore(mode,memberId);
-  if(!store[itemId]) store[itemId]={checked:false,qty:''};
+  if(!store[itemId]) store[itemId]={checked:false,qty:'',place:'',note:''};
   store[itemId].qty=val;
+  saveLocal();
+}
+function updateMedkitPlace(mode,memberId,itemId,val){
+  var store=medkitStore(mode,memberId);
+  if(!store[itemId]) store[itemId]={checked:false,qty:'',place:'',note:''};
+  store[itemId].place=val;
+  saveLocal();
+}
+function updateMedkitNote(mode,memberId,itemId,val){
+  var store=medkitStore(mode,memberId);
+  if(!store[itemId]) store[itemId]={checked:false,qty:'',place:'',note:''};
+  store[itemId].note=val;
   saveLocal();
 }
 function toggleMedkitAddRow(groupIdx){
@@ -720,9 +732,12 @@ function rMedkit(){
     var store=medkitStore(medkitMode, medkitMode==='personal'?medkitMemberId:'');
     for(var i=0;i<group.items.length;i++){
       var item=group.items[i];
-      var state=store[item.id]||{checked:false,qty:''};
+      var state=store[item.id]||{checked:false,qty:'',place:'',note:''};
       var qty=state.qty || item.qty || '';
+      var place=state.place || '';
+      var note=state.note || '';
       h+='<div class="check-item'+(state.checked?' done':'')+'" onclick="toggleMedkitItem(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\')"><div class="check-box'+(state.checked?' checked':'')+'"></div><span class="check-text">'+item.name+'</span><input class="check-qty-input" type="text" value="'+escHtml(qty)+'" onclick="event.stopPropagation()" onchange="updateMedkitQty(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"><span class="delete-item" onclick="event.stopPropagation();removeMedkitItem(\''+item.id+'\','+(item.custom?'true':'false')+')">&times;</span></div>';
+      h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Где лежит" value="'+escHtml(place)+'" onchange="updateMedkitPlace(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Комментарий" value="'+escHtml(note)+'" onchange="updateMedkitNote(\''+medkitMode+'\',\''+(medkitMode==='personal'?medkitMemberId:'')+'\',\''+item.id+'\',this.value)"></div>';
     }
     h+='<div class="add-item-btn" onclick="toggleMedkitAddRow('+g+')">＋ Добавить препарат</div>';
     h+='<div class="add-item-input" id="medkitAddRow_'+g+'"><input type="text" placeholder="Название препарата"><button onclick="addMedkitItem('+g+')">Добавить</button></div>';
@@ -736,7 +751,13 @@ function rMedkit(){
     }
     h+='</div>';
   }
-  h+='<div class="info-card"><div class="info-title">Подсказка</div><div class="bul">Теперь можно добавлять свои препараты и скрывать лишние позиции.</div><div class="bul">На этом этапе аптечка хранится локально на устройстве и не синхронизируется между участниками.</div></div>';
+  h+='<div class="info-card"><div class="info-title">Что делать если…</div>'+
+    '<div class="bul"><b>Головная боль / температура:</b> проверь раздел «Обезбол / температура», смотри, что отмечено как взято.</div>'+
+    '<div class="bul"><b>ЖКТ / отравление:</b> сначала открой раздел «ЖКТ», там должны быть Смекта, Лоперамид, Церукал, Маалокс, Панкреатин.</div>'+
+    '<div class="bul"><b>Аллергия / простуда:</b> проверь одноимённый раздел и посмотри, где лежит препарат у нужной позиции.</div>'+
+    '<div class="bul"><b>Порез / рана:</b> открой «Раны / перевязка» и смотри поле «Где лежит» у перевязочных и антисептиков.</div>'+
+    '<div class="bul"><b>Глаза / нос / сон:</b> смотри последний раздел, там же можно указать, в какой сумке лежит конкретное средство.</div></div>';
+  h+='<div class="info-card"><div class="info-title">Подсказка</div><div class="bul">Теперь у каждой позиции можно указать, где она лежит и оставить комментарий — и в общей, и в личной аптечке.</div><div class="bul">На этом этапе аптечка хранится локально на устройстве и не синхронизируется между участниками.</div></div>';
   el.innerHTML=h;
 }
 
