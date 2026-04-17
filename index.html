@@ -267,7 +267,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 <script>
 // ===== STATE =====
-var ST={people:3,menuOv:{},shopCh:{},shopQ:{},catches:[],gearPC:{},gearCC:{},riverN:{},expenses:[],settlements:[],shopCustom:[],gearCustom:[],members:[],medkitCommon:{},medkitPersonal:{},medkitCustom:[]};
+var ST={people:3,menuOv:{},shopCh:{},shopQ:{},catches:[],gearPC:{},gearCC:{},riverN:{},expenses:[],settlements:[],shopCustom:[],gearCustom:[],members:[],medkitCommon:{},medkitPersonal:{},medkitCustom:[],medkitCommonPlaces:[],medkitPersonalPlaces:{}};
 var mF='all', bF='gin', gT='common', catchKept=true, mealPickDI=0, mealPickMI=0, mealPickType='dinner';
 
 // ===== SYNC =====
@@ -648,8 +648,11 @@ function ensureMedkitMeta(mode,memberId){
   if(!ST.medkitPersonalDeleted || typeof ST.medkitPersonalDeleted!=='object') ST.medkitPersonalDeleted={};
   if(!ST.medkitCommonGroupHidden || typeof ST.medkitCommonGroupHidden!=='object') ST.medkitCommonGroupHidden={};
   if(!ST.medkitPersonalGroupHidden || typeof ST.medkitPersonalGroupHidden!=='object') ST.medkitPersonalGroupHidden={};
+  if(!Array.isArray(ST.medkitCommonPlaces)) ST.medkitCommonPlaces=[];
+  if(!ST.medkitPersonalPlaces || typeof ST.medkitPersonalPlaces!=='object') ST.medkitPersonalPlaces={};
   var id=memberId||'';
   if(mode==='personal'){
+    if(!Array.isArray(ST.medkitPersonalPlaces[id])) ST.medkitPersonalPlaces[id]=[];
     if(!ST.medkitPersonalCustom[id] || !Array.isArray(ST.medkitPersonalCustom[id])) ST.medkitPersonalCustom[id]=[];
     if(!ST.medkitPersonalDeleted[id] || typeof ST.medkitPersonalDeleted[id] !== 'object') ST.medkitPersonalDeleted[id]={};
     if(!ST.medkitPersonalGroupHidden[id] || typeof ST.medkitPersonalGroupHidden[id] !== 'object') ST.medkitPersonalGroupHidden[id]={};
@@ -867,6 +870,10 @@ function rMedkit(){
     h+='</select></div>';
   }
   h+='<div class="progress-text"><span>Собрано</span><span>'+progress.done+' / '+progress.total+'</span></div><div class="progress-bar-wrap"><div class="progress-bar" style="width:'+progress.pct+'%"></div></div></div>';
+  var places=getMedkitPlaces(medkitMode, currentMemberId);
+  h+='<div class="info-card"><div class="info-title">Места хранения</div><div class="mini-note">Добавляй свои места отдельно для общей и личной аптечки. Потом их можно выбирать в поле «Где лежит».</div><div class="add-item-input show" style="padding:0;border-top:none"><input id="medkitPlaceInput" type="text" placeholder="Например, Поясная сумка"><button onclick="addMedkitPlace()">Добавить</button></div>';
+  if(places.length){ h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">'; for(var pl=0;pl<places.length;pl++){ h+='<span class="meal-tag">'+escHtml(places[pl])+'</span>'; } h+='</div>'; }
+  h+='</div>';
   if(medkitMode==='personal'){
     var stack=medkitStackSummary('personal',medkitMemberId||'');
     var ordered=['Утро','День','Вечер'];
@@ -890,7 +897,7 @@ function rMedkit(){
   for(var g=0;g<MEDKIT_RENDER_GROUPS.length;g++){
     var group=MEDKIT_RENDER_GROUPS[g];
     var groupJs=JSON.stringify(group.group);
-    h+='<details class="check-group" data-group="'+escHtml(group.group)+'"'+(isMedkitOpen(medkitMode,currentMemberId,group.group,g)?' open':'')+'><summary class="check-group-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="medkit-summary-main"><span class="medkit-summary-arrow">▸</span><span>'+group.group+'</span></span><span class="medkit-summary-actions"><button type="button" class="hide-group-btn" data-hide-group="'+escHtml(group.group)+'" title="Скрыть раздел" aria-label="Скрыть раздел" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:none;background:transparent;padding:0;cursor:pointer"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button></span></summary>';
+    h+='<details class="check-group" data-group="'+escHtml(group.group)+'"'+(isMedkitOpen(medkitMode,currentMemberId,group.group,g)?' open':'')+'><summary class="check-group-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="medkit-summary-main"><span class="medkit-summary-arrow">▸</span><span>'+group.group+'</span></span><span class="medkit-summary-actions"><span role="button" tabindex="0" class="hide-group-btn" data-hide-group="'+escHtml(group.group)+'" title="Скрыть раздел" aria-label="Скрыть раздел" onclick="event.preventDefault();event.stopPropagation();hideMedkitGroup(''+jsEscape(group.group)+'');return false;" onmousedown="event.preventDefault();event.stopPropagation();" ontouchstart="event.preventDefault();event.stopPropagation();"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span></span></summary>';
     var store=medkitStore(medkitMode, currentMemberId);
     for(var i=0;i<group.items.length;i++){
       var item=group.items[i];
@@ -903,7 +910,7 @@ function rMedkit(){
   '<label class="medkit-field"><span class="medkit-field-label">Ед.</span><select onchange="updateMedkitUnit(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><option value=""'+(!(state.unit||'')?' selected':'')+'>ед.</option><option value="таб"'+((state.unit||'')==='таб'?' selected':'')+'>таб</option><option value="капс"'+((state.unit||'')==='капс'?' selected':'')+'>капс</option><option value="амп"'+((state.unit||'')==='амп'?' selected':'')+'>амп</option><option value="шт"'+((state.unit||'')==='шт'?' selected':'')+'>шт</option><option value="мл"'+((state.unit||'')==='мл'?' selected':'')+'>мл</option><option value="мг"'+((state.unit||'')==='мг'?' selected':'')+'>мг</option><option value="г"'+((state.unit||'')==='г'?' selected':'')+'>г</option><option value="пак"'+((state.unit||'')==='пак'?' selected':'')+'>пак</option><option value="саше"'+((state.unit||'')==='саше'?' selected':'')+'>саше</option><option value="тюб"'+((state.unit||'')==='тюб'?' selected':'')+'>тюб</option><option value="фл"'+((state.unit||'')==='фл'?' selected':'')+'>фл</option></select></label>'+
 '</div>';
             h+='<div class="medkit-fields2">'+
-  '<label class="medkit-field"><span class="medkit-field-label">Где лежит</span><select onchange="updateMedkitPlace(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><option value="">Выбери место</option><option value="Красная аптечка"'+((state.place||'')==='Красная аптечка'?' selected':'')+'>Красная аптечка</option><option value="Аптечка в машине"'+((state.place||'')==='Аптечка в машине'?' selected':'')+'>Аптечка в машине</option><option value="Личный несессер"'+((state.place||'')==='Личный несессер'?' selected':'')+'>Личный несессер</option><option value="Рюкзак"'+((state.place||'')==='Рюкзак'?' selected':'')+'>Рюкзак</option><option value="Гермосумка"'+((state.place||'')==='Гермосумка'?' selected':'')+'>Гермосумка</option><option value="Лагерь"'+((state.place||'')==='Лагерь'?' selected':'')+'>Лагерь</option></select></label>'+
+  '<label class="medkit-field"><span class="medkit-field-label">Где лежит</span><select onchange="updateMedkitPlace('\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><option value="">Выбери место</option>'+(function(){ var opts=getMedkitPlaces(medkitMode,currentMemberId), out=''; for(var pp=0;pp<opts.length;pp++){ var val=opts[pp]; out+='<option value="'+escHtml(val)+'"'+((state.place||'')===val?' selected':'')+'>'+escHtml(val)+'</option>'; } return out; })()+'</select></label>'+
   '<label class="medkit-field"><span class="medkit-field-label">Комментарий</span><input type="text" value="'+escHtml(state.note||'')+'" onchange="updateMedkitNote(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"></label>'+
 '</div>';
       if(group.group==='БАДы / витамины'){
@@ -957,7 +964,7 @@ function rMedkit(){
     for(var hr=0;hr<hiddenGroupsList.length;hr++){
       var hiddenGroup=hiddenGroupsList[hr];
       var hiddenGroupJs=JSON.stringify(hiddenGroup);
-      h+='<div class="contact-item"><div><div class="contact-name">'+escHtml(hiddenGroup)+'</div><div class="contact-sub">'+(medkitMode==='personal'?'Личная аптечка':'Общая аптечка')+'</div></div><button type="button" class="opt-btn restore-group-btn" data-restore-group="'+escHtml(hiddenGroup)+'" title="Вернуть раздел" aria-label="Вернуть раздел"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:middle;margin-right:4px" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 20L20 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Вернуть</button></div>';
+      h+='<div class="contact-item"><div><div class="contact-name">'+escHtml(hiddenGroup)+'</div><div class="contact-sub">'+(medkitMode==='personal'?'Личная аптечка':'Общая аптечка')+'</div></div><button type="button" class="opt-btn restore-group-btn" data-restore-group="'+escHtml(hiddenGroup)+'" title="Вернуть раздел" aria-label="Вернуть раздел" onclick="event.preventDefault();event.stopPropagation();restoreMedkitGroup(''+jsEscape(hiddenGroup)+'');return false;"><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:middle;margin-right:4px" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 20L20 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Вернуть</button></div>';
     }
     h+='</details>';
   }
