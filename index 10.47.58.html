@@ -1,0 +1,2920 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Сахалин 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f2f2f7;color:#1c1c1e;padding-bottom:80px}
+.topbar{background:#1F4E79;color:#fff;padding:14px 16px 10px;position:sticky;top:0;z-index:200}
+.topbar h1{font-size:18px;font-weight:700}
+.topbar p{font-size:12px;opacity:0.7;margin-top:2px}
+.bottomnav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e0e0e0;display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom)}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px 6px;cursor:pointer;font-size:10px;color:#888;gap:3px}
+.bnav.active{color:#1F4E79}
+.bnav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.page{display:none;padding:12px}
+.page.show{display:block}
+.river-detail{display:none;padding:12px}
+.river-detail.show{display:block}
+.card{background:#fff;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.card-hd{padding:13px 15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card-title{font-size:15px;font-weight:600}
+.card-sub{font-size:12px;color:#888;margin-top:2px}
+.card-arrow{color:#c7c7cc;font-size:13px;transition:transform 0.2s}
+.card.open .card-arrow{transform:rotate(180deg)}
+.card-body{display:none;padding:0 15px 14px;border-top:1px solid #f2f2f7}
+.card.open .card-body{display:block}
+.row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f2f2f7;font-size:14px}
+.row:last-child{border-bottom:none}
+.row-val{color:#888;font-size:13px}
+.method{font-size:13px;color:#555;margin-top:10px;padding:10px;background:#f8f8f8;border-radius:8px;line-height:1.6}
+.ing-label{font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;margin:12px 0 6px}
+.tag{display:inline-block;font-size:11px;font-weight:500;padding:3px 9px;border-radius:10px}
+.tag-easy{background:#EAF3DE;color:#2d6a2d}
+.tag-med{background:#FFF3CD;color:#856404}
+.tag-hard{background:#FFE4E1;color:#8b2020}
+.sec-h{font-size:16px;font-weight:700;color:#1F4E79;margin:14px 0 8px}
+.sec-h:first-child{margin-top:4px}
+.info-card{background:#fff;border-radius:12px;padding:14px 15px;margin-bottom:10px}
+.info-title{font-size:14px;font-weight:700;color:#1F4E79;margin-bottom:8px}
+.bul{font-size:14px;color:#333;padding:5px 0;padding-left:16px;position:relative;line-height:1.5;border-bottom:1px solid #f5f5f5}
+.bul:last-child{border-bottom:none}
+.bul::before{content:'\2022';position:absolute;left:4px;color:#1F4E79}
+.river-item{background:#fff;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.river-hd{padding:13px 15px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.river-name{font-size:15px;font-weight:700;color:#1F4E79}
+.river-meta{font-size:12px;color:#888;margin-top:2px}
+.river-day{font-size:12px;font-weight:500;color:#fff;background:#1F4E79;padding:3px 10px;border-radius:10px}
+.coords-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#1F4E79;background:#E6F1FB;padding:5px 10px;border-radius:8px;margin-top:8px;cursor:pointer}
+.river-hero{background:#1F4E79;border-radius:12px;padding:16px;margin-bottom:12px;color:#fff}
+.river-hero h2{font-size:22px;font-weight:700;margin-bottom:4px}
+.river-hero p{font-size:13px;opacity:0.8}
+.river-stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.river-stat .stat-card:nth-child(3),.river-stat .stat-card:nth-child(4){grid-column:span 1}
+.stat-card{background:#fff;border-radius:10px;padding:10px 12px}
+.stat-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px}
+.stat-val{font-size:12px;font-weight:500;line-height:1.4;color:#1c1c1e}
+.warn-card{background:#fff3cd;border-left:4px solid #ffc107;border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:14px;color:#533f03;line-height:1.5}
+.trow{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f2f2f7}
+.trow:last-child{border-bottom:none}
+.ttime{font-size:12px;color:#888;min-width:90px;flex-shrink:0;padding-top:1px}
+.tact{font-size:14px;line-height:1.4}
+.day-hd{font-size:16px;font-weight:700;color:#1F4E79;margin:14px 0 6px}
+.day-hd:first-child{margin-top:4px}
+.subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.stab{padding:7px 14px;font-size:13px;font-weight:500;border:1.5px solid #e0e0e0;border-radius:20px;cursor:pointer;background:#fff;color:#888;font-family:inherit}
+.stab.active{background:#1F4E79;color:#fff;border-color:#1F4E79}
+.menu-day{margin-bottom:12px;background:#fff;border-radius:12px;overflow:hidden}
+.menu-day-title{font-size:14px;font-weight:700;color:#1F4E79;padding:10px 15px;background:#E6F1FB;border-bottom:1px solid #d0e4f5}
+.meal-row{display:flex;gap:10px;padding:9px 15px;border-bottom:1px solid #f5f5f5;align-items:flex-start;cursor:pointer}
+.meal-row:last-child{border-bottom:none}
+.meal-type{font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;min-width:56px;flex-shrink:0;padding-top:2px}
+.meal-text{font-size:14px;flex:1;line-height:1.4}
+.meal-cocktail{font-size:12px;color:#888;margin-top:3px}
+.modal{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:16px 16px 0 0;padding:16px;z-index:300;box-shadow:0 -4px 20px rgba(0,0,0,0.15);display:none;max-height:80vh;overflow-y:auto}
+.modal.show{display:block}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;font-size:22px;color:#888;cursor:pointer;padding:0}
+.picker-item{padding:12px;border-bottom:1px solid #f2f2f7;font-size:14px;cursor:pointer}
+.picker-item:last-child{border-bottom:none}
+.picker-item.sel{background:#E6F1FB;color:#1F4E79;font-weight:500}
+.picker-cancel{width:100%;padding:14px;background:#f2f2f7;border:none;border-radius:10px;font-size:15px;font-weight:600;color:#1F4E79;cursor:pointer;font-family:inherit;margin-top:8px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:299;display:none}
+.overlay.show{display:block}
+.shop-header{background:#fff;border-radius:12px;padding:14px 15px;margin-bottom:10px}
+.people-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.people-label{font-size:14px;color:#555;flex:1}
+.people-ctrl{display:flex;align-items:center;gap:10px}
+.people-btn{width:32px;height:32px;border-radius:50%;background:#E6F1FB;border:none;font-size:20px;color:#1F4E79;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit}
+.people-count{font-size:18px;font-weight:700;color:#1F4E79;min-width:20px;text-align:center}
+.progress-bar-wrap{height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden}
+.progress-bar{height:100%;background:#34c759;border-radius:3px;transition:width 0.3s}
+.progress-text{font-size:13px;color:#555;margin-bottom:6px;display:flex;justify-content:space-between}
+.check-group{background:#fff;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.check-group-title{font-size:13px;font-weight:700;color:#1F4E79;padding:10px 15px;background:#E6F1FB;border-bottom:1px solid #d0e4f5;text-transform:uppercase;letter-spacing:0.04em}
+.check-item{display:flex;align-items:center;gap:12px;padding:11px 15px;border-bottom:1px solid #f2f2f7;cursor:pointer}
+.check-item:last-child{border-bottom:none}
+.check-box{width:22px;height:22px;border-radius:50%;border:2px solid #c7c7cc;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.check-box.checked{background:#34c759;border-color:#34c759}
+.check-box.checked::after{content:'\2713';color:#fff;font-size:13px;font-weight:700}
+.check-text{flex:1;font-size:14px}
+.check-qty-input{width:72px;font-size:13px;color:#555;border:1px solid #e0e0e0;border-radius:8px;padding:4px 8px;text-align:right;font-family:inherit;background:#fafafa}
+.check-item.done .check-text{color:#c7c7cc;text-decoration:line-through}
+.add-item-btn{display:flex;align-items:center;gap:8px;padding:12px 15px;color:#1F4E79;font-size:14px;font-weight:500;cursor:pointer;border-top:1px solid #f2f2f7}
+.add-item-input{display:none;padding:10px 15px;border-top:1px solid #f2f2f7;gap:8px}
+.add-item-input.show{display:flex}
+.add-item-input input{flex:1;padding:8px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;font-family:inherit}
+.add-item-input button{padding:8px 14px;background:#1F4E79;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit}
+.delete-item{color:#ff3b30;font-size:18px;padding:0 4px;cursor:pointer;flex-shrink:0}
+.reset-btn{width:100%;padding:12px;background:#fff;color:#ff3b30;font-size:14px;font-weight:500;border:none;border-radius:12px;cursor:pointer;font-family:inherit;margin-top:4px}
+.action-btn{width:100%;padding:14px;background:#1F4E79;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:12px}
+.form-card{background:#fff;border-radius:12px;padding:15px;margin-bottom:10px;display:none}
+.form-card.show{display:block}
+.form-row{margin-bottom:12px}
+.form-label{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;display:block}
+.form-select,.form-input{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:10px;font-size:15px;font-family:inherit;background:#fafafa;color:#1c1c1e}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.toggle-row{display:flex;gap:8px}
+.toggle-btn{flex:1;padding:10px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;background:#fff;font-family:inherit;color:#888;text-align:center}
+.toggle-btn.active{background:#E6F1FB;border-color:#1F4E79;color:#1F4E79}
+.save-btn{width:100%;padding:12px;background:#34c759;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.entry-card{background:#fff;border-radius:12px;padding:13px 15px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.entry-main{font-size:15px;font-weight:600}
+.entry-sub{font-size:12px;color:#888;margin-top:2px}
+.entry-num{font-size:24px;font-weight:700;color:#1F4E79}
+.entry-unit{font-size:12px;color:#888}
+.entry-del{font-size:20px;color:#ff3b30;padding:4px 8px;cursor:pointer}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-box{background:#fff;border-radius:10px;padding:10px;text-align:center}
+.stat-num{font-size:22px;font-weight:700;color:#1F4E79}
+.stat-lbl{font-size:11px;color:#888;margin-top:2px}
+.alert-box{background:#fff3cd;border-radius:10px;padding:10px 12px;font-size:13px;color:#856404;margin-bottom:10px;display:none}
+.alert-box.show{display:block}
+.contact-card{background:#fff;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.contact-item{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-bottom:1px solid #f2f2f7}
+.contact-item:last-child{border-bottom:none}
+.contact-name{font-size:14px;font-weight:500}
+.contact-sub{font-size:12px;color:#888;margin-top:1px}
+.contact-phone{font-size:14px;font-weight:600;color:#1F4E79;text-decoration:none}
+.warn-banner{background:#fff3cd;border-left:4px solid #ffc107;border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:14px;color:#533f03;line-height:1.5}
+.warn-title{font-weight:700;margin-bottom:4px}
+.sun-tide{background:#fff;border-radius:12px;overflow:hidden;margin-bottom:10px}
+.st-row{display:flex;padding:9px 15px;border-bottom:1px solid #f2f2f7;align-items:center;gap:8px;flex-wrap:wrap}
+.st-row:last-child{border-bottom:none}
+.st-date{font-size:13px;font-weight:600;min-width:90px}
+.st-sun{font-size:12px;color:#888;flex:1}
+.st-tide{font-size:11px;color:#1F4E79}
+.notes-area{width:100%;min-height:120px;padding:12px;border:1px solid #e0e0e0;border-radius:12px;font-size:14px;font-family:inherit;background:#fff;resize:vertical;line-height:1.6}
+.notes-save{padding:10px 20px;background:#1F4E79;color:#fff;border:none;border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;margin-top:8px}
+.back-btn{display:flex;align-items:center;gap:6px;color:#1F4E79;font-size:15px;font-weight:500;padding:8px 0 12px;cursor:pointer}
+.more-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px}
+.more-item{background:#fff;border-radius:12px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:#555;text-align:center}
+.more-item svg{width:24px;height:24px;stroke:#1F4E79;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.grp-hd{font-size:13px;font-weight:700;color:#1F4E79;margin:12px 0 6px 4px}
+.river-link{color:#1F4E79;text-decoration:underline;cursor:pointer}
+.meal-tag{display:inline-flex;align-items:center;gap:4px;background:#E6F1FB;color:#1F4E79;font-size:12px;padding:4px 10px;border-radius:20px;margin:2px;cursor:default}
+.meal-tag .tag-x{cursor:pointer;font-size:14px;color:#888;margin-left:2px}
+.meal-tag .tag-x:hover{color:#ff3b30}
+.constructor-section{margin-bottom:10px}
+.constructor-label{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.constructor-tags{min-height:32px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:4px;padding:2px 0}
+.constructor-opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt-btn{padding:6px 12px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:13px;cursor:pointer;background:#fff;color:#555;font-family:inherit}
+.opt-btn.sel{background:#1F4E79;color:#fff;border-color:#1F4E79}
+.member-card{background:#fff;border-radius:12px;padding:13px 15px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.member-main{flex:1}.member-name{font-size:15px;font-weight:600}.member-meta{font-size:12px;color:#888;margin-top:3px;display:flex;gap:6px;flex-wrap:wrap}.pill{display:inline-block;font-size:11px;padding:3px 8px;border-radius:999px;background:#E6F1FB;color:#1F4E79}.member-actions{display:flex;gap:8px;align-items:center}.icon-btn{border:none;background:#fff;color:#1F4E79;font-size:18px;cursor:pointer;padding:4px 6px}.icon-btn.danger{color:#ff3b30}.mini-note{font-size:12px;color:#888;margin:-4px 0 10px}
+</style>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyB-R02M_dFIEwJlbWRCxvmIElQ2mJSGMhQ",
+      authDomain: "fuckfishing-app.firebaseapp.com",
+      projectId: "fuckfishing-app",
+      storageBucket: "fuckfishing-app.firebasestorage.app",
+      messagingSenderId: "853201391991",
+      appId: "1:853201391991:web:01f43ef8ca39db11f9d172"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.firestore();
+
+    function getTripId() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        return params.get('trip') || 'sakhalin2026';
+      } catch (e) {
+        return 'sakhalin2026';
+      }
+    }
+
+    var TRIP_ID = getTripId();
+    var tripRef = db.collection('trips').doc(TRIP_ID);
+    var catchesRef = tripRef.collection('catches');
+    var expensesRef = tripRef.collection('expenses');
+    var membersRef = tripRef.collection('members');
+    var settlementsRef = tripRef.collection('settlements');
+  </script>
+</head>
+<body>
+<div class="topbar"><h1>&#x1F3A3; Сахалин 2026</h1><p>10&#8211;17 июня &bull; Сима &bull; Южный Сахалин <span id="syncStatus" style="font-size:10px;opacity:0.7;margin-left:8px"></span></p></div>
+
+<div id="p-route" class="page show"></div>
+<div id="p-rivers" class="page"></div>
+<div id="p-menu" class="page"></div>
+<div id="p-shop" class="page"></div>
+<div id="p-more" class="page">
+  <div class="more-grid">
+    <div class="more-item" onclick="showPage('recipes')"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>Рецепты</div>
+    <div class="more-item" onclick="showPage('bar')"><svg viewBox="0 0 24 24"><path d="M8 22h8M12 11v11M5 2l2 9h10l2-9"/></svg>Бар</div>
+    <div class="more-item" onclick="showPage('catch')"><svg viewBox="0 0 24 24"><path d="M12 22C6 22 2 17 2 12c0-3 3-5 3-5s1 2 3 3c0-3 2-6 4-7 0 4 2 6 4 6 1.5 0 3-1 4-2 1 2 2 4 2 6 0 5-4 9-10 9z"/></svg>Улов</div>
+    <div class="more-item" onclick="showPage('gear')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Снаряга</div>
+    <div class="more-item" onclick="showPage('pantry')"><svg viewBox="0 0 24 24"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h18v4H3z"/></svg>Кладовая</div>
+    <div class="more-item" onclick="showPage('expenses')"><svg viewBox="0 0 24 24"><path d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-3M13 3h8m0 0v8m0-8L11 13"/></svg>Расходы</div>
+    <div class="more-item" onclick="showPage('members')"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Участники</div>
+    <div class="more-item" onclick="showPage('medkit')"><svg viewBox="0 0 24 24"><path d="M19 8H5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2v-8a2 2 0 00-2-2z"/><path d="M9 8V6a1 1 0 011-1h4a1 1 0 011 1v2"/><path d="M12 11v6"/><path d="M9 14h6"/></svg>Аптечка</div>
+    <div class="more-item" onclick="showPage('safety')"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Безопасность</div>
+  </div>
+</div>
+<div id="p-recipes" class="page"></div>
+<div id="p-bar" class="page"></div>
+<div id="p-catch" class="page"></div>
+<div id="p-gear" class="page"></div>
+<div id="p-pantry" class="page"></div>
+<div id="p-expenses" class="page"></div>
+<div id="p-members" class="page"></div>
+<div id="p-medkit" class="page"></div>
+<div id="p-safety" class="page"></div>
+<div id="river-detail" class="river-detail"></div>
+
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+
+<!-- Meal constructor modal -->
+<div class="modal" id="modalMeal">
+  <div class="modal-title"><span id="modalMealTitle">Выбери блюдо</span><button class="modal-close" onclick="closeModal()">&#215;</button></div>
+  <div id="constructorBody"></div>
+  <button class="save-btn" onclick="saveMeal()" style="margin-top:12px">&#10003; Сохранить</button>
+</div>
+
+<div class="bottomnav">
+  <div class="bnav active" id="bn-route" onclick="showPage('route',this)"><svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Маршрут</div>
+  <div class="bnav" id="bn-rivers" onclick="showPage('rivers',this)"><svg viewBox="0 0 24 24"><path d="M3 7c3-2 6-2 9 0s6 2 9 0M3 12c3-2 6-2 9 0s6 2 9 0M3 17c3-2 6-2 9 0s6 2 9 0"/></svg>Реки</div>
+  <div class="bnav" id="bn-menu" onclick="showPage('menu',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Меню</div>
+  <div class="bnav" id="bn-shop" onclick="showPage('shop',this)"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>Закупка</div>
+  <div class="bnav" id="bn-more" onclick="showPage('more',this)"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>Ещё</div>
+</div>
+<script>
+// ===== STATE =====
+var ST={people:3,menuOv:{},shopCh:{},shopQ:{},catches:[],gearPC:{},gearCC:{},riverN:{},expenses:[],settlements:[],shopCustom:[],gearCustom:[],members:[],medkitCommon:{},medkitPersonal:{},medkitCustom:[]};
+var mF='all', bF='gin', gT='common', catchKept=true, mealPickDI=0, mealPickMI=0, mealPickType='dinner';
+
+// ===== SYNC =====
+var PERSONAL_FIELDS = ['menuOv','shopCh','shopQ','shopCustom','shopDeleted','shopExtra',
+  'gearPC','gearCC','gearCommonDel','gearCommonExtra','gearPersonalDel','gearCustom',
+  'riverN','riverPoints','pantryDeleted','menuOv']; // personal per device
+var catchesUnsub = null;
+var expensesUnsub = null;
+var settlementsUnsub = null;
+var membersUnsub = null;
+
+function saveLocal(){
+  try{localStorage.setItem('s26',JSON.stringify(ST));}catch(e){}
+}
+
+function load(){
+  try{
+    var s=JSON.parse(localStorage.getItem('s26')||'{}');
+    var keys=Object.keys(s);
+    for(var i=0;i<keys.length;i++) ST[keys[i]]=s[keys[i]];
+  }catch(e){}
+  loadFromFirebase();
+}
+
+function save(){
+  saveLocal();
+  saveToFirebase();
+}
+
+function saveToFirebase(){
+  if(typeof tripRef==='undefined') return;
+  tripRef.set({updatedAt:new Date().toISOString()},{merge:true})
+    .catch(function(e){console.log('Firebase save error:',e);});
+}
+
+function normalizeCatch(item,id){
+  if(!item) return null;
+  var copy=JSON.parse(JSON.stringify(item));
+  copy._id=id||copy._id||null;
+  return copy;
+}
+
+function normalizeExpense(item,id){
+  if(!item) return null;
+  var copy=JSON.parse(JSON.stringify(item));
+  copy._id=id||copy._id||null;
+  return copy;
+}
+
+function normalizeSettlement(item,id){
+  if(!item) return null;
+  var copy=JSON.parse(JSON.stringify(item));
+  copy._id=id||copy._id||null;
+  return copy;
+}
+
+function normalizeMember(item,id){
+  if(!item) return null;
+  var copy=JSON.parse(JSON.stringify(item));
+  copy._id=id||copy._id||null;
+  if(copy.isActive===undefined) copy.isActive=true;
+  return copy;
+}
+
+function sortMembers(arr){
+  arr.sort(function(a,b){
+    var av=((a&&a.displayName)||'').toLowerCase();
+    var bv=((b&&b.displayName)||'').toLowerCase();
+    if(av<bv) return -1;
+    if(av>bv) return 1;
+    return 0;
+  });
+  return arr;
+}
+
+function getTripMembers(){
+  return sortMembers((ST.members||[]).filter(function(m){return !!m && m.isActive!==false;}));
+}
+
+function getTripMemberNames(){
+  return getTripMembers().map(function(m){return m.displayName;});
+}
+
+function getActiveTripMemberCount(){
+  var c=getTripMembers().length;
+  return c>0 ? c : (ST.people||0);
+}
+
+function findMemberByName(name){
+  name=(name||'').trim().toLowerCase();
+  var members=getTripMembers();
+  for(var i=0;i<members.length;i++){
+    if(((members[i].displayName||'').trim().toLowerCase())===name) return members[i];
+  }
+  return null;
+}
+
+function slugifyMemberName(name){
+  return (name||'member').toLowerCase()
+    .replace(/[^a-zа-я0-9]+/gi,'-')
+    .replace(/^-+|-+$/g,'')
+    .substring(0,40) || ('member-'+Date.now());
+}
+
+function addManualMemberToFirebase(name){
+  if(typeof db==='undefined') return Promise.resolve(null);
+  name=(name||'').trim();
+  if(!name) return Promise.resolve(null);
+  var existing=findMemberByName(name);
+  if(existing) return Promise.resolve(existing);
+  var idBase=slugifyMemberName(name);
+  var docId=idBase;
+  return membersRef.doc(docId).get().then(function(doc){
+    if(doc.exists) docId=idBase+'-'+Date.now();
+    var payload={
+      displayName:name,
+      tripRole:'participant',
+      memberType:'manual',
+      isActive:true,
+      createdAt:new Date().toISOString()
+    };
+    return membersRef.doc(docId).set(payload).then(function(){
+      payload._id=docId;
+      return payload;
+    });
+  }).catch(function(e){
+    console.log('add manual member error:',e);
+    return null;
+  });
+}
+
+
+function updateMemberInFirebase(id,payload){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  payload.updatedAt=new Date().toISOString();
+  return membersRef.doc(id).set(payload,{merge:true}).catch(function(e){
+    console.log('update member error:',e);
+  });
+}
+
+function deactivateMemberInFirebase(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return membersRef.doc(id).set({isActive:false,updatedAt:new Date().toISOString()},{merge:true}).catch(function(e){
+    console.log('deactivate member error:',e);
+  });
+}
+
+function reactivateMemberInFirebase(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return membersRef.doc(id).set({isActive:true,updatedAt:new Date().toISOString()},{merge:true}).catch(function(e){
+    console.log('reactivate member error:',e);
+  });
+}
+
+function deleteMemberPermanent(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return membersRef.doc(id).delete().catch(function(e){
+    console.log('delete member error:',e);
+  });
+}
+
+function openMemberForm(id){
+  memberEditId=id||null;
+  memberFormOpen=true;
+  render('members');
+}
+
+function closeMemberForm(){
+  memberEditId=null;
+  memberFormOpen=false;
+  render('members');
+}
+
+function saveMemberForm(){
+  var nameEl=document.getElementById('memberNameInput');
+  var roleEl=document.getElementById('memberRoleInput');
+  var phoneEl=document.getElementById('memberPhoneInput');
+  var noteEl=document.getElementById('memberNoteInput');
+  var ecNameEl=document.getElementById('memberEmergencyNameInput');
+  var ecPhoneEl=document.getElementById('memberEmergencyPhoneInput');
+  if(!nameEl||!roleEl) return;
+  var name=(nameEl.value||'').trim();
+  var role=(roleEl.value||'participant').trim();
+  var phone=phoneEl ? (phoneEl.value||'').trim() : '';
+  var note=noteEl ? (noteEl.value||'').trim() : '';
+  var emergencyContactName=ecNameEl ? (ecNameEl.value||'').trim() : '';
+  var emergencyContactPhone=ecPhoneEl ? (ecPhoneEl.value||'').trim() : '';
+  if(!name){ alert('Введи имя участника'); return; }
+  var payload={displayName:name,tripRole:role,phone:phone,note:note,emergencyContactName:emergencyContactName,emergencyContactPhone:emergencyContactPhone};
+  if(memberEditId){
+    updateMemberInFirebase(memberEditId,payload);
+    memberEditId=null;
+    memberFormOpen=false;
+    render('members');
+    return;
+  }
+  addManualMemberToFirebase(name).then(function(member){
+    if(!member) return;
+    updateMemberInFirebase(member._id||slugifyMemberName(name),payload);
+    memberFormOpen=false;
+    render('members');
+  });
+}
+
+function memberRoleLabel(role){
+  if(role==='owner') return 'Владелец';
+  if(role==='editor') return 'Редактор';
+  if(role==='viewer') return 'Только просмотр';
+  return 'Участник';
+}
+
+function rMembers(){
+  var el=document.getElementById('p-members');
+  var all=(ST.members||[]).slice();
+  all=sortMembers(all);
+  var edit=null;
+  for(var i=0;i<all.length;i++){ if(all[i]._id===memberEditId){ edit=all[i]; break; } }
+  var h='<div class="shop-header"><div class="info-title">Участники поездки</div><div class="mini-note">Здесь можно добавить участника вручную, поменять имя и роль, либо деактивировать его. Деактивированные не участвуют в расчётах. Неактивного участника можно удалить полностью.</div>' +
+    '<button class="action-btn" style="margin-bottom:0" onclick="openMemberForm()">+ Добавить участника</button></div>';
+  h+='<div class="form-card'+((memberFormOpen||memberEditId!==null||all.length===0)?' show':'')+'">'+
+    '<div class="form-row"><label class="form-label">Имя участника</label><input id="memberNameInput" class="form-input" placeholder="Например, Алексей" value="'+(edit?((edit.displayName||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
+    '<div class="form-row"><label class="form-label">Роль в поездке</label><select id="memberRoleInput" class="form-select">'+
+      '<option value="participant"'+(edit&&edit.tripRole==='participant'?' selected':'')+'>Участник</option>'+
+      '<option value="owner"'+(edit&&edit.tripRole==='owner'?' selected':'')+'>Владелец</option>'+
+      '<option value="editor"'+(edit&&edit.tripRole==='editor'?' selected':'')+'>Редактор</option>'+
+      '<option value="viewer"'+(edit&&edit.tripRole==='viewer'?' selected':'')+'>Только просмотр</option>'+
+    '</select></div>'+
+    '<div class="form-row"><label class="form-label">Телефон</label><input id="memberPhoneInput" class="form-input" placeholder="+7..." value="'+(edit?((edit.phone||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
+    '<div class="form-row"><label class="form-label">Экстренный контакт — имя</label><input id="memberEmergencyNameInput" class="form-input" placeholder="Кого уведомлять" value="'+(edit?((edit.emergencyContactName||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
+    '<div class="form-row"><label class="form-label">Экстренный контакт — телефон</label><input id="memberEmergencyPhoneInput" class="form-input" placeholder="+7..." value="'+(edit?((edit.emergencyContactPhone||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
+    '<div class="form-row"><label class="form-label">Заметка</label><input id="memberNoteInput" class="form-input" placeholder="Например: аптечка у него / связь плохая / водитель" value="'+(edit?((edit.note||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')):'')+'"></div>'+
+    '<div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="saveMemberForm()">'+(memberEditId!==null?'Сохранить':'Добавить')+'</button>'+((memberFormOpen||memberEditId!==null)?'<button class="picker-cancel" style="flex:1;margin-top:0" onclick="closeMemberForm()">Отмена</button>':'')+'</div>'+
+    '</div>';
+  h+='<div class="sec-h">Активные</div>';
+  var active=all.filter(function(m){return m&&m.isActive!==false;});
+  var inactive=all.filter(function(m){return m&&m.isActive===false;});
+  if(!active.length) h+='<div class="info-card">Пока нет активных участников.</div>';
+  for(var j=0;j<active.length;j++){
+    var m=active[j];
+    h+='<div class="member-card"><div class="member-main"><div class="member-name">'+(m.displayName||'Без имени')+'</div><div class="member-meta"><span class="pill">'+memberRoleLabel(m.tripRole||'participant')+'</span><span class="pill">'+(m.memberType==='manual'?'Вручную':'Связанный')+'</span>'+(m.phone?'<span class="pill">'+m.phone+'</span>':'')+'</div>'+(m.emergencyContactName||m.emergencyContactPhone||m.note?'<div class="member-extra">'+(m.emergencyContactName||m.emergencyContactPhone?('SOS: '+(m.emergencyContactName||'')+(m.emergencyContactPhone?' · '+m.emergencyContactPhone:'')):'')+(m.note?((m.emergencyContactName||m.emergencyContactPhone)?'<br>':'')+'Заметка: '+m.note:'')+'</div>':'')+'</div><div class="member-actions"><button class="icon-btn" onclick="openMemberForm(\''+m._id+'\')">✎</button><button class="icon-btn danger" onclick="if(confirm(\'Убрать участника из активных?\')) deactivateMemberInFirebase(\''+m._id+'\')">⊖</button></div></div>';
+  }
+  if(inactive.length){
+    h+='<div class="sec-h">Неактивные</div>';
+    for(var k=0;k<inactive.length;k++){
+      var x=inactive[k];
+      h+='<div class="member-card"><div class="member-main"><div class="member-name">'+(x.displayName||'Без имени')+'</div><div class="member-meta"><span class="pill">Неактивен</span><span class="pill">'+memberRoleLabel(x.tripRole||'participant')+'</span>'+(x.phone?'<span class="pill">'+x.phone+'</span>':'')+'</div>'+(x.emergencyContactName||x.emergencyContactPhone||x.note?'<div class="member-extra">'+(x.emergencyContactName||x.emergencyContactPhone?('SOS: '+(x.emergencyContactName||'')+(x.emergencyContactPhone?' · '+x.emergencyContactPhone:'')):'')+(x.note?((x.emergencyContactName||x.emergencyContactPhone)?'<br>':'')+'Заметка: '+x.note:'')+'</div>':'')+'</div><div class="member-actions"><button class="icon-btn" onclick="reactivateMemberInFirebase(\''+x._id+'\')">↺</button><button class="icon-btn danger" onclick="if(confirm(\'Удалить участника полностью? Это действие необратимо.\')) deleteMemberPermanent(\''+x._id+'\')">🗑</button></div></div>';
+    }
+  }
+  el.innerHTML=h;
+}
+
+
+var MEDKIT_BASE=[
+ {group:'Обезбол / температура',items:[
+  {id:'pain_ibuprofen',name:'Ибупрофен / Нурофен',qty:'1 уп'},
+  {id:'pain_paracetamol',name:'Парацетамол',qty:'1 уп'},
+  {id:'pain_ketanov',name:'Кетанов',qty:'1 уп'},
+  {id:'pain_nimesulide',name:'Нимесулид',qty:'1 уп'}
+ ]},
+ {group:'ЖКТ',items:[
+  {id:'gi_smecta',name:'Смекта',qty:'1 уп'},
+  {id:'gi_loperamide',name:'Лоперамид',qty:'1 уп'},
+  {id:'gi_maalox',name:'Маалокс',qty:'1 уп'},
+  {id:'gi_pancreatin',name:'Панкреатин',qty:'1 уп'}
+ ]},
+ {group:'Аллергия / простуда',items:[
+  {id:'cold_suprastin',name:'Супрастин',qty:'1 уп'},
+  {id:'cold_ingavirin',name:'Ингавирин',qty:'1 уп'},
+  {id:'cold_aciclovir',name:'Ацикловир',qty:'1 уп'},
+  {id:'cold_furacilin',name:'Фурацилин',qty:'1 уп'}
+ ]},
+ {group:'Раны / перевязка',items:[
+  {id:'wound_peroxide',name:'Перекись водорода',qty:'1 фл'},
+  {id:'wound_iodine',name:'Йод / зелёнка',qty:'1 шт'},
+  {id:'wound_patch',name:'Пластыри',qty:'1 уп'},
+  {id:'wound_bandage',name:'Бинт / перевязка',qty:'2 шт'},
+  {id:'wound_voltaren',name:'Вольтарен / гель',qty:'1 шт'}
+ ]},
+ {group:'Глаза / нос / сон',items:[
+  {id:'eye_visine',name:'Визин',qty:'1 фл'},
+  {id:'nose_naftizin',name:'Нафтизин',qty:'1 фл'},
+  {id:'sleep_melaxen',name:'Мелаксен',qty:'1 уп'},
+  {id:'sleep_velson',name:'Вэлсон',qty:'1 уп'}
+ ]},
+ {group:'БАДы / витамины',items:[
+  {id:'supp_vitc',name:'Витамин C',qty:'1 уп'},
+  {id:'supp_magnesium',name:'Магний',qty:'1 уп'},
+  {id:'supp_electrolytes',name:'Электролиты / регидрон',qty:'1 уп'}
+ ]}
+];
+
+var MEDKIT_INFO={
+  pain_ibuprofen:{purpose:'Боль, температура, воспаление.',symptoms:'Головная боль, мышечная боль, температура, ломота.',how:'Обычно принимают после еды, запивая водой. Не превышай дозировку из упаковки.',replace:'Парацетамол, Нимесулид.',warn:'Осторожно при проблемах с желудком, язве, чувствительности к НПВС.'},
+  pain_paracetamol:{purpose:'Снижение температуры и боли.',symptoms:'Температура, головная боль, общая ломота.',how:'Обычно принимают по инструкции из упаковки. Не смешивать бездумно с другими жаропонижающими.',replace:'Ибупрофен / Нурофен.',warn:'Осторожно при проблемах с печенью и алкоголе.'},
+  pain_ketanov:{purpose:'Сильная боль.',symptoms:'Зубная боль, сильная мышечная или суставная боль.',how:'Использовать как более сильное обезболивающее и строго по инструкции.',replace:'Нимесулид, Ибупрофен.',warn:'Не для регулярного приёма. Осторожно при ЖКТ и почках.'},
+  pain_nimesulide:{purpose:'Боль и воспаление.',symptoms:'Боль в мышцах, суставах, спине, температура.',how:'Обычно принимают после еды по инструкции.',replace:'Ибупрофен.',warn:'Осторожно при проблемах с печенью и ЖКТ.'},
+  gi_smecta:{purpose:'Сорбент при расстройстве ЖКТ.',symptoms:'Диарея, вздутие, лёгкое отравление.',how:'Разводить и принимать по инструкции на упаковке.',replace:'Регидрон / электролиты как поддержка, другие сорбенты.',warn:'Если сильное обезвоживание, кровь, высокая температура — не тянуть.'},
+  gi_loperamide:{purpose:'Снижение частоты диареи.',symptoms:'Частый жидкий стул без тяжёлой температуры.',how:'Принимать строго по инструкции.',replace:'Смекта как более мягкий вариант.',warn:'Не злоупотреблять и не пить при тяжёлой инфекции / крови / высокой температуре.'},
+  gi_maalox:{purpose:'Изжога, тяжесть, кислотность.',symptoms:'Жжение, изжога, тяжесть в желудке.',how:'Принимать по инструкции, обычно после еды или при симптомах.',replace:'Другие антациды.',warn:'Если боли сильные и постоянные — это не просто изжога.'},
+  gi_pancreatin:{purpose:'Поддержка пищеварения.',symptoms:'Тяжесть после еды, переедание.',how:'Обычно принимают во время или после еды по инструкции.',replace:'Другие ферменты.',warn:'Не лечит отравление, а только помогает пищеварению.'},
+  cold_suprastin:{purpose:'Антигистаминное.',symptoms:'Аллергия, зуд, отёк, реакция на укус.',how:'Принимать по инструкции. Может вызывать сонливость.',replace:'Другие антигистаминные, если есть.',warn:'Осторожно за рулём и при необходимости быть в тонусе.'},
+  cold_ingavirin:{purpose:'Поддержка при вирусных симптомах.',symptoms:'Озноб, слабость, простудное состояние.',how:'По инструкции из упаковки.',replace:'Режим, питьё, жаропонижающее по симптомам.',warn:'Это не скорая помощь. При тяжёлом состоянии — врач.'},
+  cold_aciclovir:{purpose:'Средство при герпетических проявлениях.',symptoms:'Простуда на губах и похожие проявления.',how:'По инструкции.',replace:'Аналоги ацикловира.',warn:'Использовать по назначению и не путать с другими высыпаниями.'},
+  cold_furacilin:{purpose:'Антисептическая обработка / полоскание.',symptoms:'Ссадины, полоскание горла, местная обработка.',how:'Готовить и использовать по инструкции.',replace:'Другие антисептики.',warn:'Следить за способом применения.'},
+  wound_peroxide:{purpose:'Первичная обработка раны.',symptoms:'Порез, ссадина.',how:'Использовать для первичной очистки раны.',replace:'Хлоргексидин / другие антисептики, если есть.',warn:'Не заменяет полноценную перевязку.'},
+  wound_iodine:{purpose:'Обработка краёв раны.',symptoms:'Порез, царапина.',how:'Обычно наносят вокруг, а не глубоко в открытую рану.',replace:'Зелёнка, другие антисептики.',warn:'Осторожно при чувствительной коже.'},
+  wound_patch:{purpose:'Закрыть мелкую рану.',symptoms:'Мелкие порезы, мозоли.',how:'Наклеить на чистую сухую кожу.',replace:'Бинт / салфетки / тейп.',warn:'Менять по мере намокания и загрязнения.'},
+  wound_bandage:{purpose:'Перевязка.',symptoms:'Порез, рана, фиксация повязки.',how:'Использовать с антисептиком и салфеткой.',replace:'Эластичный бинт / тейп / пластырь.',warn:'Следить, чтобы повязка не перетягивала.'},
+  wound_voltaren:{purpose:'Гель при боли в мышцах и суставах.',symptoms:'Ушиб, растяжение, боль в спине, колене.',how:'Наносить местно по инструкции.',replace:'Нимесулид-гель, другие наружные НПВС.',warn:'Не на открытую рану.'},
+  eye_visine:{purpose:'Капли для глаз.',symptoms:'Раздражение, покраснение.',how:'Использовать по инструкции.',replace:'Другие глазные капли, если подходят.',warn:'Если боль сильная и зрение падает — срочно к врачу.'},
+  nose_naftizin:{purpose:'Сосудосуживающее для носа.',symptoms:'Сильная заложенность носа.',how:'Коротким курсом и строго по инструкции.',replace:'Другие сосудосуживающие.',warn:'Не использовать часто и долго.'},
+  sleep_melaxen:{purpose:'Помощь со сном и сменой режима.',symptoms:'Сбой сна, тяжело уснуть.',how:'Обычно принимают ближе ко сну по инструкции.',replace:'Вэлсон / режим / тишина и затемнение.',warn:'Не мешать с алкоголем бездумно.'},
+  sleep_velson:{purpose:'Поддержка сна.',symptoms:'Трудно уснуть.',how:'По инструкции ближе ко сну.',replace:'Мелаксен.',warn:'Смотреть индивидуальную переносимость.'},
+  supp_vitc:{purpose:'Поддержка в дороге / простудный период.',symptoms:'Не по симптомам, а как поддержка.',how:'Принимать по инструкции или своему режиму.',replace:'Другие витамины / питание.',warn:'Не заменяет нормальное питание.'},
+  supp_magnesium:{purpose:'Поддержка восстановления и нервной системы.',symptoms:'Судороги, напряжение, вечернее расслабление.',how:'Обычно вечером или по своему режиму.',replace:'Другие формы магния.',warn:'Смотреть переносимость ЖКТ.'},
+  supp_electrolytes:{purpose:'Восполнение солей и жидкости.',symptoms:'Обезвоживание, жара, активная нагрузка, ЖКТ.',how:'Разводить в воде по инструкции.',replace:'Регидрон и аналоги.',warn:'Не игнорировать серьёзное обезвоживание.'}
+};
+
+function getMedkitInfo(item){
+  if(!item || !item.id) return null;
+  return MEDKIT_INFO[item.id] || null;
+}
+
+var MEDKIT_RENDER_GROUPS=[];
+
+function getActiveMembers(){
+  return (ST.members||[]).filter(function(m){return m && m.isActive!==false;});
+}
+function getMemberDisplayNameById(id){
+  var arr=ST.members||[];
+  for(var i=0;i<arr.length;i++) if(arr[i]._id===id) return arr[i].displayName||id;
+  return id||'Участник';
+}
+function escHtml(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function medkitStore(mode,memberId){
+  if(mode==='personal'){
+    if(!ST.medkitPersonal) ST.medkitPersonal={};
+    if(!ST.medkitPersonal[memberId||'']) ST.medkitPersonal[memberId||'']={};
+    return ST.medkitPersonal[memberId||''];
+  }
+  if(!ST.medkitCommon) ST.medkitCommon={};
+  return ST.medkitCommon;
+}
+function ensureMedkitMeta(mode,memberId){
+  if(!ST.medkitCommonCustom || !Array.isArray(ST.medkitCommonCustom)) ST.medkitCommonCustom=[];
+  if(!ST.medkitPersonalCustom || typeof ST.medkitPersonalCustom!=='object') ST.medkitPersonalCustom={};
+  if(!ST.medkitCommonDeleted || typeof ST.medkitCommonDeleted!=='object') ST.medkitCommonDeleted={};
+  if(!ST.medkitPersonalDeleted || typeof ST.medkitPersonalDeleted!=='object') ST.medkitPersonalDeleted={};
+  var id=memberId||'';
+  if(mode==='personal'){
+    if(!ST.medkitPersonalCustom[id] || !Array.isArray(ST.medkitPersonalCustom[id])) ST.medkitPersonalCustom[id]=[];
+    if(!ST.medkitPersonalDeleted[id] || typeof ST.medkitPersonalDeleted[id] !== 'object') ST.medkitPersonalDeleted[id]={};
+  }
+}
+function getMedkitCustomList(mode,memberId){
+  ensureMedkitMeta(mode,memberId);
+  if(mode==='personal') return ST.medkitPersonalCustom[memberId||''] || [];
+  return ST.medkitCommonCustom || [];
+}
+function getMedkitDeletedMap(mode,memberId){
+  ensureMedkitMeta(mode,memberId);
+  if(mode==='personal') return ST.medkitPersonalDeleted[memberId||''] || {};
+  return ST.medkitCommonDeleted || {};
+}
+function getMedkitGroups(mode,memberId){
+  ensureMedkitMeta(mode,memberId);
+  var deleted=getMedkitDeletedMap(mode,memberId);
+  var custom=getMedkitCustomList(mode,memberId);
+  var map={}, order=[];
+  for(var g=0;g<MEDKIT_BASE.length;g++){
+    var baseGroup=MEDKIT_BASE[g];
+    map[baseGroup.group]={group:baseGroup.group,items:[]};
+    order.push(baseGroup.group);
+    for(var i=0;i<baseGroup.items.length;i++){
+      var baseItem=baseGroup.items[i];
+      if(!deleted[baseItem.id]) map[baseGroup.group].items.push(baseItem);
+    }
+  }
+  for(var c=0;c<custom.length;c++){
+    var item=custom[c];
+    if(deleted[item.id]) continue;
+    if(!map[item.group]){
+      map[item.group]={group:item.group,items:[]};
+      order.push(item.group);
+    }
+    map[item.group].items.push(item);
+  }
+  var groups=[];
+  for(var o=0;o<order.length;o++){
+    var grp=map[order[o]];
+    if(grp && grp.items.length) groups.push(grp);
+  }
+  return groups;
+}
+function getHiddenMedkitBaseItems(mode,memberId){
+  ensureMedkitMeta(mode,memberId);
+  var deleted=getMedkitDeletedMap(mode,memberId);
+  var hidden=[];
+  for(var g=0;g<MEDKIT_BASE.length;g++){
+    for(var i=0;i<MEDKIT_BASE[g].items.length;i++){
+      var item=MEDKIT_BASE[g].items[i];
+      if(deleted[item.id]) hidden.push({id:item.id,name:item.name,group:MEDKIT_BASE[g].group});
+    }
+  }
+  return hidden;
+}
+function medkitProgress(mode,memberId){
+  var groups=getMedkitGroups(mode,memberId);
+  var items=[];
+  for(var g=0;g<groups.length;g++){
+    for(var i=0;i<groups[g].items.length;i++) items.push(groups[g].items[i]);
+  }
+  var store=medkitStore(mode,memberId);
+  var done=0;
+  for(var j=0;j<items.length;j++) if(store[items[j].id] && store[items[j].id].checked) done++;
+  return {done:done,total:items.length,pct:items.length?Math.round(done/items.length*100):0};
+}
+function setMedkitMode(mode){ medkitMode=mode; if(mode==='personal' && !medkitMemberId){ var m=getActiveMembers(); medkitMemberId=m.length?m[0]._id:''; } rMedkit(); }
+function setMedkitMember(id){ medkitMemberId=id||''; rMedkit(); }
+function medkitEnsureState(mode,memberId,itemId){
+  var store=medkitStore(mode,memberId);
+  if(!store[itemId]) store[itemId]={checked:false,place:'',note:'',total:'',left:'',unit:'',slot:'',how:'',taken:{}};
+  if(!store[itemId].taken || typeof store[itemId].taken!=='object') store[itemId].taken={};
+  return store[itemId];
+}
+function toggleMedkitItem(mode,memberId,itemId){
+  var state=medkitEnsureState(mode,memberId,itemId);
+  state.checked=!state.checked;
+  saveLocal();
+  rMedkit();
+}
+function updateMedkitPlace(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).place=val; saveLocal(); }
+function updateMedkitNote(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).note=val; saveLocal(); }
+function updateMedkitTotal(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).total=val; saveLocal(); }
+function updateMedkitLeft(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).left=val; saveLocal(); }
+function updateMedkitUnit(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).unit=val; saveLocal(); }
+function updateMedkitSlot(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).slot=val; saveLocal(); rMedkit(); }
+function updateMedkitHow(mode,memberId,itemId,val){ medkitEnsureState(mode,memberId,itemId).how=val; saveLocal(); }
+function toggleMedkitTakenDay(mode,memberId,itemId,dayKey){
+  var state=medkitEnsureState(mode,memberId,itemId);
+  state.taken[dayKey]=!state.taken[dayKey];
+  saveLocal();
+  rMedkit();
+}
+function medkitStackSummary(mode,memberId){
+  var out={};
+  var groups=getMedkitGroups(mode,memberId);
+  var store=medkitStore(mode,memberId);
+  for(var g=0;g<groups.length;g++){
+    if(groups[g].group!=='БАДы / витамины') continue;
+    for(var i=0;i<groups[g].items.length;i++){
+      var item=groups[g].items[i];
+      var st=store[item.id]||{};
+      var slot=st.slot||'Утро';
+      if(!out[slot]) out[slot]=[];
+      out[slot].push({name:item.name,how:st.how||'',taken:st.taken||{}});
+    }
+  }
+  return out;
+}
+function toggleMedkitAddRow(groupIdx){
+  var row=document.getElementById('medkitAddRow_'+groupIdx);
+  if(!row) return;
+  row.classList.toggle('show');
+  if(row.classList.contains('show')){
+    var input=row.querySelector('input');
+    if(input) input.focus();
+  }
+}
+function addMedkitItem(groupIdx){
+  ensureMedkitMeta(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  var row=document.getElementById('medkitAddRow_'+groupIdx);
+  if(!row) return;
+  var input=row.querySelector('input');
+  var name=(input && input.value || '').trim();
+  if(!name) return;
+  var group=MEDKIT_RENDER_GROUPS[groupIdx];
+  if(!group) return;
+  var id=(medkitMode==='personal'?'pcustom_':'ccustom_')+Date.now()+'_'+Math.floor(Math.random()*1000);
+  var list=getMedkitCustomList(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  list.push({id:id,group:group.group,name:name,custom:true});
+  input.value='';
+  saveLocal();
+  rMedkit();
+}
+function removeMedkitItem(itemId,isCustom){
+  ensureMedkitMeta(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  var memberId=(medkitMode==='personal'?medkitMemberId:'');
+  if(isCustom){
+    if(medkitMode==='personal'){
+      ST.medkitPersonalCustom[memberId]=(ST.medkitPersonalCustom[memberId]||[]).filter(function(it){ return it.id!==itemId; });
+    }else{
+      ST.medkitCommonCustom=(ST.medkitCommonCustom||[]).filter(function(it){ return it.id!==itemId; });
+    }
+  }else{
+    var deleted=getMedkitDeletedMap(medkitMode, memberId);
+    deleted[itemId]=true;
+  }
+  saveLocal();
+  rMedkit();
+}
+function restoreMedkitItem(itemId){
+  ensureMedkitMeta(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  var deleted=getMedkitDeletedMap(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  delete deleted[itemId];
+  saveLocal();
+  rMedkit();
+}
+function rMedkit(){
+  var el=document.getElementById('p-medkit');
+  var members=getActiveMembers();
+  if(medkitMode==='personal' && !medkitMemberId && members.length) medkitMemberId=members[0]._id;
+  MEDKIT_RENDER_GROUPS=getMedkitGroups(medkitMode, medkitMode==='personal'?medkitMemberId:'');
+  var currentMemberId=(medkitMode==='personal'?medkitMemberId:'');
+  var progress=medkitProgress(medkitMode, currentMemberId);
+  var h='<div class="shop-header"><div class="info-title">Аптечка</div><div class="mini-note">Общая аптечка — для лагеря и машины. Личная аптечка — для конкретного участника.</div>'+
+    '<div class="subtabs" style="margin-top:10px"><div class="stab'+(medkitMode==='common'?' active':'')+'" onclick="setMedkitMode(\'common\')">Общая</div><div class="stab'+(medkitMode==='personal'?' active':'')+'" onclick="setMedkitMode(\'personal\')">Личная</div></div>';
+  if(medkitMode==='personal'){
+    h+='<div class="form-row" style="margin-top:8px"><label class="form-label">Участник</label><select class="form-select" onchange="setMedkitMember(this.value)">';
+    for(var m=0;m<members.length;m++) h+='<option value="'+members[m]._id+'"'+(members[m]._id===medkitMemberId?' selected':'')+'>'+escHtml(members[m].displayName||members[m]._id)+'</option>';
+    h+='</select></div>';
+  }
+  h+='<div class="progress-text"><span>Собрано</span><span>'+progress.done+' / '+progress.total+'</span></div><div class="progress-bar-wrap"><div class="progress-bar" style="width:'+progress.pct+'%"></div></div></div>';
+  if(medkitMode==='personal'){
+    var stack=medkitStackSummary('personal',medkitMemberId||'');
+    var ordered=['Утро','День','Вечер'];
+    h+='<div class="info-card"><div class="info-title">Стек / режим приёма</div><div class="mini-note">БАДы и витамины группируются по времени приёма. Пометки вроде «натощак» или «перед сном» указывай в поле «Как принимать».</div>';
+    for(var oi=0;oi<ordered.length;oi++){
+      var slot=ordered[oi];
+      h+='<div class="grp-hd">'+slot+'</div>';
+      if(!stack[slot] || !stack[slot].length){ h+='<div class="bul">Пока пусто</div>'; continue; }
+      for(var si=0;si<stack[slot].length;si++){
+        var srow=stack[slot][si];
+        h+='<div class="bul">'+escHtml(srow.name)+(srow.how?' — '+escHtml(srow.how):'')+'</div>';
+      }
+    }
+    h+='</div>';
+  }
+  if(medkitMode==='personal' && !members.length){
+    h+='<div class="info-card">Нет активных участников. Сначала добавь участника в разделе «Участники».</div>';
+    el.innerHTML=h; return;
+  }
+  var dayLabels=[['Пн','mon'],['Вт','tue'],['Ср','wed'],['Чт','thu'],['Пт','fri'],['Сб','sat'],['Вс','sun']];
+  for(var g=0;g<MEDKIT_RENDER_GROUPS.length;g++){
+    var group=MEDKIT_RENDER_GROUPS[g];
+    h+='<details class="check-group"'+(g===0?' open':'')+'><summary class="check-group-title" style="cursor:pointer">'+group.group+'</summary>';
+    var store=medkitStore(medkitMode, currentMemberId);
+    for(var i=0;i<group.items.length;i++){
+      var item=group.items[i];
+      var state=medkitEnsureState(medkitMode,currentMemberId,item.id);
+      h+='<div class="check-item'+(state.checked?' done':'')+'" onclick="toggleMedkitItem(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\')"><div class="check-box'+(state.checked?' checked':'')+'"></div><span class="check-text">'+item.name+'</span><span class="delete-item" onclick="event.stopPropagation();removeMedkitItem(\''+item.id+'\','+(item.custom?'true':'false')+')">&times;</span></div>';
+      h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Было" value="'+escHtml(state.total||'')+'" onchange="updateMedkitTotal(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Осталось" value="'+escHtml(state.left||'')+'" onchange="updateMedkitLeft(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="ед. (таб/капс/амп)" value="'+escHtml(state.unit||'')+'" onchange="updateMedkitUnit(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"></div>';
+      h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><input type="text" placeholder="Где лежит" value="'+escHtml(state.place||'')+'" onchange="updateMedkitPlace(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><input type="text" placeholder="Комментарий" value="'+escHtml(state.note||'')+'" onchange="updateMedkitNote(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"></div>';
+      if(group.group==='БАДы / витамины'){
+        h+='<div class="add-item-input show" style="padding-top:0;border-top:none"><select class="form-select" onchange="updateMedkitSlot(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"><option value="Утро"'+((state.slot||'Утро')==='Утро'?' selected':'')+'>Утро</option><option value="День"'+((state.slot||'')==='День'?' selected':'')+'>День</option><option value="Вечер"'+((state.slot||'')==='Вечер'?' selected':'')+'>Вечер</option></select><input type="text" placeholder="Как принимать: натощак / после еды / перед сном" value="'+escHtml(state.how||'')+'" onchange="updateMedkitHow(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',this.value)"></div>';
+        if(medkitMode==='personal'){
+          h+='<div style="padding:0 15px 10px"><div class="constructor-label">Трекер приёма</div><div class="constructor-opts">';
+          for(var di=0;di<dayLabels.length;di++){
+            var key=dayLabels[di][1];
+            var active=!!state.taken[key];
+            h+='<button class="opt-btn'+(active?' sel':'')+'" onclick="event.stopPropagation();toggleMedkitTakenDay(\''+medkitMode+'\',\''+currentMemberId+'\',\''+item.id+'\',\''+key+'\')">'+dayLabels[di][0]+'</button>';
+          }
+          h+='</div></div>';
+        }
+      }
+      if(MEDKIT_INFO[item.id]){
+        var info=MEDKIT_INFO[item.id];
+        h+='<details class="info-card" style="margin:0 10px 10px 10px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:#1F4E79">Карточка препарата</summary>'+
+          '<div class="bul"><b>Для чего:</b> '+escHtml(info.purpose||'')+'</div>'+
+          '<div class="bul"><b>При симптомах:</b> '+escHtml(info.symptoms||'')+'</div>'+
+          '<div class="bul"><b>Как принимать:</b> '+escHtml(info.how||'')+'</div>'+
+          '<div class="bul"><b>Чем заменить:</b> '+escHtml(info.replace||'')+'</div>'+
+          '<div class="bul"><b>Важно:</b> '+escHtml(info.warn||'')+'</div>'+
+        '</details>';
+      } else if(item.custom){
+        h+='<details class="info-card" style="margin:0 10px 10px 10px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:#1F4E79">Карточка препарата</summary><div class="bul">Для добавленного вручную препарата позже добавим подробную карточку.</div></details>';
+      }
+    }
+    h+='<div class="add-item-btn" onclick="toggleMedkitAddRow('+g+')">＋ Добавить препарат</div>';
+    h+='<div class="add-item-input" id="medkitAddRow_'+g+'"><input type="text" placeholder="Название препарата"><button onclick="addMedkitItem('+g+')">Добавить</button></div>';
+    h+='</details>';
+  }
+  var hidden=getHiddenMedkitBaseItems(medkitMode, currentMemberId);
+  if(hidden.length){
+    h+='<details class="check-group"><summary class="check-group-title" style="cursor:pointer">Скрытые позиции</summary>';
+    for(var k=0;k<hidden.length;k++){
+      h+='<div class="contact-item"><div><div class="contact-name">'+escHtml(hidden[k].name)+'</div><div class="contact-sub">'+escHtml(hidden[k].group)+'</div></div><button class="opt-btn" onclick="restoreMedkitItem(\''+hidden[k].id+'\')">Вернуть</button></div>';
+    }
+    h+='</details>';
+  }
+  h+='<div class="info-card"><div class="info-title">Что делать если…</div><div class="mini-note">Ниже — быстрые походные подсказки. Для серьёзных симптомов, ухудшения состояния или сомнений — 112 / врач.</div>'+
+    '<div class="bul"><b>Головная боль / температура:</b> проверь раздел «Обезбол / температура», смотри, что отмечено как взято.</div>'+
+    '<div class="bul"><b>ЖКТ / отравление:</b> сначала открой раздел «ЖКТ», там должны быть Смекта, Лоперамид, Церукал, Маалокс, Панкреатин.</div>'+
+    '<div class="bul"><b>Аллергия / простуда:</b> проверь одноимённый раздел и посмотри, где лежит препарат у нужной позиции.</div>'+
+    '<div class="bul"><b>Порез / рана:</b> открой «Раны / перевязка» и смотри поле «Где лежит» у перевязочных и антисептиков.</div>'+
+    '<div class="bul"><b>Глаза / нос / сон:</b> смотри последний раздел, там же можно указать, в какой сумке лежит конкретное средство.</div></div>';
+  h+='<div class="info-card"><div class="info-title">Подсказка</div><div class="bul">Теперь у каждой позиции можно указать, где она лежит, сколько было, сколько осталось и в какой фасовке. Для БАДов и витаминов появился более удобный стек: Утро / День / Вечер с трекером по дням недели.</div><div class="bul">Категории аптечки теперь можно сворачивать и разворачивать как аккордеон.</div><div class="bul">Карточки не заменяют врача и не отменяют инструкцию из упаковки — это полевой ориентир.</div></div>';
+  el.innerHTML=h;
+}
+
+
+function sortSharedArr(arr){
+  arr.sort(function(a,b){
+    var av=(a&& (a.createdAt||a.date)) || '';
+    var bv=(b&& (b.createdAt||b.date)) || '';
+    if(av<bv) return -1;
+    if(av>bv) return 1;
+    return 0;
+  });
+  return arr;
+}
+
+function migrateLegacyArraysIfNeeded(data){
+  if(typeof db==='undefined' || !data) return Promise.resolve();
+  var jobs=[];
+
+  if(Array.isArray(data.catches) && data.catches.length){
+    jobs.push(catchesRef.limit(1).get().then(function(snap){
+      if(!snap.empty) return null;
+      var batch=db.batch();
+      for(var i=0;i<data.catches.length;i++){
+        var ref=catchesRef.doc();
+        var payload=Object.assign({},data.catches[i],{createdAt:data.catches[i].createdAt||new Date().toISOString(),migratedFromLegacy:true});
+        batch.set(ref,payload);
+      }
+      return batch.commit();
+    }));
+  }
+
+  if(Array.isArray(data.expenses) && data.expenses.length){
+    jobs.push(expensesRef.limit(1).get().then(function(snap){
+      if(!snap.empty) return null;
+      var batch=db.batch();
+      for(var i=0;i<data.expenses.length;i++){
+        var ref=expensesRef.doc();
+        var payload=Object.assign({},data.expenses[i],{createdAt:data.expenses[i].createdAt||new Date().toISOString(),migratedFromLegacy:true});
+        batch.set(ref,payload);
+      }
+      return batch.commit();
+    }));
+  }
+
+  if(!jobs.length) return Promise.resolve();
+  return Promise.all(jobs);
+}
+
+function loadSharedCollections(){
+  return Promise.all([
+    catchesRef.get().then(function(snap){
+      var arr=[];
+      snap.forEach(function(doc){arr.push(normalizeCatch(doc.data(),doc.id));});
+      ST.catches=sortSharedArr(arr);
+    }),
+    expensesRef.get().then(function(snap){
+      var arr=[];
+      snap.forEach(function(doc){arr.push(normalizeExpense(doc.data(),doc.id));});
+      ST.expenses=sortSharedArr(arr);
+    }),
+    settlementsRef.get().then(function(snap){
+      var arr=[];
+      snap.forEach(function(doc){arr.push(normalizeSettlement(doc.data(),doc.id));});
+      ST.settlements=sortSharedArr(arr);
+    }),
+    membersRef.get().then(function(snap){
+      var arr=[];
+      snap.forEach(function(doc){arr.push(normalizeMember(doc.data(),doc.id));});
+      ST.members=sortMembers(arr);
+    })
+  ]).then(function(){
+    saveLocal();
+    render(currentPage||'route');
+  });
+}
+
+function loadFromFirebase(){
+  if(typeof db==='undefined') return;
+  tripRef.get()
+    .then(function(doc){
+      if(doc.exists) return migrateLegacyArraysIfNeeded(doc.data()||{});
+    })
+    .then(function(){
+      return loadSharedCollections();
+    })
+    .then(function(){
+      showSyncStatus('Синхронизировано ✓');
+    })
+    .catch(function(e){
+      console.log('Firebase load error:',e);
+      showSyncStatus('Офлайн — данные локальные');
+    });
+}
+
+var currentPage='route';
+var origShowPage=null;
+var expEditId=null;
+var expEditIndex=-1;
+var memberEditId=null;
+var memberFormOpen=false;
+var settlementPreset=null;
+var medkitMode='common';
+var medkitMemberId='';
+
+function showSyncStatus(msg){
+  var el=document.getElementById('syncStatus');
+  if(el){el.textContent=msg;setTimeout(function(){el.textContent='';},3000);}
+}
+
+function subscribeFirebase(){
+  if(typeof db==='undefined') return;
+  if(catchesUnsub) catchesUnsub();
+  if(expensesUnsub) expensesUnsub();
+  if(settlementsUnsub) settlementsUnsub();
+  if(membersUnsub) membersUnsub();
+
+  catchesUnsub = catchesRef.onSnapshot(function(snap){
+    var arr=[];
+    snap.forEach(function(doc){arr.push(normalizeCatch(doc.data(),doc.id));});
+    arr=sortSharedArr(arr);
+    var newVal=JSON.stringify(arr);
+    var oldVal=JSON.stringify(ST.catches||[]);
+    if(newVal!==oldVal){
+      ST.catches=arr;
+      saveLocal();
+      if(currentPage==='catch' || document.getElementById('river-detail').classList.contains('show')) render(currentPage||'route');
+      showSyncStatus('Улов обновлён ✓');
+    }
+  },function(e){console.log('catches snapshot error:',e);});
+
+  expensesUnsub = expensesRef.onSnapshot(function(snap){
+    var arr=[];
+    snap.forEach(function(doc){arr.push(normalizeExpense(doc.data(),doc.id));});
+    arr=sortSharedArr(arr);
+    var newVal=JSON.stringify(arr);
+    var oldVal=JSON.stringify(ST.expenses||[]);
+    if(newVal!==oldVal){
+      ST.expenses=arr;
+      saveLocal();
+      if(currentPage==='expenses' || currentPage==='members') render(currentPage||'route');
+      showSyncStatus('Расходы обновлены ✓');
+    }
+  },function(e){console.log('expenses snapshot error:',e);});
+
+  settlementsUnsub = settlementsRef.onSnapshot(function(snap){
+    var arr=[];
+    snap.forEach(function(doc){arr.push(normalizeSettlement(doc.data(),doc.id));});
+    arr=sortSharedArr(arr);
+    var newVal=JSON.stringify(arr);
+    var oldVal=JSON.stringify(ST.settlements||[]);
+    if(newVal!==oldVal){
+      ST.settlements=arr;
+      saveLocal();
+      if(currentPage==='expenses') render(currentPage||'route');
+      showSyncStatus('Погашения обновлены ✓');
+    }
+  },function(e){console.log('settlements snapshot error:',e);});
+
+  membersUnsub = membersRef.onSnapshot(function(snap){
+    var arr=[];
+    snap.forEach(function(doc){arr.push(normalizeMember(doc.data(),doc.id));});
+    arr=sortMembers(arr);
+    var newVal=JSON.stringify(arr);
+    var oldVal=JSON.stringify(ST.members||[]);
+    if(newVal!==oldVal){
+      ST.members=arr;
+      saveLocal();
+      if(currentPage==='expenses' || currentPage==='members') render(currentPage||'route');
+      showSyncStatus('Участники обновлены ✓');
+    }
+  },function(e){console.log('members snapshot error:',e);});
+}
+
+function addCatchToFirebase(entry){
+  if(typeof db==='undefined') return Promise.resolve();
+  var payload=Object.assign({},entry);
+  delete payload._id;
+  payload.createdAt=payload.createdAt||new Date().toISOString();
+  return catchesRef.add(payload).then(function(ref){
+    entry._id=ref.id;
+    saveLocal();
+    return ref.id;
+  }).catch(function(e){console.log('add catch error:',e);});
+}
+
+function deleteCatchFromFirebase(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return catchesRef.doc(id).delete().catch(function(e){console.log('delete catch error:',e);});
+}
+
+function addExpenseToFirebase(entry){
+  if(typeof db==='undefined') return Promise.resolve();
+  var payload=Object.assign({},entry);
+  delete payload._id;
+  payload.createdAt=payload.createdAt||new Date().toISOString();
+  return expensesRef.add(payload).then(function(ref){
+    entry._id=ref.id;
+    saveLocal();
+    return ref.id;
+  }).catch(function(e){console.log('add expense error:',e);});
+}
+
+function deleteExpenseFromFirebase(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return expensesRef.doc(id).delete().catch(function(e){console.log('delete expense error:',e);});
+}
+
+function updateExpenseInFirebase(id, entry){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  var payload=Object.assign({},entry);
+  delete payload._id;
+  return expensesRef.doc(id).set(payload,{merge:true}).catch(function(e){console.log('update expense error:',e);});
+}
+function addSettlementToFirebase(entry){
+  if(typeof db==='undefined') return Promise.resolve();
+  var payload=Object.assign({},entry);
+  delete payload._id;
+  payload.createdAt=payload.createdAt||new Date().toISOString();
+  return settlementsRef.add(payload).then(function(ref){
+    entry._id=ref.id;
+    saveLocal();
+    return ref.id;
+  }).catch(function(e){console.log('add settlement error:',e);});
+}
+
+function deleteSettlementFromFirebase(id){
+  if(typeof db==='undefined' || !id) return Promise.resolve();
+  return settlementsRef.doc(id).delete().catch(function(e){console.log('delete settlement error:',e);});
+}
+
+
+// ===== NAV =====
+function showPage(id,el){
+  currentPage=id;
+  document.getElementById('river-detail').classList.remove('show');
+  var pages=document.querySelectorAll('.page');
+  for(var i=0;i<pages.length;i++) pages[i].classList.remove('show');
+  var bnavs=document.querySelectorAll('.bnav');
+  for(var i=0;i<bnavs.length;i++) bnavs[i].classList.remove('active');
+  document.getElementById('p-'+id).classList.add('show');
+  var bn=document.getElementById('bn-'+id);
+  if(bn) bn.classList.add('active');
+  else if(el) el.classList.add('active');
+  render(id);
+}
+function render(id){
+  if(id==='route') rRoute();
+  else if(id==='rivers') rRivers();
+  else if(id==='menu') rMenu();
+  else if(id==='shop') rShop();
+  else if(id==='recipes') rRecipes();
+  else if(id==='bar') rBar();
+  else if(id==='catch') rCatch();
+  else if(id==='gear') rGear();
+  else if(id==='pantry') rPantry();
+  else if(id==='expenses') rExpenses();
+  else if(id==='members') rMembers();
+  else if(id==='medkit') rMedkit();
+  else if(id==='safety') rSafety();
+}
+function toggle(c){c.classList.toggle('open');}
+function closeModal(){
+  document.getElementById('overlay').classList.remove('show');
+  var modals=document.querySelectorAll('.modal');
+  for(var i=0;i<modals.length;i++) modals[i].classList.remove('show');
+}
+function openModal(id){
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById(id).classList.add('show');
+}
+
+// ===== DATA =====
+var RIVERS=[
+{id:'lazovaya',name:'Река Лазовая',day:'День 1-2',dist:'160 км',time:'2.5 ч',coords:'48.364, 142.666',lat:48.364,lon:142.666,
+ parkLat:48.370,parkLon:142.651,parkNote:'Съезд с грунтовки у с. Лазо, координаты стоянки: 48.370, 142.651',
+ factory:'',
+ type:'Средняя горная река',size:'Ширина 30-40 м, ямы до 3 м',bottom:'Галечное',
+ access:'Грунтовка от Лазо. Подготовленное авто.',
+ fishing:'Нижние 5-7 км от устья. Перекаты с выходами в плёсы.',
+ lures:'Колебалки 10-18 г (серебро, медь, зелёный). Воблеры минноу 7-9 см. Вращалки №2-3.',
+ best:'05:00-09:00 и 16:00-21:00. После дождей волна захода.',
+ people:'Есть местные в устье',warning:''},
+{id:'pugachevka',name:'Река Пугачёвка',day:'День 3 утро',dist:'+15 км',time:'20 мин',coords:'48.183, 142.535',lat:48.183,lon:142.535,
+ parkLat:48.186,parkLon:142.530,parkNote:'Стоянка у рыбзавода, координаты: 48.186, 142.530',
+ factory:'Рыбзавод в нижнем течении у с. Пугачёво — рыба концентрируется ниже завода в устьевом участке',
+ type:'Нерестовая, рыбозавод',size:'Длина 47 км, ширина у устья 45 м',bottom:'Галечное, течение 0.7 м/с',
+ access:'Через с. Пугачёво по главной дороге.',
+ fishing:'Нижнее течение вдоль с. Пугачёво. Ямы под обрывистыми берегами. Лучшие точки — ниже рыбзавода.',
+ lures:'Те же что на Лазовой.',best:'Утро и вечер. Рыбозавод — рыба есть стабильно.',
+ people:'Меньше чем на Найбе',warning:''},
+{id:'makarovka',name:'Река Макаровка',day:'День 3',dist:'+5 км',time:'10 мин',coords:'48.630, 142.780',lat:48.630,lon:142.780,
+ parkLat:48.628,parkLon:142.778,parkNote:'Парковка у моста в Макарове: 48.628, 142.778',
+ factory:'',
+ type:'Крупная нерестовая река',size:'Одна из крупнейших района',bottom:'Галечное',
+ access:'Через г. Макаров по главной улице до реки. Мост — отправная точка.',
+ fishing:'Нижнее течение. Мост — ямы ниже и выше. Разведка по пути.',
+ lures:'Стандартный набор.',best:'Быстрая остановка 1-2 часа.',
+ people:'Городские рыболовы',warning:'⛽ ЗАПРАВИТЬСЯ В МАКАРОВЕ — обязательно!'},
+{id:'naiba',name:'Река Найба',day:'День 3 вечер',dist:'+120 км',time:'2 ч',coords:'47.220, 142.880',lat:47.220,lon:142.880,
+ parkLat:47.218,parkLon:142.875,parkNote:'Съезд к нижнему течению за 3 км от устья: 47.218, 142.875',
+ factory:'Рыбзавод в нижнем течении — крупный. Рыба скапливается у завода перед заходом на нерест. Лучшие ямы — 1-3 км выше завода',
+ type:'Крупная — 3-я по длине на Сахалине',size:'Длина 119 км, бассейн 1660 км²',bottom:'Галечное, песчаные плёсы',
+ access:'Через Долинск. Главная дорога вдоль реки.',
+ fishing:'Нижние 5-7 км от устья. Выходы из перекатов. Плёсы под нависшими берегами.',
+ lures:'Колебалки 14-20 г. Воблеры 8-9 см. Нахлыст.',
+ best:'Одна из лучших рек Сахалина по симе в июне.',
+ people:'Популярное место',warning:'Дозакупка в Долинске по пути.'},
+{id:'busse',name:'Озеро Буссе',day:'День 4 опцион',dist:'~60 км',time:'1 ч',coords:'46.950, 143.070',lat:46.950,lon:143.070,
+ parkLat:46.948,parkLon:143.065,parkNote:'Парковка у лагуны: 46.948, 143.065',
+ factory:'',
+ type:'Лагуна — памятник природы ООПТ',size:'Площадь 39 км², глубина 4.5 м',bottom:'Морское, солёная вода',
+ access:'Трасса Южный — Корсаков, поворот на Охотское.',
+ fishing:'Устрицы, гребешки, ежи, трубач. Только с организованной экскурсией!',
+ lures:'— (не рыбалка)',best:'Только при отливе. Уточнить заранее.',
+ people:'Туристы с гидом',warning:'⚠️ ООПТ — самовольный сбор запрещён, штраф. Только с гидом.'},
+{id:'mereya',name:'Река Мерея',day:'День 4',dist:'~80 км',time:'1.5 ч',coords:'46.750, 142.200',lat:46.750,lon:142.200,
+ parkLat:46.752,parkLon:142.198,parkNote:'Парковка у моста: 46.752, 142.198',
+ factory:'',
+ type:'Небольшая горная речка',size:'Небольшая, быстрая, прозрачная',bottom:'Галечное, чистое',
+ access:'Трасса Холмск — Южный, съезд у моста через Мерею.',
+ fishing:'Рыба пугливая — тихий подход! Небольшие ямы. Хороша для нахлыста.',
+ lures:'Мелкие вращалки №1-2. Воблеры 5-7 см. Мушки.',
+ best:'Быстро осветляется после дождей — план Б.',
+ people:'Почти никого',warning:''},
+{id:'taranay',name:'Река Таранай',day:'День 4 вечер',dist:'+15 км',time:'20 мин',coords:'46.671, 142.263',lat:46.671,lon:142.263,
+ parkLat:46.673,parkLon:142.260,parkNote:'Съезд к нижнему мосту: 46.673, 142.260',
+ factory:'',
+ type:'Западная, устье у залива Анива',size:'Небольшая',bottom:'Галечное',
+ access:'Трасса Южный — Холмск, поворот на Таранай.',
+ fishing:'Нижний участок у устья. Ямы на выходах. Вечерняя зоря перед гостиницей.',
+ lures:'Мелкие колебалки.',best:'Вечерняя зоря 18:00-21:00.',
+ people:'Умеренно',warning:''},
+{id:'uryum',name:'Река Урюм',day:'День 5',dist:'+35 км',time:'45 мин',coords:'46.920, 142.380',lat:46.920,lon:142.380,
+ parkLat:46.921,parkLon:142.378,parkNote:'Парковка у моста: 46.921, 142.378. Съезд к берегу сразу после моста слева.',
+ factory:'Рыбзавод в 2 км выше моста — рыба концентрируется ниже завода',
+ type:'Средняя река',size:'Средняя, хорошие перекаты и плёсы',bottom:'Галечное',
+ access:'Трасса Южный — Холмск. Мост через Урюм.',
+ fishing:'От моста вверх 1.5 км — лицензионный участок. Перекаты и ямы.',
+ lures:'Колебалки, воблеры. Нахлыст на перекатах.',
+ best:'Полный день. Утро и вечер.',
+ people:'Есть рыболовы на лицензионном участке',warning:'⚠️ Лицензионный участок: от моста вверх 1.5 км. Путёвка обязательна.'},
+{id:'tambovka',name:'Река Тамбовка',day:'День 6',dist:'+25 км',time:'30 мин',coords:'46.780, 142.580',lat:46.780,lon:142.580,
+ parkLat:46.785,parkLon:142.572,parkNote:'Верхний мост — основная точка: 46.785, 142.572. Нижний мост закрыт — не ехать.',
+ factory:'',
+ type:'Приливная — залив Анива',size:'Средняя, нижнее течение приливное',bottom:'Галечное, ил у устья',
+ access:'От Анивы 15 км на север.',
+ fishing:'2-5 км выше устья — лучшие места. Нижние 2-3 км избегать. Рыба активна при смене прилива.',
+ lures:'Ваш проверенный набор с прошлой поездки.',
+ best:'Следи за приливами! Прилив 0.8-1.5 м.',
+ people:'Местные рыболовы',warning:'⚠️ ЛАГЕРЬ — выше линии плавника! Прилив 0.8-1.5 м.'},
+{id:'lyutoga',name:'Река Лютога',day:'День 7',dist:'+60 км',time:'1 ч',coords:'47.017, 142.292',lat:47.017,lon:142.292,
+ parkLat:47.019,parkLon:142.289,parkNote:'Парковка сразу за мостом справа: 47.019, 142.289',
+ factory:'Рыбзавод в 4 км выше моста. Лицензионный участок от моста до притока Счастье включает зону у завода',
+ type:'Крупная горная река',size:'Длина 100+ км, мощное течение',bottom:'Крупный галечник, двойное дно',
+ access:'Трасса Южный — Холмск, мост через Лютогу.',
+ fishing:'Сима и кунджа. От моста до притока Счастье — лицензионный участок.',
+ lures:'Тяжёлые колебалки 18-25 г из-за течения.',
+ best:'Последний день — утро 05:00-09:00.',
+ people:'Популярное место',warning:'⚠️ ОПАСНО: двойное дно, сильное течение. Брод только в вейдерсах с шестом.'},
+];
+
+var SUNTIDE=[
+{date:'10 июн (пн)',sun:'04:58 / 20:21',tide:'Отлив 05:30 · Прилив 12:10 · Отлив 18:45'},
+{date:'11 июн (вт)',sun:'04:57 / 20:22',tide:'Прилив 06:20 · Отлив 13:00 · Прилив 19:30'},
+{date:'12 июн (ср)',sun:'04:57 / 20:23',tide:'Отлив 07:10 · Прилив 13:50 · Отлив 20:15'},
+{date:'13 июн (чт)',sun:'04:56 / 20:24',tide:'Прилив 08:00 · Отлив 14:40 · Прилив 21:00'},
+{date:'14 июн (пт)',sun:'04:56 / 20:25',tide:'Отлив 08:50 · Прилив 15:30 · Отлив 21:45'},
+{date:'15 июн (сб)',sun:'04:56 / 20:25',tide:'Прилив 09:40 · Отлив 16:20 · Прилив 22:30'},
+{date:'16 июн (вс)',sun:'04:55 / 20:26',tide:'Отлив 10:30 · Прилив 17:10 · Отлив 23:15'},
+{date:'17 июн (пн)',sun:'04:55 / 20:27',tide:'Прилив 11:20 · Отлив 18:00'},
+];
+
+var PANTRY={
+ // Готовые блюда целиком
+ dishes:[
+  {id:'dish1',name:'Уха рыбацкая',time:40},
+  {id:'dish2',name:'Пельмени из симы на сочнях',time:30},
+  {id:'dish3',name:'Карбонара из симы',time:25},
+  {id:'dish4',name:'Феттучини с симой',time:25},
+  {id:'dish5',name:'Рыба бабочкой на костре',time:40},
+  {id:'dish6',name:'Рыба в фольге',time:30},
+  {id:'dish7',name:'Хе из симы',time:40},
+  {id:'dish8',name:'Сугудай',time:20},
+  {id:'dish9',name:'Сашими',time:10},
+  {id:'dish10',name:'Яйца пашот + голландский + икра',time:40},
+  {id:'dish11',name:'Шакшука',time:20},
+  {id:'dish12',name:'Устрицы на костре с сыром',time:15},
+  {id:'dish13',name:'Гребешок на сковороде',time:10},
+  {id:'dish14',name:'Краб варёный',time:25},
+  {id:'dish15',name:'Морской ёж',time:5},
+  {id:'dish16',name:'Мидии на костре',time:10},
+ ],
+ // Гарниры
+ garnishes:[
+  'Гречка','Макароны','Спагетти','Рис быстрый','Хлеб + масло','Хлебцы','Картошка','Без гарнира'
+ ],
+ // Белок к гарниру
+ proteins:[
+  'Сима (стейки)','Малосольная сима','Тушняк','Буженина','Сосиски','Яйца','Без белка'
+ ],
+ // Завтраки
+ breakfasts:[
+  {id:'b1',name:'Омлет с бужениной',time:15},
+  {id:'b2',name:'Яичница',time:10},
+  {id:'b3',name:'Яйца пашот + малосольная сима',time:20},
+  {id:'b4',name:'Яйца пашот + голландский + икра',time:30},
+  {id:'b5',name:'Шакшука',time:20},
+  {id:'b6',name:'Каша быстрая',time:5},
+  {id:'b7',name:'Малосольная сима + масло + хлеб',time:5},
+  {id:'b8',name:'Риет на хлебе + варёные яйца',time:5},
+ ],
+ // Перекусы
+ snacks:[
+  'Орехи + сникерс + дрип','Казинаки + батончики','Бутики с колбасой',
+  'Бутики с малосольной симой','Бутики с сыром','Бутики с бужениной',
+  'Сосиски на костре + хлеб','Риет на хлебе','Икра на хлебе с маслом',
+  'Перекус в дороге'
+ ],
+ // Закуски
+ starters:[
+  'Бутерброд с малосольной симой','Бутерброд с риетом','Бутерброд с икрой',
+  'Бутерброд с сыром','Бутерброд с бужениной','Оливки','Нарезка','Без закуски'
+ ],
+ // Напитки
+ cocktails:[
+  'Негрони классика','Негрони Сбальято','Джин-тоник','Джин + тархун',
+  'French 75',"Bee's Knees",'Том Коллинз','Московский мул','Куба либре',
+  'Мохито','Dark & Stormy','Rum Old Fashioned','Егерь сауэр','Jager тоник',
+  'Wine Spritzer','Spritz без апероля','Kir Royale','Без алкоголя'
+ ],
+ drinks:[
+  'Кофе (дрип)','Раф с халвой','Бамбл би','Чай','Вода','Лимонад','Энергетик','Без напитка'
+ ],
+};
+
+// Load custom pantry items
+(function(){
+  try{
+    var c=JSON.parse(localStorage.getItem('pantryC')||'{}');
+    var keys=['dishes','breakfasts','garnishes','proteins','starters','snacks','cocktails','drinks'];
+    for(var i=0;i<keys.length;i++){
+      var k=keys[i];
+      if(c[k]&&c[k].length){
+        for(var j=0;j<c[k].length;j++) PANTRY[k].push(c[k][j]);
+      }
+    }
+  }catch(e){}
+})();
+
+var MENU=[
+ {day:'День 1',date:'10 июн',special:false,meals:[
+  {type:'Утро',text:'Самолёт',cocktail:'',editable:false},
+  {type:'Обед',text:'Орехи, сникерс, дрип',cocktail:'',editable:true},
+  {type:'Ужин',text:'Тушняк + гречка, хлеб',cocktail:'Фляжка с негрони',editable:true},
+ ]},
+ {day:'День 2',date:'11 июн',special:false,meals:[
+  {type:'Утро',text:'Омлет с бужениной + кофе',cocktail:'',editable:true},
+  {type:'Обед',text:'Казинаки, дрип на реке',cocktail:'',editable:true},
+  {type:'Ужин',text:'Рыба бабочкой на костре',cocktail:'Джин-тоник',editable:true},
+ ]},
+ {day:'День 3',date:'12 июн',special:false,meals:[
+  {type:'Утро',text:'Каша быстрая + кофе',cocktail:'',editable:true},
+  {type:'Обед',text:'Сникерс, фляжка, сосиски у костра',cocktail:'',editable:true},
+  {type:'Ужин',text:'Уха рыбацкая + хлеб + масло',cocktail:'Негрони классика',editable:true},
+ ]},
+ {day:'День 4',date:'13 июн',special:false,meals:[
+  {type:'Утро',text:'Бутики с бужениной + кофе',cocktail:'',editable:true},
+  {type:'Обед',text:'Устрицы на Буссе (если едем)',cocktail:'French 75',editable:true},
+  {type:'Ужин',text:'Кафе в Аниве',cocktail:'Негрони Сбальято',editable:false},
+ ]},
+ {day:'День 5',date:'14 июн',special:false,meals:[
+  {type:'Утро',text:'Риет на хлебе + варёные яйца + кофе',cocktail:'Бамбл би',editable:true},
+  {type:'Обед',text:'Орехи, дрип',cocktail:'',editable:true},
+  {type:'Ужин',text:'Пельмени из симы на сочнях + бульон',cocktail:'Московский мул',editable:true},
+ ]},
+ {day:'День 6',date:'15 июн',special:true,meals:[
+  {type:'Утро',text:'Малосольная сима + масло + шакшука',cocktail:'Раф с халвой',editable:true},
+  {type:'Обед',text:'Казинаки, фляжка',cocktail:'',editable:true},
+  {type:'Ужин',text:'Яйца пашот + голландский соус + малосольная сима + икра',cocktail:'Негрони Сбальято',editable:true},
+ ]},
+ {day:'День 7',date:'16 июн',special:false,meals:[
+  {type:'Утро',text:'Паштет / риет на хлебе + кофе',cocktail:'',editable:true},
+  {type:'Обед',text:'Остатки снеков',cocktail:'',editable:true},
+  {type:'Ужин',text:'Ресторан в Южном',cocktail:'На усмотрение',editable:false},
+ ]},
+ {day:'День 8',date:'17 июн',special:false,meals:[
+  {type:'Утро',text:'Завтрак в отеле или кофе у аэропорта',cocktail:'',editable:false},
+ ]},
+];
+
+var SHOP=[
+ {group:'Овощи и фрукты',items:[
+  {id:'v1',name:'Огурцы',qty:'1 кг',pp:0.3,unit:'кг'},
+  {id:'v2',name:'Помидоры',qty:'1 кг',pp:0,unit:'кг'},
+  {id:'v3',name:'Картофель',qty:'2 кг',pp:0,unit:'кг'},
+  {id:'v4',name:'Лук репчатый',qty:'3 шт',pp:0,unit:'шт'},
+  {id:'v5',name:'Чеснок',qty:'2 головки',pp:0,unit:'шт'},
+  {id:'v6',name:'Лимоны / лаймы',qty:'8 шт',pp:0,unit:'шт'},
+  {id:'v7',name:'Яблоки / апельсины',qty:'по 3-4 шт',pp:0,unit:'шт'},
+ ]},
+ {group:'Мясо и консервы',items:[
+  {id:'m1',name:'Тушёнка Кронидов',qty:'6 банок',pp:2,unit:'банок'},
+  {id:'m2',name:'Буженина',qty:'500 г',pp:0,unit:'г'},
+  {id:'m3',name:'Колбаса с/к',qty:'2 фуэтика',pp:0,unit:'шт'},
+  {id:'m4',name:'Сосиски',qty:'2 пачки',pp:0,unit:'пачек'},
+ ]},
+ {group:'Крупы и паста',items:[
+  {id:'k1',name:'Гречка',qty:'500 г',pp:0,unit:'г'},
+  {id:'k2',name:'Спагетти',qty:'2 пачки',pp:0,unit:'пачек'},
+  {id:'k3',name:'Макароны',qty:'2 пачки',pp:0,unit:'пачек'},
+  {id:'k4',name:'Рис быстрый',qty:'1 пачка',pp:0,unit:'пачек'},
+  {id:'k5',name:'Каша быстрая',qty:'6 пакетов',pp:2,unit:'пакетов'},
+  {id:'k6',name:'Сочни для пельменей',qty:'2 пачки',pp:0,unit:'пачек'},
+  {id:'k7',name:'Дошики (резерв)',qty:'4 шт',pp:0,unit:'шт'},
+ ]},
+ {group:'Яйца и молочное',items:[
+  {id:'e1',name:'Яйца',qty:'30 шт',pp:10,unit:'шт'},
+  {id:'e2',name:'Сливочное масло',qty:'300 г',pp:0,unit:'г'},
+  {id:'e3',name:'Сыр твёрдый / пармезан',qty:'2 пачки',pp:0,unit:'пачек'},
+  {id:'e4',name:'Сыр плавленый',qty:'4 шт',pp:0,unit:'шт'},
+  {id:'e5',name:'Сгуха в пакете',qty:'2 шт',pp:0,unit:'шт'},
+  {id:'e6',name:'Сливки',qty:'200 мл',pp:0,unit:'мл'},
+  {id:'e7',name:'Халва (для рафа)',qty:'1 пачка',pp:0,unit:'шт'},
+ ]},
+ {group:'Хлеб и снеки',items:[
+  {id:'s1',name:'Хлеб (докупать в пути)',qty:'2 буханки',pp:0,unit:'шт'},
+  {id:'s2',name:'Сникерсы',qty:'12 шт',pp:4,unit:'шт'},
+  {id:'s3',name:'Казинаки / батончики',qty:'10 шт',pp:3,unit:'шт'},
+  {id:'s4',name:'Орехи / арахис',qty:'500 г',pp:0,unit:'г'},
+  {id:'s5',name:'Шоколад плитки',qty:'5 шт',pp:0,unit:'шт'},
+  {id:'s6',name:'Курага, чернослив, финики',qty:'500 г',pp:0,unit:'г'},
+  {id:'s7',name:'Кофе дрипы',qty:'50 шт',pp:16,unit:'шт'},
+  {id:'s8',name:'Чай пакетики',qty:'20 шт',pp:0,unit:'шт'},
+  {id:'s9',name:'Оливки',qty:'1 банка',pp:0,unit:'шт'},
+  {id:'s10',name:'Хлебцы / крекеры',qty:'2 пачки',pp:0,unit:'пачек'},
+ ]},
+ {group:'Специи и соусы',items:[
+  {id:'sp1',name:'Соль крупная',qty:'500 г',pp:0,unit:'г'},
+  {id:'sp2',name:'Перец чёрный',qty:'1 пакет',pp:0,unit:'шт'},
+  {id:'sp3',name:'Масло растительное',qty:'300 мл',pp:0,unit:'мл'},
+  {id:'sp4',name:'Сахар',qty:'200 г',pp:0,unit:'г'},
+  {id:'sp5',name:'Мёд',qty:'1 банка',pp:0,unit:'шт'},
+  {id:'sp6',name:'Укроп сушёный',qty:'1 пакет',pp:0,unit:'шт'},
+  {id:'sp7',name:'Лавровый лист',qty:'1 пакет',pp:0,unit:'шт'},
+  {id:'sp8',name:'Томатная паста',qty:'1 банка',pp:0,unit:'шт'},
+  {id:'sp9',name:'Каперсы',qty:'1 банка',pp:0,unit:'шт'},
+  {id:'sp10',name:'Соевый соус',qty:'1 бутылка',pp:0,unit:'шт'},
+  {id:'sp11',name:'Васаби тюбик',qty:'1 шт',pp:0,unit:'шт'},
+  {id:'sp12',name:'Имбирь тюбик',qty:'1 шт',pp:0,unit:'шт'},
+  {id:'sp13',name:'Горчица',qty:'1 банка',pp:0,unit:'шт'},
+  {id:'sp14',name:'Хрен',qty:'1 банка',pp:0,unit:'шт'},
+  {id:'sp15',name:'Кунжутное масло',qty:'маленькая',pp:0,unit:'шт'},
+  {id:'sp16',name:'Уксус столовый',qty:'маленькая',pp:0,unit:'шт'},
+  {id:'sp17',name:'Хлопья острого перца',qty:'1 пакет',pp:0,unit:'шт'},
+  {id:'sp18',name:'Сахарный сироп (бар)',qty:'300 мл',pp:0,unit:'мл'},
+ ]},
+ {group:'Напитки',items:[
+  {id:'n1',name:'Вода 0.5 л',qty:'12 шт',pp:4,unit:'шт'},
+  {id:'n2',name:'Минералка',qty:'12 шт',pp:0,unit:'шт'},
+  {id:'n3',name:'Энергетики',qty:'9 шт',pp:3,unit:'шт'},
+  {id:'n4',name:'Черноголовка / кола',qty:'4 банки',pp:0,unit:'банок'},
+ ]},
+ {group:'Снаряжение кухни',items:[
+  {id:'g1',name:'Фольга',qty:'1 рулон',pp:0,unit:'шт'},
+  {id:'g2',name:'Проволока мягкая',qty:'3-4 м',pp:0,unit:'шт'},
+  {id:'g3',name:'Пакеты зип-лок',qty:'10 шт',pp:0,unit:'шт'},
+  {id:'g4',name:'Перчатки одноразовые',qty:'10 пар',pp:0,unit:'пар'},
+  {id:'g5',name:'Пакеты мусорные',qty:'1 рулон',pp:0,unit:'шт'},
+  {id:'g6',name:'Губки + фейри',qty:'3 шт',pp:0,unit:'шт'},
+  {id:'g7',name:'Скотч / изолента',qty:'1 шт',pp:0,unit:'шт'},
+  {id:'g8',name:'Зажигалки',qty:'3 шт',pp:0,unit:'шт'},
+  {id:'g9',name:'Влажные салфетки',qty:'3 пачки',pp:0,unit:'пачек'},
+ ]},
+ {group:'Бар',items:[
+  {id:'b1',name:'Джин (Tanqueray / Beefeater)',qty:'1.5 л',pp:0,unit:'л'},
+  {id:'b2',name:'Тёмный ром',qty:'0.7 л',pp:0,unit:'л'},
+  {id:'b3',name:'Егерь',qty:'0.7 л',pp:0,unit:'л'},
+  {id:'b4',name:'Кампари',qty:'0.5 л',pp:0,unit:'л'},
+  {id:'b5',name:'Вермут красный (Martini)',qty:'0.5 л',pp:0,unit:'л'},
+  {id:'b6',name:'Брют / просекко',qty:'2 бутылки',pp:0,unit:'шт'},
+  {id:'b7',name:'Белое сухое',qty:'1 бутылка',pp:0,unit:'шт'},
+  {id:'b8',name:'Тоник',qty:'8 банок',pp:0,unit:'банок'},
+  {id:'b9',name:'Ginger beer',qty:'6 банок',pp:0,unit:'банок'},
+  {id:'b10',name:'Тархун (газировка)',qty:'4 бутылки',pp:0,unit:'шт'},
+  {id:'b11',name:'Содовая',qty:'4 банки',pp:0,unit:'банок'},
+  {id:'b12',name:'Ананасовый сок',qty:'1 пакет',pp:0,unit:'шт'},
+  {id:'b13',name:'Angostura биттер',qty:'1 бутылочка',pp:0,unit:'шт'},
+ ]},
+ {group:'Маркетплейсы (заказать заранее)',items:[
+  {id:'mp1',name:'Фальшфейеры',qty:'3 шт',pp:0,unit:'шт'},
+  {id:'mp2',name:'Медвежий спрей',qty:'2 шт',pp:0,unit:'шт'},
+  {id:'mp3',name:'Газ цанговый',qty:'10 шт',pp:0,unit:'шт'},
+  {id:'mp4',name:'Колокольчики на рюкзак',qty:'3 шт',pp:0,unit:'шт'},
+  {id:'mp5',name:'Ремкомплект BOA',qty:'1 шт',pp:0,unit:'шт'},
+ ]},
+];
+
+var GEAR_GROUPS=[
+ {title:'Медведи — ОБЯЗАТЕЛЬНО!',items:['ФАЛЬШФЕЙЕРЫ (x3 минимум)','МЕДВЕЖИЙ СПРЕЙ (x2)','Колокольчики на рюкзак']},
+ {title:'Лагерь и кухня',items:['Тент Маверик 3x3','Котелок 5 л','Котелок 2 л','Сковорода (x2)','Плита основная','Джетбойл + газ НЗ','Газ цанговый (x10)','Доски разделочные','Миски пластик (x5)','Стаканы железные (x4)','Ложки, вилки','Нож кухонный','Пиллер']},
+ {title:'Инструменты',items:['Баул гермо 120 л','Верёвка / паракорд','Пила складная','Фонари + батарейки','Пакеты мусорные 120 л','Огниво + диски','Сигнал охотника','Фумитокс / репелленты']},
+];
+var GEAR_PERSONAL=[
+ {title:'Одежда и обувь',items:['Вейдерсы','Боты забродные','Кроксы / сандали','Куртка штормовая','Флис комплект','Термобельё','Пуховик','Шапки (x2)','Перчатки (x2 пары)','Бафф','Носки тёплые (x3 пары)','Кепка','Дождевик','Поляризационные очки']},
+ {title:'Снаряжение',items:['Налобный фонарь','Спальник','Коврик','Подушка','Пауэрбанк (x2)','Зарядки + провода','Наушники','Фляга']},
+ {title:'Документы',items:['Паспорт','Лицензия на симу']},
+ {title:'Снасти',items:['Спиннинги','Катушки','Приманки (вобы, колебалки)','Шнуры / поводки / застёжки','Нахлыст (если берёшь)','Ремкомплект BOA']},
+ {title:'Уход и здоровье',items:['Аптечка личная','Несессер','Крем от солнца','Сухой душ']},
+];
+
+// ===== ROUTE =====
+function rRoute(){
+  var el=document.getElementById('p-route');
+  var days=[
+   {t:'День 1 — 10 июня (прилёт)',rows:[['09:15','Прилёт, багаж, авто'],['10:30','Озон ПВЗ — снаряга, газ, фары'],['11:00','Командор/Спар — продукты + весь алкоголь'],['12:30','АЗС — полный бак + канистра!'],['13:00','Выдвижение на Лазовую (~160 км)'],['16:00-21:00','🎣 Вечерняя зоря на Лазовой'],['Ночь','Лагерь у Лазовой']]},
+   {t:'День 2 — 11 июня (Лазовая)',rows:[['05:00-09:00','🎣 Главная утренняя зоря'],['09:00-16:00','Завтрак, разведка, отдых'],['16:00-21:00','🎣 Вечерний выход'],['Ночь','Лагерь у Лазовой']]},
+   {t:'День 3 — 12 июня (переезд)',rows:[['05:00-08:00','🎣 Последнее утро на Лазовой, сборы'],['08:30','Пугачёвка (~15 км)'],['09:00-12:00','🎣 Пугачёвка — утренний выход'],['12:00','Макаровка + ⛽ ЗАПРАВКА!'],['15:00','Найба (~120 км). Дозакупка в Долинске'],['18:00-21:00','🎣 Найба — вечерняя зоря']]},
+   {t:'День 4 — 13 июня (Найба → Анива)',rows:[['05:00-09:00','🎣 Найба — утреннее'],['11:00-13:00','🦪 [ОПЦИОН] Буссе — только при отливе!'],['15:30-17:30','🎣 Мерея'],['19:00-21:00','🎣 Таранай — вечерняя зоря'],['21:30','🛏️ Гостиница Анива +7 984 139-06-36']]},
+   {t:'День 5 — 14 июня (Урюм)',rows:[['05:00-09:00','🎣 Утренняя зоря'],['09:00-16:00','Разведка, обед, отдых'],['16:00-21:00','🎣 Вечерний выход']]},
+   {t:'День 6 — 15 июня ★ (Тамбовка)',rows:[['05:00-09:30','🎣 Утро — следи за приливом!'],['09:30-16:00','Перемещение, обед'],['16:00-21:00','🎣 Вечерний выход']]},
+   {t:'День 7 — 16 июня (Лютога → Южный)',rows:[['05:00-09:00','🎣 Последняя зоря'],['09:00-11:00','Финальные сборы'],['12:00','Переезд в Южный (~40 км)'],['Вечер','Ресторан + упаковка рыбы']]},
+   {t:'День 8 — 17 июня (вылет)',rows:[['Утро','Завтрак, сборы'],['13:00','Выезд в аэропорт'],['14:20','✈️ Вылет домой']]},
+  ];
+  var riverNames={'Лазовая':'lazovaya','Пугачёвка':'pugachevka','Макаровка':'makarovka','Найба':'naiba','Буссе':'busse','Мерея':'mereya','Таранай':'taranay','Урюм':'uryum','Тамбовка':'tambovka','Лютога':'lyutoga'};
+  
+  var h='<div class="card"><div class="card-hd" onclick="toggle(this.parentNode)"><div class="card-title">✈️ Авиабилеты</div><span class="card-arrow">&#9660;</span></div>';
+  h+='<div class="card-body">';
+  h+='<div class="row"><span>Москва &#8594; Южный (SU 1744)</span><span class="row-val">09 июн 17:10 &#8594; 10 июн 09:15</span></div>';
+  h+='<div class="row"><span>Южный &#8594; Москва (SU 5823)</span><span class="row-val">17 июн 14:20 &#8594; 17 июн 15:20</span></div>';
+  h+='<div class="row"><span>В аэропорт не позднее</span><span class="row-val">13:00</span></div>';
+  h+='</div></div>';
+  
+  h+='<div class="info-card" style="background:#E6F1FB"><div class="info-title">Правило суток</div>';
+  h+='<div class="bul">05:00-09:00 — главная зоря, не пропускать!</div>';
+  h+='<div class="bul">10:00-15:00 — переезды и отдых</div>';
+  h+='<div class="bul">16:00-21:00 — второй выход</div></div>';
+  
+  h+='<div class="sec-h">Рассвет / Закат / Приливы</div>';
+  h+='<div class="sun-tide">';
+  for(var i=0;i<SUNTIDE.length;i++){
+    var d=SUNTIDE[i];
+    h+='<div class="st-row"><span class="st-date">'+d.date+'</span><span class="st-sun">'+d.sun+'</span><span class="st-tide">'+d.tide+'</span></div>';
+  }
+  h+='</div>';
+  
+  for(var di=0;di<days.length;di++){
+    var d=days[di];
+    h+='<div class="day-hd">'+d.t+'</div>';
+    h+='<div class="card"><div class="card-hd" onclick="toggle(this.parentNode)"><div class="card-title">Расписание</div><span class="card-arrow">&#9660;</span></div>';
+    h+='<div class="card-body"><div>';
+    for(var ri=0;ri<d.rows.length;ri++){
+      var row=d.rows[ri];
+      var act=row[1];
+      // Make river names clickable
+      var rkeys=Object.keys(riverNames);
+      for(var rk=0;rk<rkeys.length;rk++){
+        var rn=rkeys[rk];
+        if(act.indexOf(rn)>=0){
+          act=act.split(rn).join('<span class="river-link" data-go="'+riverNames[rn]+'">'+rn+'</span>');
+        }
+      }
+      h+='<div class="trow"><span class="ttime">'+row[0]+'</span><span class="tact">'+act+'</span></div>';
+    }
+    h+='</div></div></div>';
+  }
+  el.innerHTML=h;
+  el.addEventListener('click', function(e){
+    var sp=e.target.closest('[data-go]');
+    if(sp) goRiver(sp.getAttribute('data-go'));
+  });
+}
+function goRiver(id){showPage('rivers',document.getElementById('bn-rivers'));setTimeout(function(){showRiver(id);},50);}
+
+// ===== RIVERS =====
+function rRivers(){
+  var el=document.getElementById('p-rivers');
+  var h='<div style="font-size:13px;color:#888;margin-bottom:10px">Нажми на название реки &#8594; подробная страница</div>';
+  for(var i=0;i<RIVERS.length;i++){
+    var r=RIVERS[i];
+    h+='<div class="river-item">';
+    h+='<div class="river-hd" data-rid="'+r.id+'">';
+    h+='<div><div class="river-name">'+r.name+'</div><div class="river-meta">'+r.dist+' &bull; '+r.time+'</div></div>';
+    h+='<div style="display:flex;align-items:center;gap:6px"><span class="river-day">'+r.day+'</span><span style="color:#c7c7cc;font-size:18px">&#8250;</span></div>';
+    h+='</div>';
+    h+='<div style="padding:0 15px 12px"><span class="coords-btn" onclick="navToR(\''+r.id+'\')">&#128205; '+r.coords+' &#8594; Навигатор</span></div>';
+    h+='</div>';
+  }
+  el.innerHTML=h;
+  // Wire up clicks via event delegation
+  el.addEventListener('click', function(e){
+    var hd=e.target.closest('[data-rid]');
+    if(!hd) return;
+    var rid=hd.getAttribute('data-rid');
+    var type=hd.getAttribute('data-type');
+    if(type==='nav') navToR(rid);
+    else showRiver(rid);
+  });
+}
+
+function showRiver(id){
+  var r=null;
+  for(var i=0;i<RIVERS.length;i++){if(RIVERS[i].id===id){r=RIVERS[i];break;}}
+  if(!r) return;
+  var det=document.getElementById('river-detail');
+  var pages=document.querySelectorAll('.page');
+  for(var i=0;i<pages.length;i++) pages[i].classList.remove('show');
+  var note=ST.riverN[id]||'';
+  var h='<div class="back-btn" onclick="backToRivers()">&#8592; Все реки</div>';
+  h+='<div class="river-hero"><h2>'+r.name+'</h2><p>'+r.day+' &bull; '+r.dist+' &bull; '+r.time+'</p></div>';
+  if(r.warning) h+='<div class="warn-card">'+r.warning+'</div>';
+  h+='<span class="coords-btn" style="display:inline-flex;margin-bottom:12px" onclick="navToR(\''+r.id+'\')">&#128205; '+r.coords+' &#8594; Яндекс Навигатор</span>';
+  h+='<div class="river-stat">';
+  h+='<div class="stat-card"><div class="stat-label">Тип</div><div class="stat-val">'+r.type+'</div></div>';
+  h+='<div class="stat-card"><div class="stat-label">Дно</div><div class="stat-val">'+r.bottom+'</div></div>';
+  h+='<div class="stat-card"><div class="stat-label">Где ловить</div><div class="stat-val">'+r.fishing+'</div></div>';
+  h+='<div class="stat-card"><div class="stat-label">Лучшее время</div><div class="stat-val">'+r.best+'</div></div>';
+  h+='</div>';
+  if(r.factory){
+    h+='<div class="info-card" style="background:#E6F1FB"><div class="info-title">&#127981; Рыбзавод</div><div style="font-size:14px;line-height:1.6">'+r.factory+'</div></div>';
+  }
+  h+='<div class="info-card"><div class="info-title">&#128663; Подъезд и парковка</div>';
+  h+='<div style="font-size:14px;line-height:1.6;margin-bottom:8px">'+r.access+'</div>';
+  if(r.parkLat){
+    h+='<span class="coords-btn" data-plat="'+r.parkLat+'" data-plon="'+r.parkLon+'" data-type="park">&#128205; Парковка: '+r.parkLat+', '+r.parkLon+' &#8594; Навигатор</span>';
+  }
+  h+='</div>';
+  h+='<div class="info-card"><div class="info-title">&#127907; Быстро записать улов</div>';
+  h+='<div class="form-row-2">';
+  h+='<div><label class="form-label">Рыба</label><select class="form-select" id="qFish"><option>Сима</option><option>Кунджа</option><option>Горбуша</option><option>Голец</option><option>Другое</option></select></div>';
+  h+='<div><label class="form-label">Кол-во</label><input class="form-input" type="number" id="qCnt" value="1" min="1"></div>';
+  h+='</div>';
+  h+='<div class="toggle-row" style="margin-bottom:10px">';
+  h+='<div class="toggle-btn active" id="qKept" onclick="setQK(true)">Взяли</div>';
+  h+='<div class="toggle-btn" id="qRel" onclick="setQK(false)">Отпустили</div>';
+  h+='</div>';
+  h+='<button class="save-btn" id="qSaveBtn">Сохранить улов</button></div>';
+  // Custom points
+  var pts=ST.riverPoints&&ST.riverPoints[id]?ST.riverPoints[id]:[];
+  h+='<div class="info-card"><div class="info-title">&#128204; Точки на реке</div>';
+  if(pts.length>0){
+    for(var pi=0;pi<pts.length;pi++){
+      var pt=pts[pi];
+      h+='<div class="check-item" style="cursor:default">';
+      h+='<div style="flex:1"><div style="font-size:14px;font-weight:500">'+pt.name+'</div>';
+      if(pt.note) h+='<div style="font-size:12px;color:#888">'+pt.note+'</div>';
+      if(pt.lat&&pt.lon) h+='<span class="coords-btn" data-plat="'+pt.lat+'" data-plon="'+pt.lon+'" data-pname="'+pt.name+'" data-type="pt" style="margin-top:4px;font-size:11px">&#128205; '+pt.lat+', '+pt.lon+'</span>';
+      h+='</div>';
+      h+='<span class="delete-item" data-delpt="'+pi+'" data-delrid="'+id+'">&#215;</span>';
+      h+='</div>';
+    }
+  } else {
+    h+='<div style="font-size:13px;color:#aaa;padding:8px 0">Нет сохранённых точек</div>';
+  }
+  h+='<div class="add-item-btn" id="addPtBtn">+ Добавить точку</div>';
+  h+='<div class="add-item-input" id="addPtForm" style="flex-direction:column;gap:8px">';
+  h+='<input type="text" id="ptName" placeholder="Название (яма, перекат, стоянка...)">';
+  h+='<input type="text" id="ptCoords" placeholder="Координаты (47.123, 142.456) — необязательно">';
+  h+='<input type="text" id="ptNote" placeholder="Заметка — необязательно">';
+  h+='<button id="savePtBtn">Сохранить точку</button>';
+  h+='</div></div>';
+    h+='<div class="warn-card"><div class="warn-title">&#9888;&#65039; Безопасность</div>';
+  h+='Фальшфейер при себе у воды. Медвежий спрей на поясе. Колокольчик при ходьбе по берегу. Не оставлять рыбу у воды. При встрече с медведем — не бежать, говорить громко. Экстренный: 112.</div>';
+  h+='<div class="info-card"><div class="info-title">&#128221; Заметки</div>';
+  h+='<textarea class="notes-area" id="rn-'+id+'" placeholder="Что работало, где клевало...">'+note+'</textarea>';
+  h+='<button class="notes-save" id="saveRNBtn">Сохранить</button></div>';
+  det.innerHTML=h;
+  det.classList.add('show');
+  det.addEventListener('click', function(e){
+    // Nav buttons
+    var navBtn=e.target.closest('[data-type]');
+    if(navBtn){
+      var lat=parseFloat(navBtn.getAttribute('data-plat'));
+      var lon=parseFloat(navBtn.getAttribute('data-plon'));
+      var nm=navBtn.getAttribute('data-pname')||('Парковка '+r.name);
+      navTo(lat,lon,nm);
+    }
+    // Delete point
+    var delBtn=e.target.closest('[data-delpt]');
+    if(delBtn){
+      var pid=parseInt(delBtn.getAttribute('data-delpt'));
+      var rid=delBtn.getAttribute('data-delrid');
+      delRiverPoint(rid,pid);
+    }
+  });
+  // Add point button
+  var addPtBtn=document.getElementById('addPtBtn');
+  if(addPtBtn) addPtBtn.onclick=function(){
+    document.getElementById('addPtForm').classList.add('show');
+    document.getElementById('ptName').focus();
+  };
+  // Save point button
+  var savePtBtn=document.getElementById('savePtBtn');
+  if(savePtBtn)(function(rid){savePtBtn.onclick=function(){addRiverPoint(rid);};})(id);
+  var qb=document.getElementById('qSaveBtn');
+  if(qb)(function(rid){qb.onclick=function(){saveQuickCatch(rid);};})(r.id);
+  var btn=document.getElementById('saveRNBtn');
+  if(btn)(function(rid){btn.onclick=function(){saveRN(rid);};})(id);
+  qKept2=true;
+}
+var qKept2=true;
+function setQK(v){
+  qKept2=v;
+  var k=document.getElementById('qKept');
+  var r=document.getElementById('qRel');
+  if(k){k.classList.toggle('active',v);}
+  if(r){r.classList.toggle('active',!v);}
+}
+function saveQuickCatch(riverIdOrName){
+  var riverName=riverIdOrName;
+  for(var i=0;i<RIVERS.length;i++){if(RIVERS[i].id===riverIdOrName){riverName=RIVERS[i].name;break;}}
+  var fish=document.getElementById('qFish').value;
+  var cnt=parseInt(document.getElementById('qCnt').value)||1;
+  if(!ST.catches) ST.catches=[];
+  var entry={date:new Date().toISOString().split('T')[0],river:riverName,fish:fish,count:cnt,weight:0,kept:qKept2,createdAt:new Date().toISOString()};
+  ST.catches.push(entry);
+  save();
+  addCatchToFirebase(entry);
+  alert('Записано: '+cnt+' шт ' +fish+(qKept2?' (взяли)':' (отпустили)'));
+}
+function backToRivers(){
+  document.getElementById('river-detail').classList.remove('show');
+  document.getElementById('p-rivers').classList.add('show');
+}
+function saveRN(id){
+  ST.riverN[id]=document.getElementById('rn-'+id).value;
+  save();
+  alert('Сохранено!');
+}
+
+function navToR(id){
+  var r=null;
+  for(var i=0;i<RIVERS.length;i++){if(RIVERS[i].id===id){r=RIVERS[i];break;}}
+  if(r) navTo(r.lat,r.lon,r.name);
+}
+
+function navTo(lat,lon,name){
+  var url='yandexnavi://build_route_on_map?lat_to='+lat+'&lon_to='+lon+'&name='+encodeURIComponent(name);
+  window.location.href=url;
+  setTimeout(function(){window.open('https://yandex.ru/maps/?pt='+lon+','+lat+'&z=14','_blank');},1500);
+}
+
+// ===== MENU =====
+// ===== MEAL CONSTRUCTOR STATE =====
+var MC = {}; // current construction: {dish, garnish, protein, starter, cocktail, snack}
+var MC_DI = 0, MC_MI = 0, MC_TYPE = 'dinner';
+
+function openMealPicker(di, mi, mType){
+  MC_DI=di; MC_MI=mi; MC_TYPE=mType;
+  // Load current state
+  MC={};
+  var base=MENU[di].meals[mi];
+  MC.dish=ST.menuOv['dish_'+di+'_'+mi]||'';
+  MC.garnish=ST.menuOv['garn_'+di+'_'+mi]||'';
+  MC.protein=ST.menuOv['prot_'+di+'_'+mi]||'';
+  MC.starter=ST.menuOv['star_'+di+'_'+mi]||'';
+  var savedCock=ST.menuOv['cock_'+di+'_'+mi];
+  MC.cocktails=savedCock?savedCock.split('|'):(base.cocktail?[base.cocktail]:[]);
+  var savedDrink=ST.menuOv['drink_'+di+'_'+mi];
+  MC.drinks=savedDrink?savedDrink.split('|'):[];
+  MC.snack=ST.menuOv['snack_'+di+'_'+mi]||'';
+  
+  var title=mType==='breakfast'?'Завтрак':mType==='lunch'?'Обед':'Ужин';
+  document.getElementById('modalMealTitle').textContent=title+' — '+MENU[di].date;
+  renderConstructor();
+  openModal('modalMeal');
+}
+
+function renderConstructor(){
+  var h='';
+  
+  if(MC_TYPE==='breakfast'){
+    h+=constructorSection('Блюдо','dish',PANTRY.breakfasts.map(function(x){return x.name;}));
+    h+=constructorSection('Закуска','starter',PANTRY.starters);
+    h+=constructorSectionMulti('Напиток (алко)','cocktails',PANTRY.cocktails);
+    h+=constructorSectionMulti('Напиток (безалко)','drinks',PANTRY.drinks);
+  } else if(MC_TYPE==='lunch'){
+    h+=constructorSection('Перекус','snack',PANTRY.snacks);
+    h+=constructorSectionMulti('Напиток (алко)','cocktails',PANTRY.cocktails);
+    h+=constructorSectionMulti('Напиток (безалко)','drinks',PANTRY.drinks);
+  } else {
+    h+=constructorSection('Готовое блюдо','dish',PANTRY.dishes.map(function(x){return x.name;}));
+    h+='<div style="text-align:center;font-size:12px;color:#aaa;margin:4px 0">— или собери сам —</div>';
+    h+=constructorSection('Гарнир','garnish',PANTRY.garnishes);
+    h+=constructorSection('Белок к гарниру','protein',PANTRY.proteins);
+    h+=constructorSection('Закуска','starter',PANTRY.starters);
+    h+=constructorSectionMulti('Алкоголь','cocktails',PANTRY.cocktails);
+    h+=constructorSectionMulti('Безалкогольное','drinks',PANTRY.drinks);
+  }
+  
+  document.getElementById('constructorBody').innerHTML=h;
+  // Wire up clicks via delegation
+  document.getElementById('constructorBody').onclick=function(e){
+    var btn=e.target.closest('.mc-opt');
+    if(btn){setMC(btn.getAttribute('data-key'),btn.getAttribute('data-val'));return;}
+    var clr=e.target.closest('.mc-clear');
+    if(clr){clearMC(clr.getAttribute('data-key'));return;}
+    var btnM=e.target.closest('.mc-opt-multi');
+    if(btnM){toggleMC(btnM.getAttribute('data-key'),btnM.getAttribute('data-val'));return;}
+    var clrM=e.target.closest('.mc-clear-multi');
+    if(clrM){removeMC(clrM.getAttribute('data-key'),clrM.getAttribute('data-val'));return;}
+  };
+}
+
+
+function constructorSectionMulti(label, key, opts){
+  var cur=MC[key]||[];
+  var del2=ST.pantryDeleted||{};
+  opts=opts.filter(function(o){
+    var nm=typeof o==='object'?o.name:o;
+    // find id
+    var found=false;
+    var allKeys=Object.keys(PANTRY);
+    for(var ki=0;ki<allKeys.length;ki++){
+      var arr=PANTRY[allKeys[ki]];
+      for(var ai=0;ai<arr.length;ai++){
+        var item=arr[ai];
+        var inm=typeof item==='object'?item.name:item;
+        if(inm===nm){
+          var iid=typeof item==='object'?item.id:(allKeys[ki]+'_'+ai);
+          if(del2[iid]) return false;
+        }
+      }
+    }
+    return true;
+  });
+  var h='<div class="constructor-section">';
+  h+='<div class="constructor-label">'+label+'</div>';h='<div class="constructor-section">';
+  h+='<div class="constructor-label">'+label+' <span style="font-size:10px;color:#aaa">(можно несколько)</span></div>';
+  h+='<div class="constructor-tags" id="ctag-'+key+'">';
+  for(var i=0;i<cur.length;i++){
+    h+='<span class="meal-tag">'+cur[i]+' <span class="tag-x mc-clear-multi" data-key="'+key+'" data-val="'+cur[i].replace(/"/g,'&quot;')+'">&#215;</span></span>';
+  }
+  h+='</div>';
+  h+='<div class="constructor-opts">';
+  for(var i=0;i<opts.length;i++){
+    var o=opts[i];
+    var sel=cur.indexOf(o)>=0;
+    h+='<div class="opt-btn'+(sel?' sel':'')+' mc-opt-multi" data-key="'+key+'" data-val="'+o.replace(/"/g,'&quot;')+'">'+o+'</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+function constructorSection(label, key, opts){
+  var cur=MC[key]||'';
+  var del2=ST.pantryDeleted||{};
+  opts=opts.filter(function(o){
+    var nm=typeof o==='object'?o.name:o;
+    // find id
+    var found=false;
+    var allKeys=Object.keys(PANTRY);
+    for(var ki=0;ki<allKeys.length;ki++){
+      var arr=PANTRY[allKeys[ki]];
+      for(var ai=0;ai<arr.length;ai++){
+        var item=arr[ai];
+        var inm=typeof item==='object'?item.name:item;
+        if(inm===nm){
+          var iid=typeof item==='object'?item.id:(allKeys[ki]+'_'+ai);
+          if(del2[iid]) return false;
+        }
+      }
+    }
+    return true;
+  });
+  var h='<div class="constructor-section">';
+  h+='<div class="constructor-label">'+label+'</div>';h='<div class="constructor-section">';
+  h+='<div class="constructor-label">'+label+'</div>';
+  h+='<div class="constructor-tags" id="ctag-'+key+'">';
+  if(cur){
+    h+='<span class="meal-tag">'+cur+' <span class="tag-x mc-clear" data-key="'+key+'">&#215;</span></span>';
+  }
+  h+='</div>';
+  h+='<div class="constructor-opts">';
+  for(var i=0;i<opts.length;i++){
+    var o=opts[i];
+    h+='<div class="opt-btn'+(cur===o?' sel':'')+' mc-opt" data-key="'+key+'" data-val="'+o.replace(/"/g,'&quot;')+'">'+o+'</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+
+function toggleMC(key, val){
+  if(!MC[key]) MC[key]=[];
+  var idx=MC[key].indexOf(val);
+  if(idx>=0) MC[key].splice(idx,1);
+  else MC[key].push(val);
+  renderConstructor();
+}
+function removeMC(key, val){
+  if(!MC[key]) return;
+  MC[key]=MC[key].filter(function(x){return x!==val;});
+  renderConstructor();
+}
+
+function setMC(key, val){
+  MC[key]=val;
+  renderConstructor();
+}
+
+function clearMC(key){
+  MC[key]='';
+  renderConstructor();
+}
+
+function saveMeal(){
+  var di=MC_DI, mi=MC_MI;
+  ST.menuOv['dish_'+di+'_'+mi]=MC.dish||'';
+  ST.menuOv['garn_'+di+'_'+mi]=MC.garnish||'';
+  ST.menuOv['prot_'+di+'_'+mi]=MC.protein||'';
+  ST.menuOv['star_'+di+'_'+mi]=MC.starter||'';
+  ST.menuOv['cock_'+di+'_'+mi]=(MC.cocktails||[]).join('|');
+  ST.menuOv['drink_'+di+'_'+mi]=(MC.drinks||[]).join('|');
+  ST.menuOv['snack_'+di+'_'+mi]=MC.snack||'';
+  save();
+  closeModal();
+  rMenu();
+}
+
+function rMenu(){
+  var el=document.getElementById('p-menu');
+  var tabs=[['all','Все'],['breakfast','Завтраки'],['lunch','Обеды'],['dinner','Ужины']];
+  var h='<div class="subtabs">';
+  for(var i=0;i<tabs.length;i++){
+    h+='<div class="stab'+(mF===tabs[i][0]?' active':'')+'" onclick="setMF(\''+tabs[i][0]+'\')">'+tabs[i][1]+'</div>';
+  }
+  h+='</div>';
+  for(var di=0;di<MENU.length;di++){
+    var d=MENU[di];
+    var meals=d.meals.filter(function(m){
+      if(mF==='all') return true;
+      if(mF==='breakfast') return m.type==='Утро';
+      if(mF==='lunch') return m.type==='Обед';
+      if(mF==='dinner') return m.type.indexOf('Ужин')>=0;
+      return true;
+    });
+    if(!meals.length) continue;
+    h+='<div class="menu-day">';
+    h+='<div class="menu-day-title"'+(d.special?' style="background:#d5f5e3;color:#1a5c2a"':'')+'>'+d.day+' — '+d.date+(d.special?' &#9733;':'')+'</div>';
+    for(var mi=0;mi<meals.length;mi++){
+      var m=meals[mi];
+      var origMi=d.meals.indexOf(m);
+      var mainTxt=ST.menuOv['dish_'+di+'_'+origMi]||m.text;
+      var garnTxt=ST.menuOv['garn_'+di+'_'+origMi]||'';
+      var protTxt=ST.menuOv['prot_'+di+'_'+origMi]||'';
+      var starTxt=ST.menuOv['star_'+di+'_'+origMi]||'';
+      var cockTxt=ST.menuOv['cock_'+di+'_'+origMi]||m.cocktail||'';
+      var snackTxt=ST.menuOv['snack_'+di+'_'+origMi]||'';
+      var mType=m.type==='Утро'?'breakfast':m.type==='Обед'?'lunch':'dinner';
+      var evtAttr=m.editable?' onclick="openMealPicker('+di+','+origMi+',\''+mType+'\')"':' style="cursor:default"';
+      h+='<div class="meal-row"'+evtAttr+'>';
+      h+='<span class="meal-type">'+m.type+'</span>';
+      h+='<div class="meal-text">';
+      if(snackTxt) h+='<div>'+snackTxt+'</div>';
+      else {
+        h+=mainTxt;
+        if(garnTxt && garnTxt!=='Без гарнира') h+=' + '+garnTxt;
+        if(protTxt && protTxt!=='Без белка') h+=' + '+protTxt;
+      }
+      if(starTxt && starTxt!=='Без закуски') h+='<div style="font-size:12px;color:#888">&#127860; '+starTxt+'</div>';
+      var drinkTxt=ST.menuOv['drink_'+di+'_'+origMi]||'';
+      var cockArr=(cockTxt?cockTxt.split('|'):[]).filter(function(x){return x&&x!=='Без алкоголя';});
+      var drinkArr=(drinkTxt?drinkTxt.split('|'):[]).filter(function(x){return x&&x!=='Без напитка';});
+      if(cockArr.length) h+='<div class="meal-cocktail">&#127864; '+cockArr.join(' + ')+'</div>';
+      if(drinkArr.length) h+='<div class="meal-cocktail">&#9749; '+drinkArr.join(' + ')+'</div>';
+      h+='</div>';
+      if(m.editable) h+='<span style="font-size:11px;color:#c7c7cc;flex-shrink:0">&#9998;</span>';
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+function setMF(f){mF=f;rMenu();}
+
+
+// ===== SHOP =====
+function rShop(){
+  var el=document.getElementById('p-shop');
+  var deleted=ST.shopDeleted||[];
+  var allGroups=SHOP.map(function(g){
+    var extra=(ST.shopExtra&&ST.shopExtra[g.group])||[];
+    var base=g.items.filter(function(i){return deleted.indexOf(i.id)<0;});
+    return {group:g.group,items:base.concat(extra)};
+  }).concat(ST.shopCustom||[]);
+  var total=0,done=0;
+  for(var i=0;i<allGroups.length;i++){
+    for(var j=0;j<allGroups[i].items.length;j++){
+      total++;
+      if(ST.shopCh[allGroups[i].items[j].id]) done++;
+    }
+  }
+  var pct=total>0?Math.round(done/total*100):0;
+  var h='<div class="shop-header">';
+  h+='<div class="people-row"><span class="people-label">Количество человек</span>';
+  h+='<div class="people-ctrl"><button class="people-btn" onclick="chP(-1)">&#8722;</button>';
+  h+='<span class="people-count">'+ST.people+'</span>';
+  h+='<button class="people-btn" onclick="chP(1)">+</button></div></div>';
+  h+='<div class="progress-text"><span>Куплено</span><span>'+done+' / '+total+'</span></div>';
+  h+='<div class="progress-bar-wrap"><div class="progress-bar" style="width:'+pct+'%"></div></div></div>';
+  for(var gi=0;gi<allGroups.length;gi++){
+    var g=allGroups[gi];
+    var isCustom=gi>=SHOP.length;
+    h+='<div class="check-group"><div class="check-group-title">'+g.group;
+    if(isCustom) h+=' <span class="delete-item" onclick="delShopGroup('+gi+')">&#215;</span>';
+    h+='</div>';
+    for(var ii=0;ii<g.items.length;ii++){
+      var item=g.items[ii];
+      var chk=!!ST.shopCh[item.id];
+      var qty=ST.shopQ[item.id]||(item.pp>0?(Math.round(item.pp*ST.people*10)/10)+' '+item.unit:item.qty);
+      h+='<div class="check-item'+(chk?' done':'')+'" onclick="togS(\''+item.id+'\',this)">';
+      h+='<div class="check-box'+(chk?' checked':'')+'"></div>';
+      h+='<span class="check-text">'+item.name+'</span>';
+      h+='<input class="check-qty-input" type="text" value="'+qty+'" onclick="event.stopPropagation()" onchange="updQ(this.dataset.id,this.value)" data-id="'+item.id+'">';
+      h+='<span class="delete-item" onclick="event.stopPropagation();delShopAny(\'' +item.id+'\','+gi+','+ii+')">&#215;</span>';
+      h+='</div>';
+    }
+    // Add item button for ALL groups
+    h+='<div class="add-item-btn" onclick="showAddShopItem('+gi+')">+ Добавить позицию</div>';
+    h+='<div class="add-item-input" id="addSI-'+gi+'">';
+    h+='<input type="text" id="addSN-'+gi+'" placeholder="Название..."><button onclick="addShopItem('+gi+')">OK</button></div>';
+    h+='</div>';
+  }
+  h+='<button class="reset-btn" style="margin-bottom:4px" onclick="rstS()">Сбросить все отметки</button>';
+  h+='<div class="check-group" style="margin-top:4px"><div class="add-item-btn" onclick="showAddGroupInput()">+ Добавить свою группу</div><div class="add-item-input" id="addGroupInput"><input type="text" id="addGroupName" placeholder="Название группы..."><button onclick="addShopGroup()">OK</button></div></div>';
+  el.innerHTML=h;
+}
+function chP(d){ST.people=Math.max(1,Math.min(10,ST.people+d));save();rShop();}
+function togS(id,el){
+  ST.shopCh[id]=!ST.shopCh[id];save();
+  el.classList.toggle('done');
+  el.querySelector('.check-box').classList.toggle('checked');
+  var deleted=ST.shopDeleted||[];
+  var allGroups=SHOP.map(function(g){
+    var extra=(ST.shopExtra&&ST.shopExtra[g.group])||[];
+    var base=g.items.filter(function(i){return deleted.indexOf(i.id)<0;});
+    return {group:g.group,items:base.concat(extra)};
+  }).concat(ST.shopCustom||[]);
+  var t=0,d=0;
+  for(var i=0;i<allGroups.length;i++) for(var j=0;j<allGroups[i].items.length;j++){t++;if(ST.shopCh[allGroups[i].items[j].id])d++;}
+  document.querySelector('.progress-bar').style.width=Math.round(d/t*100)+'%';
+  document.querySelector('.progress-text span:last-child').textContent=d+' / '+t;
+}
+function updQ(id,v){ST.shopQ[id]=v;save();}
+function rstS(){if(confirm('Сбросить все отметки?')){ST.shopCh={};save();rShop();}}
+function showAddGroupInput(){
+  document.getElementById('addGroupInput').classList.add('show');
+  document.getElementById('addGroupName').focus();
+}
+function addShopGroup(){
+  var inp=document.getElementById('addGroupName');
+  var name=inp?inp.value.trim():'';
+  if(!name) return;
+  if(!ST.shopCustom) ST.shopCustom=[];
+  ST.shopCustom.push({group:name,items:[]});
+  save();rShop();
+}
+function delShopGroup(gi){
+  var idx=gi-SHOP.length;
+  if(!ST.shopCustom||idx<0) return;
+  ST.shopCustom.splice(idx,1);save();rShop();
+}
+function showAddShopItem(gi){
+  document.getElementById('addSI-'+gi).classList.add('show');
+  document.getElementById('addSN-'+gi).focus();
+}
+function addShopItem(gi){
+  var name=document.getElementById('addSN-'+gi).value.trim();
+  if(!name) return;
+  var id='u'+Date.now();
+  var item={id:id,name:name,qty:'1 шт',pp:0,unit:'шт'};
+  var customIdx=gi-SHOP.length;
+  if(customIdx>=0){
+    // Custom group
+    if(!ST.shopCustom) ST.shopCustom=[];
+    ST.shopCustom[customIdx].items.push(item);
+  } else {
+    // Built-in group - add to extra items
+    if(!ST.shopExtra) ST.shopExtra={};
+    var gName=SHOP[gi].group;
+    if(!ST.shopExtra[gName]) ST.shopExtra[gName]=[];
+    ST.shopExtra[gName].push(item);
+    // Also mark as deletable
+    if(!ST.shopExtra) ST.shopExtra={};
+    ST.shopExtra[id]=true;
+  }
+  save();rShop();
+}
+function delShopAny(itemId, gi, ii){
+  if(!ST.shopDeleted) ST.shopDeleted=[];
+  var customIdx=gi-SHOP.length;
+  if(customIdx>=0 && ST.shopCustom && ST.shopCustom[customIdx]){
+    // Custom group item
+    ST.shopCustom[customIdx].items.splice(ii,1);
+  } else if(itemId.indexOf('u')===0){
+    // Extra item added to built-in group - find and remove from shopExtra
+    if(ST.shopExtra){
+      var gName=gi<SHOP.length?SHOP[gi].group:'';
+      if(gName && ST.shopExtra[gName]){
+        ST.shopExtra[gName]=ST.shopExtra[gName].filter(function(x){return x.id!==itemId;});
+      }
+    }
+  } else {
+    // Base built-in item - hide it
+    if(ST.shopDeleted.indexOf(itemId)<0) ST.shopDeleted.push(itemId);
+  }
+  save();rShop();
+}
+function delShopItem(gi,ii){
+  var idx=gi-SHOP.length;
+  if(!ST.shopCustom||idx<0) return;
+  ST.shopCustom[idx].items.splice(ii,1);save();rShop();
+}
+
+// ===== CATCH =====
+function rCatch(){
+  var el=document.getElementById('p-catch');
+  var total=0,kept=0,rel=0,simaK=0;
+  for(var i=0;i<ST.catches.length;i++){
+    var e=ST.catches[i];
+    total+=e.count;
+    if(e.kept){kept+=e.count;if(e.fish==='Сима')simaK+=e.count;}
+    else rel+=e.count;
+  }
+  var licLeft=ST.people*5-simaK;
+  var h='<div class="stat-grid">';
+  h+='<div class="stat-box"><div class="stat-num">'+total+'</div><div class="stat-lbl">Всего</div></div>';
+  h+='<div class="stat-box"><div class="stat-num">'+kept+'</div><div class="stat-lbl">Взяли</div></div>';
+  h+='<div class="stat-box"><div class="stat-num">'+rel+'</div><div class="stat-lbl">Отпустили</div></div>';
+  h+='</div>';
+  h+='<div class="alert-box'+(licLeft<=5?' show':'')+'" id="licW">&#9888; Лицензия симы: осталось '+licLeft+' шт ('+ST.people+' чел x 5)</div>';
+  h+='<button class="action-btn" onclick="togCF()">+ Добавить улов</button>';
+  h+='<div class="form-card" id="cForm">';
+  h+='<div class="form-row"><label class="form-label">Дата</label><input class="form-input" type="date" id="cDate" value="'+new Date().toISOString().split('T')[0]+'"></div>';
+  h+='<div class="form-row"><label class="form-label">Река</label><select class="form-select" id="cRiver">';
+  for(var i=0;i<RIVERS.length;i++) h+='<option>'+RIVERS[i].name+'</option>';
+  h+='</select></div>';
+  h+='<div class="form-row"><label class="form-label">Рыба</label><select class="form-select" id="cFish"><option>Сима</option><option>Кунджа</option><option>Горбуша</option><option>Голец</option><option>Мальма</option><option>Другое</option></select></div>';
+  h+='<div class="form-row-2">';
+  h+='<div><label class="form-label">Кол-во</label><input class="form-input" type="number" id="cCnt" value="1" min="1"></div>';
+  h+='<div><label class="form-label">Вес (кг)</label><input class="form-input" type="number" id="cWt" step="0.1" placeholder="~"></div>';
+  h+='</div>';
+  h+='<div class="form-row"><label class="form-label">Что сделали</label>';
+  h+='<div class="toggle-row"><div class="toggle-btn active" id="cKept" onclick="setCK(true)">Взяли</div><div class="toggle-btn" id="cRel" onclick="setCK(false)">Отпустили</div></div></div>';
+  h+='<button class="save-btn" onclick="saveCatch()">Сохранить</button></div>';
+  if(ST.catches.length===0){
+    h+='<div style="text-align:center;color:#aaa;padding:30px;font-size:14px">Пока нет записей</div>';
+  } else {
+    for(var i=ST.catches.length-1;i>=0;i--){
+      var e=ST.catches[i];
+      h+='<div class="entry-card">';
+      h+='<div><div class="entry-main">'+e.fish+' '+(e.kept?'&#128031;':'&#127754;')+'</div>';
+      h+='<div class="entry-sub">'+e.river+' &bull; '+e.date+(e.weight?' &bull; ~'+e.weight+' кг':'')+'</div></div>';
+      h+='<div style="display:flex;align-items:center">';
+      h+='<div style="text-align:right"><div class="entry-num">'+e.count+'</div><div class="entry-unit">шт</div></div>';
+      h+='<div class="entry-del" onclick="delCatch('+i+')">&#215;</div></div></div>';
+    }
+  }
+  el.innerHTML=h;
+}
+function togCF(){document.getElementById('cForm').classList.toggle('show');}
+function setCK(v){
+  catchKept=v;
+  document.getElementById('cKept').classList.toggle('active',v);
+  document.getElementById('cRel').classList.toggle('active',!v);
+}
+function saveCatch(){
+  var d={
+    date:document.getElementById('cDate').value,
+    river:document.getElementById('cRiver').value,
+    fish:document.getElementById('cFish').value,
+    count:parseInt(document.getElementById('cCnt').value)||1,
+    weight:parseFloat(document.getElementById('cWt').value)||0,
+    kept:catchKept
+  };
+  d.createdAt=new Date().toISOString();
+  ST.catches.push(d);
+  save();
+  addCatchToFirebase(d);
+  document.getElementById('cForm').classList.remove('show');
+  rCatch();
+}
+function delCatch(i){if(confirm('Удалить?')){var entry=ST.catches[i];ST.catches.splice(i,1);save();if(entry&&entry._id) deleteCatchFromFirebase(entry._id);rCatch();}}
+
+// ===== GEAR =====
+function rGear(){
+  var el=document.getElementById('p-gear');
+  if(!ST.gearCustom) ST.gearCustom=[];
+  var h='<div class="subtabs">';
+  h+='<div class="stab'+(gT==='common'?' active':'')+'" onclick="setGT(&quot;common&quot;)">Общая</div>';
+  h+='<div class="stab'+(gT==='personal'?' active':'')+'" onclick="setGT(&quot;personal&quot;)">Личная</div>';
+  h+='</div>';
+  
+  if(gT==='common'){
+    var ci=0;
+    var gearCommonDel=ST.gearCommonDel||[];
+    for(var gi=0;gi<GEAR_GROUPS.length;gi++){
+      var g=GEAR_GROUPS[gi];
+      h+='<div class="grp-hd">'+g.title+'</div><div class="check-group">';
+      for(var ii=0;ii<g.items.length;ii++){
+        var item=g.items[ii]; var idx=ci++;
+        if(gearCommonDel.indexOf(idx)>=0) continue;
+        h+='<div class="check-item'+(ST.gearCC[idx]?' done':'')+'" onclick="togGC('+idx+',this)">';
+        h+='<div class="check-box'+(ST.gearCC[idx]?' checked':'')+'"></div>';
+        h+='<span class="check-text">'+item+'</span>';
+        h+='<span class="delete-item" onclick="event.stopPropagation();delGearCommon('+idx+')">&#215;</span>';
+        h+='</div>';
+      }
+      var extraC=(ST.gearCommonExtra&&ST.gearCommonExtra[gi])||[];
+      for(var ei=0;ei<extraC.length;ei++){
+        var ekey='ec'+gi+'_'+ei;
+        h+='<div class="check-item'+(ST.gearCC[ekey]?' done':'')+'" onclick="togGCE('+gi+','+ei+',this)">';
+        h+='<div class="check-box'+(ST.gearCC[ekey]?' checked':'')+'"></div>';
+        h+='<span class="check-text">'+extraC[ei]+'</span>';
+        h+='<span class="delete-item" onclick="event.stopPropagation();delGearCommonExtra('+gi+','+ei+')">&#215;</span>';
+        h+='</div>';
+      }
+      h+='<div class="add-item-btn" onclick="showAddGearCommon('+gi+')">+ Добавить позицию</div>';
+      h+='<div class="add-item-input" id="addGC-'+gi+'"><input type="text" id="addGCT-'+gi+'" placeholder="Название..."><button onclick="addGearCommon('+gi+')">OK</button></div>';
+      h+='</div>';
+    }
+    } else {
+    for(var gi=0;gi<GEAR_PERSONAL.length;gi++){
+      var g=GEAR_PERSONAL[gi];
+      h+='<div class="grp-hd">'+g.title+'</div><div class="check-group">';
+      for(var ii=0;ii<g.items.length;ii++){
+        var item=g.items[ii];
+        var idx=gi*100+ii;
+        h+='<div class="check-item'+(ST.gearPC[idx]?' done':'')+'" onclick="togGP('+idx+',this)">';
+        h+='<div class="check-box'+(ST.gearPC[idx]?' checked':'')+'"></div>';
+        h+='<span class="check-text">'+item+'</span></div>';
+      }
+      h+='</div>';
+    }
+    if(ST.gearCustom.length>0){
+      h+='<div class="grp-hd">Своё</div><div class="check-group">';
+      for(var i=0;i<ST.gearCustom.length;i++){
+        var item=ST.gearCustom[i]; var idx=9000+i;
+        h+='<div class="check-item'+(ST.gearPC[idx]?' done':'')+'" onclick="togGP('+idx+',this)">';
+        h+='<div class="check-box'+(ST.gearPC[idx]?' checked':'')+'"></div>';
+        h+='<span class="check-text">'+item+'</span>';
+        h+='<span class="delete-item" onclick="event.stopPropagation();delGearCustom('+i+')">&#215;</span></div>';
+      }
+      h+='</div>';
+    }
+    h+='<div class="check-group">';
+    h+='<div class="add-item-btn" onclick="showAG()">+ Добавить свою позицию</div>';
+    h+='<div class="add-item-input" id="addGI"><input type="text" id="addGT" placeholder="Что добавить..."><button onclick="addGear()">OK</button></div>';
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+function setGT(t){gT=t;rGear();}
+function togGC(i,el){ST.gearCC[i]=!ST.gearCC[i];el.classList.toggle('done');el.querySelector('.check-box').classList.toggle('checked');save();}
+function togGP(i,el){ST.gearPC[i]=!ST.gearPC[i];el.classList.toggle('done');el.querySelector('.check-box').classList.toggle('checked');save();}
+function delGearCustom(i){ST.gearCustom.splice(i,1);save();rGear();setGT('personal');}
+function showAG(){document.getElementById('addGI').classList.add('show');document.getElementById('addGT').focus();}
+function addGear(){var v=document.getElementById('addGT').value.trim();if(v){if(!ST.gearCustom)ST.gearCustom=[];ST.gearCustom.push(v);save();rGear();setGT('personal');}}
+
+// ===== PANTRY =====
+function rPantry(){
+  var el=document.getElementById('p-pantry');
+  if(!el) return;
+  var del=ST.pantryDeleted||{};
+  var sections=[
+    {key:'dishes',label:'Готовые блюда',isObj:true},
+    {key:'breakfasts',label:'Завтраки',isObj:true},
+    {key:'snacks',label:'Перекусы',isObj:false},
+    {key:'garnishes',label:'Гарниры',isObj:false},
+    {key:'proteins',label:'Белок к гарниру',isObj:false},
+    {key:'starters',label:'Закуски',isObj:false},
+    {key:'cocktails',label:'Коктейли (алко)',isObj:false},
+    {key:'drinks',label:'Напитки (безалко)',isObj:false},
+  ];
+  var h='<div style="font-size:13px;color:#888;margin-bottom:10px">База блюд и напитков — используется в конструкторе меню. Нажми &#215; чтобы скрыть, или добавь своё.</div>';
+  for(var si=0;si<sections.length;si++){
+    var sec=sections[si];
+    var items=PANTRY[sec.key]||[];
+    h+='<div class="grp-hd">'+sec.label+'</div><div class="check-group">';
+    for(var i=0;i<items.length;i++){
+      var item=items[i];
+      var nm=typeof item==='object'?item.name:item;
+      var itemId=typeof item==='object'?item.id:(sec.key+'_'+i);
+      var isHidden=del[itemId];
+      if(isHidden) continue;
+      var tm=typeof item==='object'&&item.time?' <span style="color:#aaa;font-size:11px">~'+item.time+' мин</span>':'';
+      h+='<div class="check-item" style="cursor:default">';
+      h+='<span class="check-text">'+nm+tm+'</span>';
+      h+='<span class="delete-item pc-del" data-key="'+sec.key+'" data-id="'+itemId+'" data-idx="'+i+'">&#215;</span>';
+      h+='</div>';
+    }
+    // Show hidden items count with restore option
+    var hiddenCount=0;
+    for(var i=0;i<items.length;i++){
+      var item=items[i];
+      var itemId=typeof item==='object'?item.id:(sec.key+'_'+i);
+      if(del[itemId]) hiddenCount++;
+    }
+    if(hiddenCount>0){
+      h+='<div class="add-item-btn pc-restore" data-key="'+sec.key+'" style="color:#aaa;font-size:12px">&#8635; Восстановить скрытые ('+hiddenCount+')</div>';
+    }
+    h+='<div class="add-item-btn pc-add" data-key="'+sec.key+'">+ Добавить своё</div>';
+    h+='<div class="add-item-input" id="addP-'+sec.key+'">';
+    h+='<input type="text" id="addPT-'+sec.key+'" placeholder="Название...">';
+    if(sec.isObj) h+='<input type="number" id="addPTime-'+sec.key+'" placeholder="мин" style="width:60px">';
+    h+='<button class="pc-save" data-key="'+sec.key+'">OK</button>';
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+
+
+function showAddPantry(key){
+  document.getElementById('addP-'+key).classList.add('show');
+  document.getElementById('addPT-'+key).focus();
+}
+function addPantryItem(key){
+  var inp=document.getElementById('addPT-'+key);
+  var v=inp?inp.value.trim():'';
+  if(!v) return;
+  var tInp=document.getElementById('addPTime-'+key);
+  var t=tInp?parseInt(tInp.value)||0:0;
+  var objKeys=['dishes','breakfasts'];
+  var item=(objKeys.indexOf(key)>=0)?{id:'u'+Date.now(),name:v,time:t}:v;
+  var c=JSON.parse(localStorage.getItem('pantryC')||'{}');
+  if(!c[key]) c[key]=[];
+  c[key].push(item);
+  PANTRY[key].push(item);
+  localStorage.setItem('pantryC',JSON.stringify(c));
+  if(inp) inp.value='';
+  if(tInp) tInp.value='';
+  rPantry();
+}
+function delPantryAny(key, itemId, idx){
+  if(!ST.pantryDeleted) ST.pantryDeleted={};
+  ST.pantryDeleted[itemId]=true;
+  save();
+  rPantry();
+}
+function restorePantry(key){
+  if(!ST.pantryDeleted) return;
+  var items=PANTRY[key]||[];
+  for(var i=0;i<items.length;i++){
+    var item=items[i];
+    var itemId=typeof item==='object'?item.id:(key+'_'+i);
+    delete ST.pantryDeleted[itemId];
+  }
+  save();
+  rPantry();
+}
+
+// ===== EXPENSES =====
+function getExpenseWhoValue(){
+  var sel=document.getElementById('expWhoSelect');
+  if(!sel) return '';
+  if(sel.value==='__manual__'){
+    var inp=document.getElementById('expWhoManual');
+    return inp ? inp.value.trim() : '';
+  }
+  return sel.value;
+}
+function onExpWhoChange(){
+  var sel=document.getElementById('expWhoSelect');
+  var wrap=document.getElementById('expWhoManualWrap');
+  if(!sel || !wrap) return;
+  wrap.style.display = sel.value==='__manual__' ? 'block' : 'none';
+}
+function buildExpenseWhoOptions(selected){
+  var members=getTripMembers();
+  var h='<option value="">Выбери участника</option>';
+  for(var i=0;i<members.length;i++){
+    var name=members[i].displayName||'';
+    h+='<option value="'+name.replace(/"/g,'&quot;')+'"'+(selected===name?' selected':'')+'>'+name+'</option>';
+  }
+  h+='<option value="__manual__">+ Вписать вручную</option>';
+  return h;
+}
+function buildExpenseParticipantChecks(){
+  var members=getTripMembers();
+  var h='<div class="form-row"><label class="form-label">Участвуют в расходе</label><div class="check-group">';
+  for(var i=0;i<members.length;i++){
+    var name=members[i].displayName||'';
+    h+='<div class="check-item exp-participant-row" data-name="'+name.replace(/"/g,'&quot;')+'" style="cursor:pointer"><div class="check-box checked" data-exp-check="1"></div><input type="checkbox" class="expParticipant" value="'+name.replace(/"/g,'&quot;')+'" checked style="display:none"><span class="check-text">'+name+'</span></div>';
+  }
+  h+='</div><div style="display:flex;gap:8px;margin-top:8px"><button type="button" class="opt-btn" onclick="setAllExpenseParticipants(true)">Все</button><button type="button" class="opt-btn" onclick="setAllExpenseParticipants(false)">Снять всех</button></div></div>';
+  return h;
+}
+function wireExpenseParticipantChecks(){
+  var items=document.querySelectorAll('#p-expenses .expParticipant');
+  for(var i=0;i<items.length;i++){
+    (function(inp){
+      var row=inp.closest('.check-item');
+      if(!row) return;
+      row.addEventListener('click', function(ev){
+        ev.preventDefault();
+        inp.checked=!inp.checked;
+        syncExpenseCheckVisual(inp);
+      });
+      syncExpenseCheckVisual(inp);
+    })(items[i]);
+  }
+}
+function syncExpenseCheckVisual(inp){
+  var row=inp.closest('.check-item');
+  if(!row) return;
+  var box=row.querySelector('[data-exp-check]');
+  if(box) box.classList.toggle('checked', !!inp.checked);
+}
+function setAllExpenseParticipants(state){
+  var items=document.querySelectorAll('#p-expenses .expParticipant');
+  for(var i=0;i<items.length;i++){
+    items[i].checked=!!state;
+    syncExpenseCheckVisual(items[i]);
+  }
+}
+function getSelectedExpenseParticipants(){
+  var items=document.querySelectorAll('#p-expenses .expParticipant');
+  var names=[];
+  for(var i=0;i<items.length;i++) if(items[i].checked) names.push(items[i].value);
+  return names;
+}
+function buildMemberOptions(selected, includeEmpty){
+  var members=getTripMembers();
+  var h=includeEmpty?'<option value="">Выбери участника</option>':'';
+  for(var i=0;i<members.length;i++){
+    var name=members[i].displayName||'';
+    h+='<option value="'+name.replace(/"/g,'&quot;')+'"'+(selected===name?' selected':'')+'>'+name+'</option>';
+  }
+  return h;
+}
+
+function openSettlementForm(fromName,toName,amount){
+  settlementPreset={fromName:fromName||'',toName:toName||'',amount:amount||''};
+  var f=document.getElementById('settlementForm');
+  if(!f) return;
+  var fromSel=document.getElementById('settFrom');
+  var toSel=document.getElementById('settTo');
+  var amt=document.getElementById('settAmt');
+  var date=document.getElementById('settDate');
+  var note=document.getElementById('settNote');
+  if(fromSel) fromSel.value=fromName||'';
+  if(toSel) toSel.value=toName||'';
+  if(amt) amt.value=amount?Math.round(amount):'';
+  if(date && !date.value) date.value=new Date().toISOString().split('T')[0];
+  if(note) note.value='';
+  f.classList.add('show');
+}
+
+function closeSettlementForm(){
+  settlementPreset=null;
+  var f=document.getElementById('settlementForm');
+  if(!f) return;
+  f.classList.remove('show');
+  var ids=['settFrom','settTo','settAmt','settDate','settNote'];
+  for(var i=0;i<ids.length;i++){
+    var el=document.getElementById(ids[i]);
+    if(el) el.value='';
+  }
+}
+
+function saveSettlement(){
+  var fromName=(document.getElementById('settFrom').value||'').trim();
+  var toName=(document.getElementById('settTo').value||'').trim();
+  var amount=parseFloat(document.getElementById('settAmt').value)||0;
+  var date=(document.getElementById('settDate').value||new Date().toISOString().split('T')[0]);
+  var note=(document.getElementById('settNote').value||'').trim();
+  if(!fromName||!toName||fromName===toName||amount<=0){ alert('Проверь участников и сумму'); return; }
+  var fromMember=findMemberByName(fromName);
+  var toMember=findMemberByName(toName);
+  var entry={fromName:fromName,toName:toName,fromMemberId:fromMember&&fromMember._id||null,toMemberId:toMember&&toMember._id||null,amount:amount,date:date,note:note,createdAt:new Date().toISOString()};
+  if(!ST.settlements) ST.settlements=[];
+  ST.settlements.push(entry);
+  save();
+  addSettlementToFirebase(entry);
+  closeSettlementForm();
+  rExpenses();
+}
+
+function delSettlement(i){
+  var entry=ST.settlements[i];
+  ST.settlements.splice(i,1);
+  save();
+  if(entry&&entry._id) deleteSettlementFromFirebase(entry._id);
+  rExpenses();
+}
+
+function computeExpenseSummary(){
+  var total=0;
+  var names=getTripMemberNames();
+  var paidByPerson={};
+  var owedByPerson={};
+  for(var i=0;i<names.length;i++){
+    paidByPerson[names[i]]=0;
+    owedByPerson[names[i]]=0;
+  }
+  for(var i=0;i<ST.expenses.length;i++){
+    var e=ST.expenses[i]||{};
+    var amount=parseFloat(e.amount)||0;
+    total+=amount;
+    if(e.paidBy){
+      if(paidByPerson[e.paidBy]===undefined) paidByPerson[e.paidBy]=0;
+      paidByPerson[e.paidBy]+=amount;
+    }
+    var participants=(e.participantNames&&e.participantNames.length)?e.participantNames.slice():names.slice();
+    if(!participants.length) participants=names.slice();
+    var share=participants.length ? amount/participants.length : 0;
+    for(var j=0;j<participants.length;j++){
+      var pname=participants[j];
+      if(owedByPerson[pname]===undefined) owedByPerson[pname]=0;
+      owedByPerson[pname]+=share;
+    }
+  }
+  var settledOut={};
+  var settledIn={};
+  var settlementsList=Array.isArray(ST.settlements)?ST.settlements:[];
+  for(var si=0;si<settlementsList.length;si++){
+    var s=settlementsList[si]||{};
+    var sa=parseFloat(s.amount)||0;
+    if(!sa) continue;
+    if(s.fromName){ if(settledOut[s.fromName]===undefined) settledOut[s.fromName]=0; settledOut[s.fromName]+=sa; }
+    if(s.toName){ if(settledIn[s.toName]===undefined) settledIn[s.toName]=0; settledIn[s.toName]+=sa; }
+  }
+  var summaryNames={};
+  Object.keys(paidByPerson).forEach(function(k){summaryNames[k]=1;});
+  Object.keys(owedByPerson).forEach(function(k){summaryNames[k]=1;});
+  Object.keys(settledOut).forEach(function(k){summaryNames[k]=1;});
+  Object.keys(settledIn).forEach(function(k){summaryNames[k]=1;});
+  var rows=[];
+  Object.keys(summaryNames).sort(function(a,b){return a.localeCompare(b,'ru');}).forEach(function(name){
+    var diff=(paidByPerson[name]||0)-(owedByPerson[name]||0);
+    var out=settledOut[name]||0;
+    var inn=settledIn[name]||0;
+    rows.push({
+      name:name,
+      paid:paidByPerson[name]||0,
+      owed:owedByPerson[name]||0,
+      diff:diff,
+      settledOut:out,
+      settledIn:inn,
+      netDiff:diff + out - inn
+    });
+  });
+  var avgShare=rows.length ? rows.reduce(function(s,r){return s+r.owed;},0)/rows.length : 0;
+
+  var creditors=[];
+  var debtors=[];
+  var eps=0.01;
+  for(var k=0;k<rows.length;k++){
+    var diffNet=rows[k].netDiff;
+    if(diffNet>eps) creditors.push({name:rows[k].name, amount:diffNet});
+    else if(diffNet<-eps) debtors.push({name:rows[k].name, amount:Math.abs(diffNet)});
+  }
+  creditors.sort(function(a,b){return b.amount-a.amount;});
+  debtors.sort(function(a,b){return b.amount-a.amount;});
+  var suggestedTransfers=[];
+  var ci=0, di=0;
+  while(ci<creditors.length && di<debtors.length){
+    var c=creditors[ci], d=debtors[di];
+    var pay=Math.min(c.amount,d.amount);
+    if(pay>eps){
+      suggestedTransfers.push({from:d.name,to:c.name,amount:pay});
+      c.amount-=pay;
+      d.amount-=pay;
+    }
+    if(c.amount<=eps) ci++;
+    if(d.amount<=eps) di++;
+  }
+  return {total:total, rows:rows, avgShare:avgShare, suggestedTransfers:suggestedTransfers};
+}
+function rExpenses(){
+  var el=document.getElementById('p-expenses');
+  if(!ST.expenses) ST.expenses=[];
+  if(!ST.settlements) ST.settlements=[];
+  var summary=computeExpenseSummary();
+  var total=summary.total;
+  var h='<div class="stat-grid">';
+  h+='<div class="stat-box"><div class="stat-num">'+Math.round(total).toLocaleString()+'</div><div class="stat-lbl">Итого &#8381;</div></div>';
+  h+='<div class="stat-box"><div class="stat-num">'+Math.round(summary.avgShare).toLocaleString()+'</div><div class="stat-lbl">Средняя доля</div></div>';
+  h+='<div class="stat-box"><div class="stat-num">'+ST.expenses.length+'</div><div class="stat-lbl">Позиций</div></div>';
+  h+='</div>';
+  h+='<div style="font-size:12px;color:#888;margin:-2px 0 10px 2px">Расходы делятся по выбранным участникам. Погашения учитываются отдельно и уменьшают остаток долга.</div>';
+  h+='<button class="action-btn" onclick="openNewExpenseForm()">+ Добавить расход</button>';
+  h+='<div class="form-card" id="expForm">';
+  h+='<div class="info-title" id="expFormTitle" style="margin-bottom:12px">Новый расход</div>';
+  h+='<div class="form-row"><label class="form-label">Описание</label><input class="form-input" type="text" id="expDesc" placeholder="Бензин, продукты..."></div>';
+  h+='<div class="form-row"><label class="form-label">Сумма &#8381;</label><input class="form-input" type="number" id="expAmt" placeholder="0"></div>';
+  h+='<div class="form-row"><label class="form-label">Кто платил</label><select class="form-select" id="expWhoSelect" onchange="onExpWhoChange()">'+buildExpenseWhoOptions('')+'</select></div>';
+  h+='<div class="form-row" id="expWhoManualWrap" style="display:none"><label class="form-label">Новый участник</label><input class="form-input" type="text" id="expWhoManual" placeholder="Имя участника"></div>';
+  h+=buildExpenseParticipantChecks();
+  h+='<div class="form-row"><label class="form-label">Категория</label><select class="form-select" id="expCat"><option>Топливо</option><option>Продукты</option><option>Алкоголь</option><option>Жильё</option><option>Снаряжение</option><option>Ресторан</option><option>Лицензии</option><option>Другое</option></select></div>';
+  h+='<div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="saveExp()">Сохранить</button><button type="button" class="picker-cancel" style="flex:1;margin-top:0" onclick="cancelExpEdit()">Отмена</button></div></div>';
+
+  h+='<div class="sec-h">Погашения</div>';
+  h+='<button class="action-btn" style="margin-bottom:8px" onclick="openSettlementForm()">+ Добавить погашение</button>';
+  h+='<div class="form-card" id="settlementForm">';
+  h+='<div class="info-title" style="margin-bottom:12px">Погашение долга</div>';
+  h+='<div class="form-row"><label class="form-label">Кто перевёл</label><select class="form-select" id="settFrom">'+buildMemberOptions('', true)+'</select></div>';
+  h+='<div class="form-row"><label class="form-label">Кому перевёл</label><select class="form-select" id="settTo">'+buildMemberOptions('', true)+'</select></div>';
+  h+='<div class="form-row"><label class="form-label">Сумма &#8381;</label><input class="form-input" type="number" id="settAmt" placeholder="0"></div>';
+  h+='<div class="form-row"><label class="form-label">Дата</label><input class="form-input" type="date" id="settDate" value="'+new Date().toISOString().split('T')[0]+'"></div>';
+  h+='<div class="form-row"><label class="form-label">Комментарий</label><input class="form-input" type="text" id="settNote" placeholder="Перевод, наличные, частично..."></div>';
+  h+='<div style="display:flex;gap:8px"><button class="save-btn" style="flex:1" onclick="saveSettlement()">Сохранить</button><button type="button" class="picker-cancel" style="flex:1;margin-top:0" onclick="closeSettlementForm()">Отмена</button></div></div>';
+
+  if(summary.rows.length>0){
+    h+='<div class="sec-h">По участникам</div><div class="check-group">';
+    for(var i=0;i<summary.rows.length;i++){
+      var r=summary.rows[i], diff=r.netDiff;
+      h+='<div class="check-item" style="cursor:default;align-items:flex-start"><span class="check-text">'+r.name+
+        '<div style="font-size:12px;color:#888;margin-top:2px">Заплатил '+Math.round(r.paid).toLocaleString()+' ₽ • Доля '+Math.round(r.owed).toLocaleString()+' ₽</div>'+
+        '<div style="font-size:12px;color:#888;margin-top:2px">Погасил '+Math.round(r.settledOut).toLocaleString()+' ₽ • Получил '+Math.round(r.settledIn).toLocaleString()+' ₽</div></span>';
+      h+='<span style="font-size:13px;font-weight:600;color:'+(diff>=0?'#34c759':'#ff3b30')+';padding-top:2px">'
+      +(diff>=0?('К получению '+Math.abs(Math.round(diff)).toLocaleString()+' ₽'):('К оплате '+Math.abs(Math.round(diff)).toLocaleString()+' ₽'))
+      +'</span></div>';
+    }
+    h+='</div>';
+  }
+  if(summary.suggestedTransfers && summary.suggestedTransfers.length){
+    h+='<div class="sec-h">Кто кому должен</div><div class="check-group">';
+    for(var s=0;s<summary.suggestedTransfers.length;s++){
+      var st=summary.suggestedTransfers[s];
+      h+='<div class="check-item" style="cursor:default;align-items:flex-start"><span class="check-text">'+st.from+' → '+st.to+'<div style="font-size:12px;color:#888;margin-top:2px">Остаток после учёта погашений</div></span>';
+      h+='<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:600;color:#1F4E79;padding-top:2px">'+Math.round(st.amount).toLocaleString()+' ₽</span><button class="opt-btn debt-pay-btn" type="button" data-from="'+st.from.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-to="'+st.to.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-amount="'+Math.round(st.amount)+'">Погасить</button></div></div>';
+    }
+    h+='</div>';
+  }
+  if(ST.settlements.length>0){
+    h+='<div class="sec-h">История погашений</div>';
+    for(var z=ST.settlements.length-1;z>=0;z--){
+      var p=ST.settlements[z];
+      h+='<div class="entry-card"><div><div class="entry-main">'+p.fromName+' → '+p.toName+'</div><div class="entry-sub">'+(p.date||'')+(p.note?' • '+p.note:'')+'</div></div><div style="display:flex;align-items:center"><div style="text-align:right"><div class="entry-num" style="font-size:18px">'+Math.round(p.amount||0).toLocaleString()+'</div><div class="entry-unit">&#8381;</div></div><div class="entry-del" onclick="delSettlement('+z+')">&#215;</div></div></div>';
+    }
+  }
+  if(ST.expenses.length>0){
+    h+='<div class="sec-h">Все расходы</div>';
+    for(var i=ST.expenses.length-1;i>=0;i--){
+      var e=ST.expenses[i];
+      var participants=(e.participantNames&&e.participantNames.length)?e.participantNames.join(', '):'все активные';
+      h+='<div class="entry-card"><div><div class="entry-main">'+e.desc+'</div>';
+      h+='<div class="entry-sub">'+e.paidBy+' &bull; '+e.cat+'<div style="margin-top:2px">Участвуют: '+participants+'</div></div></div>';
+      h+='<div style="display:flex;align-items:center">';
+      h+='<div style="text-align:right"><div class="entry-num" style="font-size:18px">'+Math.round(e.amount).toLocaleString()+'</div><div class="entry-unit">&#8381;</div></div>';
+      h+='<div class="entry-del" style="color:#1F4E79" onclick="editExp('+i+')">&#9998;</div>';
+      h+='<div class="entry-del" onclick="delExp('+i+')">&#215;</div></div></div>';
+    }
+  }
+  el.innerHTML=h;
+  wireExpenseParticipantChecks();
+  var debtBtns=document.querySelectorAll('#p-expenses .debt-pay-btn');
+  for(var dbi=0;dbi<debtBtns.length;dbi++){
+    debtBtns[dbi].addEventListener('click', function(){
+      openSettlementForm(this.getAttribute('data-from')||'', this.getAttribute('data-to')||'', parseFloat(this.getAttribute('data-amount')||'0')||0);
+    });
+  }
+}
+function togExpForm(){document.getElementById('expForm').classList.toggle('show');}
+function resetExpForm(){
+  expEditId=null; expEditIndex=-1;
+  var t=document.getElementById('expFormTitle'); if(t) t.textContent='Новый расход';
+  var ids=['expDesc','expAmt','expWhoManual'];
+  for(var i=0;i<ids.length;i++){ var el=document.getElementById(ids[i]); if(el) el.value=''; }
+  var whoSel=document.getElementById('expWhoSelect'); if(whoSel) whoSel.value='';
+  var cat=document.getElementById('expCat'); if(cat) cat.value='Топливо';
+  onExpWhoChange();
+  setAllExpenseParticipants(true);
+}
+function openNewExpenseForm(){
+  resetExpForm();
+  var f=document.getElementById('expForm');
+  if(f) f.classList.add('show');
+}
+function cancelExpEdit(){
+  resetExpForm();
+  var f=document.getElementById('expForm');
+  if(f) f.classList.remove('show');
+}
+function editExp(i){
+  if(!ST.expenses || !ST.expenses[i]) return;
+  var e=ST.expenses[i];
+  expEditIndex=i; expEditId=e._id||null;
+  var f=document.getElementById('expForm');
+  if(f) f.classList.add('show');
+  var t=document.getElementById('expFormTitle'); if(t) t.textContent='Редактировать расход';
+  document.getElementById('expDesc').value=e.desc||'';
+  document.getElementById('expAmt').value=e.amount||'';
+  document.getElementById('expCat').value=e.cat||'Другое';
+  var whoSel=document.getElementById('expWhoSelect');
+  var whoManual=document.getElementById('expWhoManual');
+  var member=findMemberByName(e.paidBy||'');
+  if(member){ whoSel.value=member.displayName||''; whoManual.value=''; }
+  else { whoSel.value='__manual__'; whoManual.value=e.paidBy||''; }
+  onExpWhoChange();
+  setAllExpenseParticipants(false);
+  var names=(e.participantNames&&e.participantNames.length)?e.participantNames:[];
+  var items=document.querySelectorAll('#p-expenses .expParticipant');
+  for(var j=0;j<items.length;j++){
+    items[j].checked = names.indexOf(items[j].value)>=0;
+    syncExpenseCheckVisual(items[j]);
+  }
+}
+function saveExp(){
+  var desc=document.getElementById('expDesc').value.trim();
+  var amt=parseFloat(document.getElementById('expAmt').value)||0;
+  var who=getExpenseWhoValue();
+  var cat=document.getElementById('expCat').value;
+  var sel=document.getElementById('expWhoSelect');
+  var selectedParticipants=getSelectedExpenseParticipants();
+  if(!desc||!amt||!who){alert('Заполни все поля');return;}
+  var afterMemberReady = function(member){
+    var whoName = member && member.displayName ? member.displayName : who;
+    var participantNames=selectedParticipants.slice();
+    if(participantNames.indexOf(whoName)===-1) participantNames.push(whoName);
+    if(!participantNames.length){alert('Выбери хотя бы одного участника расхода');return;}
+    var participantMemberIds=[];
+    for(var i=0;i<participantNames.length;i++){
+      var found=findMemberByName(participantNames[i]);
+      if(found&&found._id) participantMemberIds.push(found._id);
+    }
+    if(!ST.expenses) ST.expenses=[];
+    var base=(expEditIndex>=0 && ST.expenses[expEditIndex]) ? ST.expenses[expEditIndex] : {};
+    var entry={desc:desc,amount:amt,paidBy:whoName,paidByMemberId:(member&&member._id)||null,participantNames:participantNames,participantMemberIds:participantMemberIds,cat:cat,date:base.date||new Date().toISOString().split('T')[0],createdAt:base.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+    if(base._id) entry._id=base._id;
+    if(expEditIndex>=0){
+      ST.expenses[expEditIndex]=entry;
+      save();
+      if(entry._id) updateExpenseInFirebase(entry._id, entry);
+      else addExpenseToFirebase(entry);
+    } else {
+      ST.expenses.push(entry);
+      save();
+      addExpenseToFirebase(entry);
+    }
+    cancelExpEdit();
+    rExpenses();
+  };
+  if(sel && sel.value==='__manual__'){
+    addManualMemberToFirebase(who).then(function(member){
+      afterMemberReady(member || {displayName:who,_id:null});
+    });
+  }else{
+    afterMemberReady(findMemberByName(who));
+  }
+}
+function delExp(i){var entry=ST.expenses[i];ST.expenses.splice(i,1);save();if(entry&&entry._id) deleteExpenseFromFirebase(entry._id);rExpenses();}
+
+// ===== SAFETY =====
+function rSafety(){
+  var el=document.getElementById('p-safety');
+  var h='<div class="warn-banner"><div class="warn-title">&#9888;&#65039; Медведи — встреча вероятна</div>На Сахалине в июне медведь голодный. У рек с рыбой особенно активен.</div>';
+  h+='<div class="info-card"><div class="info-title">Снаряжение</div>';
+  h+='<div class="bul">Фальшфейер — минимум 2-3 шт, лучший отпугиватель</div>';
+  h+='<div class="bul">Медвежий спрей на пояс каждому при выходе</div>';
+  h+='<div class="bul">Колокольчик на рюкзаке при ходьбе по берегу</div></div>';
+  h+='<div class="info-card"><div class="info-title">Лагерь</div>';
+  h+='<div class="bul">Не ставить у воды — отступить 50-100 м</div>';
+  h+='<div class="bul">Тамбовка — выше линии плавника! Прилив 0.8-1.5 м</div>';
+  h+='<div class="bul">Еда и рыба — не в палатке, в машине</div>';
+  h+='<div class="bul">Не оставлять рыбу и потроха у берега</div></div>';
+  h+='<div class="info-card"><div class="info-title">При встрече</div>';
+  h+='<div class="bul">Не бежать</div>';
+  h+='<div class="bul">Говорить громко, медленно отступать</div>';
+  h+='<div class="bul">Фальшфейер если не уходит</div>';
+  h+='<div class="bul">Медвежий спрей — последний аргумент</div></div>';
+  h+='<div class="sec-h">&#128222; Экстренные телефоны</div>';
+  h+='<div class="contact-card">';
+  h+='<div class="contact-item"><div class="contact-name">Единый экстренный</div><a href="tel:112" class="contact-phone">112</a></div>';
+  h+='<div class="contact-item"><div class="contact-name">Скорая</div><a href="tel:103" class="contact-phone">103</a></div>';
+  h+='<div class="contact-item"><div class="contact-name">Полиция</div><a href="tel:102" class="contact-phone">102</a></div>';
+  h+='<div class="contact-item"><div class="contact-name">Пожарные</div><a href="tel:101" class="contact-phone">101</a></div>';
+  h+='</div>';
+  h+='<div class="sec-h">&#127973; Больницы по маршруту</div>';
+  h+='<div class="contact-card">';
+  h+='<div class="contact-item"><div><div class="contact-name">Областная больница Южно-Сахалинск</div><div class="contact-sub">ул. Мира, 430</div></div><a href="tel:+74242460051" class="contact-phone">+7 4242 46-00-51</a></div>';
+  h+='<div class="contact-item"><div><div class="contact-name">ЦРБ Долинск</div></div><a href="tel:+74244323344" class="contact-phone">+7 4244 3-23-44</a></div>';
+  h+='<div class="contact-item"><div><div class="contact-name">ЦРБ Макаров</div></div><a href="tel:+74245521650" class="contact-phone">+7 4245 5-21-65</a></div>';
+  h+='</div>';
+  h+='<div class="sec-h">&#127907; Рыболовные службы</div>';
+  h+='<div class="contact-card">';
+  h+='<div class="contact-item"><div><div class="contact-name">Сахалинрыбвод</div><div class="contact-sub">Лицензии на симу</div></div><a href="tel:+74242720620" class="contact-phone">+7 4242 72-06-20</a></div>';
+  h+='<div class="contact-item"><div><div class="contact-name">Эмико Фиш (путёвки)</div><div class="contact-sub">ул. Ленина, 551</div></div><a href="tel:+74242454545" class="contact-phone">+7 4242 45-45-45</a></div>';
+  h+='</div>';
+  h+='<div class="sec-h">&#128205; Контакты по маршруту</div>';
+  h+='<div class="contact-card">';
+  h+='<div class="contact-item"><div><div class="contact-name">Гостиница Анива</div><div class="contact-sub">ул. Пудова, 28</div></div><a href="tel:+79841390636" class="contact-phone">+7 984 139-06-36</a></div>';
+  h+='<div class="contact-item"><div class="contact-name">Аэропорт Южно-Сахалинск</div><a href="tel:+74242788390" class="contact-phone">+7 4242 78-83-90</a></div>';
+  h+='<div class="contact-item"><div class="contact-name">Погода Gismeteo</div><a href="https://www.gismeteo.ru/weather-yuzhno-sakhalinsk-4820/" class="contact-phone" target="_blank">Открыть</a></div>';
+  h+='</div>';
+  h+='<div class="sec-h">&#128221; Лицензия на симу</div>';
+  h+='<div class="info-card">';
+  h+='<div class="bul">Оформить в день прилёта — не тянуть!</div>';
+  h+='<div class="bul">Южный: ул. Ленина 551 — магазин Эмико Фиш</div>';
+  h+='<div class="bul">~1300 руб за 5 экземпляров / человека</div>';
+  h+='<div class="bul">На '+ST.people+' чел лимит: '+(ST.people*5)+' симы</div>';
+  h+='<div class="bul">Сахалинский таймень — только поймал-отпустил!</div>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// ===== RECIPES =====
+function rRecipes(){
+  var el=document.getElementById('p-recipes');
+  function RC(name,sub,body){
+    return '<div class="card" onclick="toggle(this)"><div class="card-hd"><div><div class="card-title">'+name+'</div>'+(sub?'<div class="card-sub">'+sub+'</div>':'')+'</div><span class="card-arrow">&#9660;</span></div><div class="card-body">'+body+'</div></div>';
+  }
+  function ING(rows){
+    var h='';
+    for(var i=0;i<rows.length;i++) h+='<div class="row"><span>'+rows[i][0]+'</span><span class="row-val">'+rows[i][1]+'</span></div>';
+    return h;
+  }
+  function M(t){return '<div class="method">'+t+'</div>';}
+  var h='<div class="sec-h">Из рыбы</div>';
+  h+=RC('Малосольная сима','8-12 ч без огня',ING([['Филе','800 г'],['Соль крупная','2 ст.л.'],['Сахар','1 ст.л.'],['Перец + укроп','по вкусу']])+M('Не мыть — обсушить. Натереть смесью, в пакет, под гнёт в тень/реку на 8-12 ч. Нарезать тонко поперёк волокна. Подать с: джин-тоник.'));
+  h+=RC('Икра пятиминутка','5 мин',M('Освободить от плёнок. Залить рассолом (1 ст.л. соли на стакан воды) на 5-7 мин. Слить, промыть. На хлеб с маслом.'));
+  h+=RC('Риет из симы','Лучший завтрак',ING([['Филе варёное','400 г'],['Сливочное масло','80-100 г'],['Каперсы','1 ст.л.'],['Лимон, соль, перец','по вкусу']])+M('Горячую рыбу разобрать на волокна. Масло тает — мешать вилкой. Каперсы, лимон. Утрамбовать, в реку на 2+ ч. Подать с: Bee\'s Knees.'));
+  h+=RC('Рыба бабочкой на костре','',M('Выпотрошить, раскрыть бабочкой. Посолить, натереть чесноком. Зафиксировать прутьями. Над углями (не огнём) 25-30 мин. Подать с: Негрони.'));
+  h+=RC('Уха рыбацкая','С традицией',M('Головы+хвосты варить 20 мин. Процедить. Картошка + куски филе + лавровый лист — 7-10 мин. Традиция: 50 мл водки и горящая веточка в котелок.'));
+  h+=RC('Пельмени из симы на сочнях','',M('Свежее филе порубить кусочками 3-5 мм (не фарш!). Лук, соль, перец. На сочень — начинку, залепить. Варить 7-8 мин после всплытия.'));
+  h+=RC('Хе из симы','Корейское, острое',ING([['Филе кубиками','400 г'],['Уксус / лимон','3 ст.л.'],['Соевый соус','2 ст.л.'],['Чеснок, хлопья перца','по вкусу']])+M('Смешать, мариновать 30 мин — рыба побелеет. Подать с: Jager тоник.'));
+  h+=RC('Сугудай','Мягче хе',M('Рыба кубиками + лук + соль + перец + уксус + масло. Перемешать, 15-20 мин.'));
+  h+=RC('Сашими','Только свежепойманная',M('Поперёк волокна под 45°, ломти ~5 мм. Соевый + васаби + имбирь. Подать с: French 75.'));
+  h+='<div class="sec-h">Деликатесы Сахалина</div>';
+  h+=RC('Устрицы на костре с сыром','',M('На решётку выпуклой стороной вниз. Когда откроются (~7 мин) — снять крышку. Масло + тёртый сыр. Ещё 2 мин. Лимон. Подать с: French 75.'));
+  h+=RC('Гребешок на сковороде','2 минуты',M('Сковорода очень горячая. Масло. 1-1.5 мин с каждой стороны. Соль, перец, масло + чеснок. Внутри должен быть нежным! Подать с: белое сухое.'));
+  h+=RC('Краб варёный','',M('Кипящая солёная вода. Варить 15-20 мин. Разломить, обмакнуть в растопленное масло. Подать с: белое сухое или Spritz.'));
+  h+=RC('Морской ёж','Деликатес прямо из воды',M('Разрезать ножницами по экватору. Достать оранжевые языки. Съесть так или с соевым. Подать с: брют — обязательно.'));
+  h+=RC('Мидии на костре','Открываются сами',M('На решётку над углями. Когда раковины откроются — готово. Не открылись — выбросить. Лимон + соевый.'));
+  h+='<div class="sec-h">Паста</div>';
+  h+=RC('Карбонара из симы','Вместо гуанчиале — буженина',ING([['Спагетти','300 г'],['Желтки','4 шт'],['Пармезан','80 г'],['Буженина кубиками','150 г'],['Чёрный перец (много!)','по вкусу']])+M('Сварить пасту. Обжарить буженину. Желтки + сыр + перец смешать. Горячую пасту снять с огня, влить смесь, быстро перемешать. НЕ ставить на огонь!'));
+  h+=RC('Феттучини с симой','',ING([['Паста','300 г'],['Филе симы','300 г'],['Сливки','150 мл'],['Чеснок, лимон, укроп','по вкусу']])+M('Рыбу обжарить 2-3 мин. Сливки + чеснок, тушить 3-4 мин. Смешать с пастой. Подать с: Wine Spritzer.'));
+  h+='<div class="sec-h">Яйца</div>';
+  h+=RC('Яйца пашот','Основа главного блюда',M('Воду почти до кипения + уксус (2 ст.л./л). Яйцо разбить в кружку, плавно опустить. Огонь минимальный. 3-3.5 мин. На хлеб: гравлакс → пашот → голландский → икра → перец.'));
+  h+=RC('Голландский соус','Слабый огонь!',ING([['Сливочное масло','150 г'],['Желтки','4 шт'],['Лимонный сок','2 ст.л.']])+M('Масло растопить, не кипятить. Желтки + лимон взбить. Кружку над паром. Тонкой струйкой масло — постоянно мешать.'));
+  h+=RC('Шакшука','',M('Лук + чеснок обжарить. Томатная паста + вода + паприка + тмин, 5 мин. Углубления → вбить яйца. Накрыть, 4-5 мин.'));
+  h+='<div class="sec-h">Кофе</div>';
+  h+=RC('Бамбл би','Если есть лёд',ING([['Дрип крепкий','150 мл'],['Мёд','1 ст.л.'],['Лимонный сок','30 мл'],['Лёд','полный стакан']])+M('Мёд растворить в кофе. Стакан с льдом. Лимонный сок слоем, затем кофе с мёдом.'));
+  h+=RC('Раф с халвой','Если холодно',ING([['Дрип крепкий','100 мл'],['Сливки / сгуха','80 мл'],['Халва','1-2 ст.л.']])+M('Растворить халву в горячем кофе. Добавить сливки. Взболтать.'));
+  h+=RC('Кофейный негрони (эксперимент)','Кампари вместо воды в дрип',ING([['Кампари нагреть до ~70','через дрип'],['Джин','30 мл'],['Вермут красный','30 мл']])+M('Нагреть Кампари, не кипятить. Пролить через дрип медленно. Смешать с джином и вермутом.'));
+  h+='<div class="sec-h">Базовое</div>';
+  h+=RC('Рич сироп (2:1)','Основа коктейлей',M('2 части сахара + 1 часть горячей воды. Мешать до растворения. Остудить. Хранится несколько дней.'));
+  el.innerHTML=h;
+}
+
+// ===== BAR =====
+function rBar(){
+  var el=document.getElementById('p-bar');
+  function CC(name,sub,tag,ings,method){
+    var tagLabel=tag==='easy'?'просто':tag==='med'?'средне':'сложнее';
+    var h='<div class="card" onclick="toggle(this)"><div class="card-hd">';
+    h+='<div><div class="card-title">'+name+'</div>'+(sub?'<div class="card-sub">'+sub+'</div>':'')+'</div>';
+    h+='<div style="display:flex;gap:6px;align-items:center"><span class="tag tag-'+tag+'">'+tagLabel+'</span><span class="card-arrow">&#9660;</span></div>';
+    h+='</div><div class="card-body"><div class="ing-label">Ингредиенты</div>';
+    for(var i=0;i<ings.length;i++) h+='<div class="row"><span>'+ings[i][0]+'</span><span class="row-val">'+ings[i][1]+'</span></div>';
+    h+='<div class="method">'+method+'</div></div></div>';
+    return h;
+  }
+  var cats={
+    gin:{label:'Джин',c:[
+      CC('Джин-тоник','Классика после зори','easy',[['Джин','50 мл'],['Тоник','150 мл'],['Лёд + лимон/огурец','долька']],'Лёд, джин, тоник — один раз размешать.'),
+      CC('Негрони классика','Главный коктейль','easy',[['Джин','30 мл'],['Кампари','30 мл'],['Вермут красный','30 мл'],['Лёд + апельсин','долька']],'Мешать 20-30 сек ложкой. Никакого шейкера.'),
+      CC('Негрони Сбальято','На брюте','easy',[['Кампари','30 мл'],['Вермут красный','30 мл'],['Брют холодный','60 мл'],['Апельсин','долька']],'Кампари + вермут, долить брют. Один оборот. Брют держать в реке.'),
+      CC('Джин + тархун','Опасно легко','easy',[['Джин','50 мл'],['Тархун (газировка)','150 мл'],['Лёд + лимон','долька']],'Как джин-тоник, тархун вместо тоника.'),
+      CC('French 75','Элегантно','med',[['Джин','40 мл'],['Лимонный сок','20 мл'],['Сироп','15 мл'],['Брют','60 мл']],'Джин+лимон+сироп взболтать, долить брютом.'),
+      CC("Bee's Knees",'Медовый','easy',[['Джин','50 мл'],['Лимонный сок','20 мл'],['Мёд (развести 1:1)','15 мл']],'Взболтать со льдом, процедить.'),
+      CC('Том Коллинз','Длинный','easy',[['Джин','45 мл'],['Лимонный сок','30 мл'],['Сироп','15 мл'],['Содовая','80 мл']],'Взболтать, долить содовой.'),
+      CC('Лондонский мятный свизл','Английский мохито на джине','easy',[['Джин','50 мл'],['Лимонный сок','15 мл'],['Сироп','20 мл'],['Мята (с берега!)','8-10 листов'],['Содовая','100 мл']],'Мяту засыпать льдом. Влить лимон, сироп, джин. Долить содовой.'),
+      CC('Московский мул с джином','Острый','easy',[['Джин','50 мл'],['Ginger beer','120 мл'],['Лимонный сок','15 мл']],'Всё в стакан со льдом, размешать.'),
+      CC('Beyond the Sea','Авторский, с флоутом','hard',[['Джин','60 мл'],['Лимонный сок','30 мл'],['Рич сироп (2:1)','30 мл'],['Огурец','1 долька'],['Красное сухое (флоут)','поверх']],'Огурец мадлим. Взболтать со льдом. Красное по ложке поверх — слоем.'),
+    ]},
+    rum:{label:'Ром',c:[
+      CC('Куба либре','','easy',[['Тёмный ром','50 мл'],['Черноголовка / кола','150 мл'],['Лайм','долька']],'Лёд, ром, кола, лайм.'),
+      CC('Мохито','Мята с берега реки','easy',[['Тёмный ром','50 мл'],['Лимонный сок','25 мл'],['Сироп','15 мл'],['Мята','8-10 листов'],['Содовая','80 мл']],'Мяту аккуратно помять с сиропом. Ром+лимон+лёд, долить содовой.'),
+      CC('Dark & Stormy','Морской','easy',[['Тёмный ром','50 мл'],['Ginger beer','120 мл'],['Лайм','15 мл']],'Ginger beer со льдом, ром сверху слоем.'),
+      CC('Rum Old Fashioned','Тёплый вечерний','med',[['Тёмный ром','60 мл'],['Сироп','10 мл'],['Angostura биттер','2 дэша'],['Апельсин (цедра)','масла отжать']],'Сироп+биттер+цедра, ром, лёд, мешать 20 сек.'),
+      CC('Jungle Bird','Тропический','med',[['Тёмный ром','45 мл'],['Кампари','20 мл'],['Ананасовый сок','45 мл'],['Лимонный сок','15 мл'],['Сироп','10 мл']],'Всё со льдом взболтать, процедить.'),
+    ]},
+    jager:{label:'Егерь',c:[
+      CC('Егерь сауэр','','easy',[['Егерь','45 мл'],['Лимонный сок','25 мл'],['Сироп','15 мл']],'Взболтать со льдом, процедить.'),
+      CC('Jager тоник','Недооценённый','easy',[['Егерь','40 мл'],['Тоник','120 мл'],['Апельсин','долька']],'Как джин-тоник. Многие удивляются.'),
+      CC('Jager Old Fashioned','Травяной','med',[['Егерь','60 мл'],['Сироп','10 мл'],['Angostura','2 дэша'],['Апельсин (цедра)','масла отжать']],'Сироп+биттер+цедра, егерь, лёд, мешать 20 сек.'),
+      CC('Jager Mule','Имбирь + травы','easy',[['Егерь','45 мл'],['Ginger beer','120 мл'],['Лимон','15 мл']],'Лёд, егерь, ginger beer, лайм.'),
+      CC('Jager + тархун','Дикое — работает','easy',[['Егерь','40 мл'],['Тархун (газировка)','120 мл'],['Лимон','долька']],'Травы + анисовый тархун. Лимон обязателен.'),
+    ]},
+    wine:{label:'Вино',c:[
+      CC('Wine Spritzer','Дневной','easy',[['Белое сухое','100 мл'],['Тоник или содовая','80 мл'],['Лёд + лимон','долька']],'Вино + тоник. Не мешать.'),
+      CC('Spritz без апероля','Кампари вместо апероля','easy',[['Брют','90 мл'],['Кампари','30 мл'],['Содовая','30 мл'],['Апельсин','долька']],'Лёд+Кампари+брют+содовая. Один оборот.'),
+      CC('Kir Royale','Французский аперитив','easy',[['Брют холодный','120 мл'],['Варенье / сироп','15 мл']],'Варенье на дно, долить брютом. Не мешать.'),
+      CC('Sangria Express','На двоих','easy',[['Белое сухое','250 мл'],['Тархун или лимонад','100 мл'],['Лимонный сок','20 мл'],['Сироп','20 мл']],'Смешать, настоять 10 мин.'),
+    ]},
+  };
+  var keys=Object.keys(cats);
+  var h='<div class="subtabs">';
+  for(var i=0;i<keys.length;i++) h+='<div class="stab'+(bF===keys[i]?' active':'')+'" onclick="setBF(\''+keys[i]+'\')">'+cats[keys[i]].label+'</div>';
+  h+='</div>';
+  for(var i=0;i<keys.length;i++){
+    h+='<div id="bar-'+keys[i]+'" style="display:'+(bF===keys[i]?'block':'none')+'">'+cats[keys[i]].c.join('')+'</div>';
+  }
+  el.innerHTML=h;
+}
+function setBF(f){bF=f;rBar();}
+
+
+function showAddPoint(id){
+  document.getElementById('addPtForm').classList.add('show');
+  document.getElementById('ptName').focus();
+}
+function addRiverPoint(id){
+  var name=document.getElementById('ptName').value.trim();
+  if(!name){alert('Введи название точки');return;}
+  var coords=document.getElementById('ptCoords').value.trim();
+  var note=document.getElementById('ptNote').value.trim();
+  var lat=null,lon=null;
+  if(coords){
+    var parts=coords.split(',');
+    if(parts.length===2){lat=parseFloat(parts[0].trim());lon=parseFloat(parts[1].trim());}
+  }
+  if(!ST.riverPoints) ST.riverPoints={};
+  if(!ST.riverPoints[id]) ST.riverPoints[id]=[];
+  ST.riverPoints[id].push({name:name,note:note,lat:lat,lon:lon});
+  save();
+  showRiver(id);
+}
+function delRiverPoint(id,idx){
+  if(!ST.riverPoints||!ST.riverPoints[id]) return;
+  ST.riverPoints[id].splice(idx,1);
+  save();
+  showRiver(id);
+}
+
+
+function showAddGearCommon(gi){
+  document.getElementById('addGC-'+gi).classList.add('show');
+  document.getElementById('addGCT-'+gi).focus();
+}
+function addGearCommon(gi){
+  var v=document.getElementById('addGCT-'+gi).value.trim();
+  if(!v) return;
+  if(!ST.gearCommonExtra) ST.gearCommonExtra={};
+  if(!ST.gearCommonExtra[gi]) ST.gearCommonExtra[gi]=[];
+  ST.gearCommonExtra[gi].push(v);
+  save();rGear();setGT('common');
+}
+function delGearCommon(idx){
+  if(!ST.gearCommonDel) ST.gearCommonDel=[];
+  if(ST.gearCommonDel.indexOf(idx)<0) ST.gearCommonDel.push(idx);
+  save();rGear();setGT('common');
+}
+function delGearCommonExtra(gi,idx){
+  if(!ST.gearCommonExtra||!ST.gearCommonExtra[gi]) return;
+  ST.gearCommonExtra[gi].splice(idx,1);
+  save();rGear();setGT('common');
+}
+function togGCE(gi,idx,el){
+  var key='ec'+gi+'_'+idx;
+  if(!ST.gearCC) ST.gearCC={};
+  ST.gearCC[key]=!ST.gearCC[key];
+  el.classList.toggle('done');
+  el.querySelector('.check-box').classList.toggle('checked');
+  save();
+}
+function delGearPersonalBase(idx){
+  if(!ST.gearPersonalDel) ST.gearPersonalDel=[];
+  if(ST.gearPersonalDel.indexOf(idx)<0) ST.gearPersonalDel.push(idx);
+  save();rGear();setGT('personal');
+}
+
+load();
+render('route');
+subscribeFirebase();
+</script>
+</body>
+</html>
