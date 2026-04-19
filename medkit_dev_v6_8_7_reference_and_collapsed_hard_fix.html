@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Medkit Dev автономный v4</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f2f2f7;color:#1c1c1e}
+.topbar{background:#1F4E79;color:#fff;padding:14px 16px 10px;position:sticky;top:0;z-index:50}
+.topbar h1{font-size:18px;font-weight:700}
+.topbar p{font-size:12px;opacity:.78;margin-top:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:12px}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:12px}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.seg button,.tiny-btn,.chip,.mode-btn,.group-hide-btn,.mini-link{
+  border:none;border-radius:10px;padding:10px 12px;font:inherit;cursor:pointer
+}
+.seg button{background:#e9eef5;color:#1F4E79;font-weight:600}
+.seg button.active,.mode-btn.active{background:#1F4E79;color:#fff}
+.mode-wrap{display:flex;gap:8px;flex-wrap:wrap}
+.mode-btn{background:#e9eef5;color:#1F4E79;font-weight:600}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.field{flex:1 1 140px;min-width:0}
+.field.sm{flex:0 0 96px}
+.label{font-size:12px;color:#6b7280;margin-bottom:4px}
+.select,input{
+  width:100%;padding:10px 12px;border:1px solid #d9dde3;border-radius:10px;background:#fff;font:inherit;color:#1c1c1e
+}
+.section{background:#fff;border-radius:14px;margin-bottom:10px;overflow:hidden;border:1px solid #e9edf3}
+.section summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #f1f3f5;font-weight:700;color:#1F4E79}
+.section summary::-webkit-details-marker{display:none}
+.summary-left{display:flex;align-items:center;gap:10px}
+.summary-right{display:flex;align-items:center;gap:8px}
+.arrow{display:inline-block;transition:transform .18s ease}
+details[open] .arrow{transform:rotate(90deg)}
+.section-body{padding:12px 12px 2px}
+.item{border:1px solid #eceff3;border-radius:12px;padding:10px;margin-bottom:10px;background:#fff}
+.item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.item-top-left{display:flex;align-items:flex-start;gap:10px;flex:1}
+.item-check{
+  appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:999px;border:2px solid #b7c0cb;background:#fff;position:relative;cursor:pointer;flex:0 0 22px;margin-top:2px
+}
+.item-check:checked{border-color:#16a34a;background:#16a34a}
+.item-check:checked::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.item-name{font-weight:700}
+.item-tag{font-size:12px;color:#6b7280;margin-top:3px}
+.item-cat{font-size:12px;color:#1F4E79;margin-top:3px}
+.item-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tiny-btn{background:#e9eef5;color:#1F4E79;font-size:13px;padding:8px 10px}
+.muted{font-size:12px;color:#6b7280}
+.hidden-block{background:#fff;border-radius:14px;padding:12px;margin-top:10px}
+.hidden-chip{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f1f3f5}
+.hidden-chip:last-child{border-bottom:none}
+.storage-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.storage-chip{display:inline-flex;align-items:center;gap:8px;background:#eef4ff;color:#1F4E79;border-radius:999px;padding:7px 10px;font-size:13px}
+.storage-chip button{border:none;background:none;color:#b91c1c;cursor:pointer;font:inherit}
+.info{font-size:13px;color:#4b5563;line-height:1.45}
+h3{font-size:15px;color:#1F4E79;margin-bottom:8px}
+.filter-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{background:#eef4ff;color:#1F4E79;font-size:13px;padding:8px 11px;border-radius:999px}
+.chip.active{background:#1F4E79;color:#fff}
+.item-grid-top{display:grid;grid-template-columns:1fr 1fr 110px;gap:10px}
+.item-grid-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.group-tools{display:flex;justify-content:flex-end;margin-bottom:10px}
+.group-hide-btn{background:none;color:#64748b;font-size:13px;padding:6px 8px}
+.group-hide-btn:hover{background:#f3f4f6}
+.progress{height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:8px}
+.progress > div{height:100%;background:#22c55e}
+.place-list .item{border-style:dashed}
+.mini-link{background:none;color:#1F4E79;font-size:13px;padding:0}
+.medinfo{margin-top:10px;border-top:1px dashed #e5e7eb;padding-top:10px}
+.medinfo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.medinfo-block{background:#f8fafc;border-radius:10px;padding:10px}
+.medinfo-title{font-size:12px;color:#64748b;margin-bottom:4px}
+.medinfo-text{font-size:13px;line-height:1.45;color:#1f2937}
+@media (max-width: 700px){
+  .item-grid-top{grid-template-columns:1fr 1fr 92px}
+  .item-grid-bottom,.medinfo-grid{grid-template-columns:1fr}
+}
+
+.supp-stack{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.supp-col{background:#fff;border:1px solid #e9edf3;border-radius:12px;padding:10px}
+.supp-col h4{font-size:14px;color:#1F4E79;margin-bottom:8px}
+.supp-item{padding:6px 0;border-bottom:1px solid #f1f3f5}
+.supp-item:last-child{border-bottom:none}
+.supp-name{font-size:13px;font-weight:600}
+.supp-how{font-size:12px;color:#6b7280;margin-top:2px}
+@media (max-width:700px){
+  .supp-stack{grid-template-columns:1fr}
+}
+
+
+.ref-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ref-card{background:#fff;border:1px solid #e9edf3;border-radius:12px;padding:12px}
+.ref-card h4{font-size:14px;color:#1F4E79;margin-bottom:8px}
+.ref-card ul{padding-left:18px}
+.ref-card li{margin:0 0 6px 0;font-size:13px;line-height:1.45;color:#1f2937}
+.ref-red{color:#b91c1c;font-weight:600}
+@media (max-width:700px){.ref-grid{grid-template-columns:1fr}}
+
+
+.import-preview{margin-top:10px;border-top:1px solid #eef2f7;padding-top:10px}
+.import-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #f1f3f5}
+.import-row:last-child{border-bottom:none}
+.import-left{min-width:0}
+.import-name{font-weight:600;font-size:14px}
+.import-meta{font-size:12px;color:#6b7280;margin-top:3px;line-height:1.35}
+.import-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+
+
+.import-edit{margin-top:8px;padding:10px;border:1px dashed #d8dee8;border-radius:10px;background:#fafcff}
+.import-edit-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px}
+@media (max-width:700px){.import-edit-grid{grid-template-columns:1fr}}
+
+
+.tool-acc{background:#fff;border:1px solid #e9edf3;border-radius:14px;margin-bottom:12px;overflow:hidden}
+.tool-acc summary{list-style:none;cursor:pointer;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;color:#1F4E79}
+.tool-acc summary::-webkit-details-marker{display:none}
+.tool-acc-body{padding:0 14px 14px}
+
+
+.scope-block{margin-bottom:8px}
+.mode-block{margin-top:4px}
+.mode-label{font-size:12px;color:#6b7280;margin:0 0 6px 2px}
+.seg-main button{
+  font-size:15px;
+  font-weight:700;
+  padding:11px 15px;
+}
+.seg-sub button{
+  font-size:13px;
+  font-weight:600;
+  padding:7px 11px;
+  opacity:.92;
+}
+
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>Аптечка — dev v4</h1>
+  <p>Автономный тестовый экран. Вернул карточки препаратов поверх рабочей логики.</p>
+</div>
+<div class="wrap">
+  <div class="card" id="overviewCard">
+    <div class="scope-block">
+      <div class="seg seg-main" id="scopeSeg">
+        <button data-scope="common" class="active">Общая аптечка</button>
+        <button data-scope="personal">Личная аптечка</button>
+      </div>
+    </div>
+    <div class="row" id="memberRow" style="display:none">
+      <div class="field">
+        <div class="label">Участник</div>
+        <select class="select" id="memberSelect"></select>
+      </div>
+    </div>
+    <div class="mode-block">
+      <div class="mode-label" id="modeLabel">Режим просмотра</div>
+      <div class="mode-wrap seg-sub" id="modeSeg">
+        <button class="mode-btn active" data-mode="groups">По категориям</button>
+        <button class="mode-btn" data-mode="storage">По месту хранения</button>
+      </div>
+    </div>
+    <div class="info" style="margin-top:8px">Тут тестируем только аптечку и места хранения, без общего каркаса сайта.</div>
+    <div class="row" style="margin-top:10px;justify-content:space-between">
+      <div class="muted">Собрано</div>
+      <div class="muted" id="progressText"></div>
+    </div>
+    <div class="progress"><div id="progressBar" style="width:0%"></div></div>
+  </div>
+
+  <details class="tool-acc" id="storageAcc">
+    <summary><span>Места хранения</span><span class="arrow">▸</span></summary>
+    <div class="tool-acc-body">
+      <div class="row">
+        <div class="field">
+          <div class="label">Новое место хранения</div>
+          <input id="newStorageInput" class="select" placeholder="Например: Красная аптечка / Поясная сумка" />
+        </div>
+        <div style="align-self:flex-end">
+          <button class="tiny-btn" id="addStorageBtn">Добавить</button>
+        </div>
+      </div>
+      <div class="storage-list" id="storageList"></div>
+    </div>
+  </details>
+
+  <details class="tool-acc" id="importAcc">
+    <summary><span>Импорт списка препаратов / БАДов</span><span class="arrow">▸</span></summary>
+    <div class="tool-acc-body" id="importCard">
+      <div class="muted">Вставь список построчно. Можно просто названия. Можно расширенно: <b>название | место хранения | слот | как принимать</b></div>
+      <div class="row" style="margin-top:10px">
+        <div class="field">
+          <textarea id="importText" class="select" rows="7" placeholder="Например:
+Омега 950 Now Foods | Личный несессер | Утро | с едой
+D3 2000 IU | Личный несессер | Утро | после еды
+Супрастин 25 мг | Красная аптечка
+Церукал ампулы 2 мл | Красная аптечка"></textarea>
+        </div>
+      </div>
+      <div class="import-actions">
+        <button class="tiny-btn" id="parseImportBtn">Разобрать список</button>
+        <button class="tiny-btn" id="applyImportBtn" style="display:none">Добавить в аптечку</button>
+        <button class="tiny-btn" id="clearImportBtn" style="display:none">Очистить</button>
+      </div>
+      <div id="importPreview" class="import-preview" style="display:none"></div>
+    </div>
+  </details>
+
+  <div class="card" id="storageFilterCard" style="display:none">
+    <h3>Показывать содержимое места</h3>
+    <div class="filter-chips" id="storageFilterChips"></div>
+  </div>
+
+  
+  <!--search moved--><div class="card" id="searchCard">
+    <h3 id="searchTitle">Поиск по аптечке</h3>
+    <div class="row">
+      <div class="field">
+        <div class="label">Название, ярлык, симптомы, категория, место хранения, комментарий</div>
+        <input id="searchInput" class="select" placeholder="Например: аллергия, рвота, сон, ибупрофен" />
+      </div>
+    </div>
+    <div class="muted" id="searchHint" style="margin-top:8px">Когда ввод пустой — работает обычный режим. Когда есть запрос — показывается единый список результатов.</div>
+  </div>
+
+
+  <details class="tool-acc" id="suppQuickAcc"><summary><span>Стек / режим приёма</span><span class="arrow">▸</span></summary><div class="tool-acc-body"><div id="suppQuickRoot"></div></div></details>
+  <div id="searchRoot"></div>
+  <div id="medkitRoot"></div>
+  <div id="refRoot"></div>
+  <div id="hiddenRoot"></div>
+</div>
+
+<script>
+const MEDINFO = {
+  ibuprofen:{purpose:'Обезболивание, температура, воспаление.',symptoms:'Головная боль, мышцы, суставы, жар.',how:'Обычно после еды. В походном наборе — по необходимости.',replace:'Парацетамол, нимесулид.',contra:'Язва, выраженные проблемы с ЖКТ, непереносимость НПВС.',side:'Желудок, изжога, тошнота.',warn:'Не смешивать бездумно с другими НПВС.'},
+  ketanov:{purpose:'Сильное обезболивание.',symptoms:'Острая боль, когда лёгкие средства не помогают.',how:'Коротко, по необходимости.',replace:'Кеторол / кеторолак.',contra:'Язва, кровотечения, НПВС-риски.',side:'Тошнота, слабость, ЖКТ-реакции.',warn:'Не для длительного приёма.'},
+  nimesulide:{purpose:'Боль и воспаление.',symptoms:'Спина, суставы, воспалительная боль.',how:'Обычно после еды.',replace:'Ибупрофен.',contra:'Печень, ЖКТ, непереносимость.',side:'Тошнота, тяжесть.',warn:'Не злоупотреблять.'},
+  paracetamol:{purpose:'Снижение температуры и умеренное обезболивание.',symptoms:'Жар, простуда, головная боль.',how:'По необходимости.',replace:'Ибупрофен.',contra:'Проблемы с печенью.',side:'Редко — тошнота.',warn:'Не превышать дозу.'},
+  ingavirin:{purpose:'Противовирусное.',symptoms:'Простудные / вирусные состояния.',how:'По схеме курса.',replace:'По ситуации, симптоматическая терапия.',contra:'Индивидуальная непереносимость.',side:'Редко аллергические реакции.',warn:'Не заменяет базовую симптоматическую помощь.'},
+  remantadin:{purpose:'Противовирусное.',symptoms:'Ранние вирусные состояния.',how:'По схеме.',replace:'Симптоматическая терапия.',contra:'Беременность, печень/почки, индивидуальная непереносимость.',side:'Тошнота, головная боль.',warn:'Есть ограничения и нюансы по эффективности.'},
+  smecta:{purpose:'Сорбент при ЖКТ-проблемах.',symptoms:'Отравление, диарея, тяжесть.',how:'Разводить и пить по ситуации.',replace:'Другой сорбент.',contra:'Кишечная непроходимость, тяжёлые запоры.',side:'Запор.',warn:'Может мешать всасыванию других препаратов.'},
+  loperamide:{purpose:'Останавливает диарею.',symptoms:'Понос без тяжёлой интоксикации.',how:'По необходимости.',replace:'Сорбент + регидратация.',contra:'Подозрение на инфекцию с температурой/кровью.',side:'Запор, вздутие.',warn:'Не всегда нужен при отравлении.'},
+  cerucal:{purpose:'От тошноты и рвоты.',symptoms:'Тошнота, рвота.',how:'По необходимости.',replace:'Регидратация, покой; ампульная форма при тяжёлом сценарии.',contra:'Некоторые неврологические состояния.',side:'Слабость, сонливость.',warn:'Смотреть противопоказания внимательно.'},
+  suprastin_tabs:{purpose:'Антигистаминное.',symptoms:'Аллергия, зуд, отёк.',how:'По необходимости.',replace:'Другие антигистаминные.',contra:'Индивидуальная непереносимость, осторожно при сонливости.',side:'Сонливость, сухость.',warn:'Может усыплять.'},
+  peroxide:{purpose:'Обработка раны.',symptoms:'Порез, ссадина.',how:'Наружно.',replace:'Антисептик по ситуации.',contra:'Нетипично, наружное применение.',side:'Может щипать.',warn:'Не злоупотреблять глубоко в ране.'},
+  plaster:{purpose:'Защита мелких повреждений.',symptoms:'Мозоли, мелкие порезы.',how:'Наружно.',replace:'Бинт, салфетка.',contra:'Аллергия на клей.',side:'Раздражение кожи.',warn:'Менять по загрязнению.'},
+  vizin:{purpose:'Капли для глаз.',symptoms:'Раздражение глаз, покраснение.',how:'По инструкции и по ситуации.',replace:'Другие капли для глаз.',contra:'Некоторые глазные состояния.',side:'Жжение, сухость.',warn:'Не злоупотреблять.'},
+  naftizin:{purpose:'Капли / спрей для носа.',symptoms:'Заложенность носа.',how:'Коротко, по необходимости.',replace:'Другие сосудосуживающие.',contra:'Ряд ЛОР и сердечно-сосудистых ограничений.',side:'Сухость, привыкание.',warn:'Не использовать слишком долго.'},
+  melaxen:{purpose:'Сон / засыпание.',symptoms:'Сбой сна, перелёты, тяжёлое засыпание.',how:'Обычно вечером / перед сном.',replace:'Вэлсон, режим сна.',contra:'Индивидуальные ограничения.',side:'Сонливость утром.',warn:'Не мешать с активностями, где нужна концентрация.'},
+  velson:{purpose:'Сон.',symptoms:'Трудности с засыпанием.',how:'Перед сном.',replace:'Мелаксен.',contra:'Смотреть состав и ограничения.',side:'Сонливость.',warn:'Не использовать перед активной ездой.'},
+  d3:{purpose:'Витамин D.',symptoms:'Не для экстренного сценария, а для режима.',how:'Часто после еды.',replace:'Другие формы витамина D.',contra:'Индивидуальные ограничения.',side:'Редко дискомфорт при передозе.',warn:'Смотреть дозировку.'},
+  omega:{purpose:'Омега-3.',symptoms:'Режимный приём.',how:'Обычно с едой.',replace:'Другие омега-комплексы.',contra:'Индивидуальные нюансы.',side:'Тяжесть, отрыжка.',warn:'Лучше с пищей.'},
+  k2:{purpose:'Витамин K2.',symptoms:'Режимный приём.',how:'Часто вместе с D3.',replace:'Комплексы D3+K2.',contra:'Нюансы с антикоагулянтами.',side:'Редко.',warn:'Учитывать совместимость.'},
+  astax:{purpose:'Антиоксидант.',symptoms:'Режимный приём.',how:'Часто с едой.',replace:'Другие антиоксиданты.',contra:'Индивидуальная непереносимость.',side:'Редко.',warn:'Не экстренный препарат.'},
+  dexa_amp:{purpose:'Сильное противоотёчное / противоаллергическое.',symptoms:'Аллергия, отёк, экстренные сценарии.',how:'Ампульная форма, по экстренной схеме.',replace:'Антигистаминные, по ситуации.',contra:'Много нюансов, использовать с головой.',side:'Сердцебиение, возбуждение и др.',warn:'Серьёзный препарат, не колоть без понимания ситуации.'},
+  ketorol_amp:{purpose:'Сильный обезбол.',symptoms:'Острая боль.',how:'Инъекционно, по ситуации.',replace:'Таблетированные обезболы, если хватает.',contra:'НПВС-риски, ЖКТ, кровотечения.',side:'ЖКТ, слабость.',warn:'Не для регулярного использования.'},
+  suprastin_amp:{purpose:'Аллергия в более жёстком сценарии.',symptoms:'Сильная аллергическая реакция.',how:'Инъекционно.',replace:'Таблетированный антигистаминный при мягком сценарии.',contra:'Сонливость и др. ограничения.',side:'Сонливость, слабость.',warn:'Понимать, что и зачем колешь.'},
+  cerucal_amp:{purpose:'Тошнота / рвота, когда таблетки не заходят.',symptoms:'Рвота, тяжёлая тошнота.',how:'Инъекционно.',replace:'Таблетированная форма, если человек может пить.',contra:'Неврологические ограничения и др.',side:'Слабость, сонливость.',warn:'Не колоть без понимания противопоказаний.'}
+};
+
+const BASE = {
+  groups: [
+    {key:'pain', title:'Обезбол', items:[
+      {id:'ibuprofen', name:'Ибупрофен', tag:'боль / температура'},
+      {id:'ketanov', name:'Кетанов', tag:'сильная боль'},
+      {id:'nimesulide', name:'Нимесулид', tag:'боль / воспаление'}
+    ]},
+    {key:'cold', title:'Простуда / температура', items:[
+      {id:'paracetamol', name:'Парацетамол', tag:'жар / температура'},
+      {id:'ingavirin', name:'Ингавирин', tag:'простуда / вирусное'},
+      {id:'remantadin', name:'Ремантадин', tag:'простуда / вирусное'}
+    ]},
+    {key:'gut', title:'ЖКТ', items:[
+      {id:'smecta', name:'Смекта', tag:'ЖКТ / сорбент'},
+      {id:'loperamide', name:'Лоперамид', tag:'диарея'},
+      {id:'cerucal', name:'Церукал', tag:'тошнота / рвота'}
+    ]},
+    {key:'allergy', title:'Аллергия', items:[
+      {id:'suprastin_tabs', name:'Супрастин', tag:'аллергия'}
+    ]},
+    {key:'wounds', title:'Раны / перевязка', items:[
+      {id:'peroxide', name:'Перекись', tag:'обработка'},
+      {id:'plaster', name:'Пластырь', tag:'перевязка'}
+    ]},
+    {key:'eyesnose', title:'Глаза / нос', items:[
+      {id:'vizin', name:'Визин', tag:'глаза'},
+      {id:'naftizin', name:'Нафтизин', tag:'нос'}
+    ]},
+    {key:'sleep', title:'Сон', items:[
+      {id:'melaxen', name:'Мелаксен', tag:'сон'},
+      {id:'velson', name:'Вэлсон', tag:'сон'}
+    ]},
+    {key:'supplements', title:'БАДы / витамины', items:[
+      {id:'d3', name:'D3', tag:'витамин'},
+      {id:'omega', name:'Омега 950', tag:'омега'},
+      {id:'k2', name:'K2', tag:'витамин'},
+      {id:'astax', name:'Астаксантин', tag:'антиоксидант'}
+    ]},
+    {key:'ampules', title:'Ампулы / уколы', items:[
+      {id:'dexa_amp', name:'Дексаметазон (амп.)', tag:'отёк / аллергия'},
+      {id:'ketorol_amp', name:'Кеторол (амп.)', tag:'сильный обезбол'},
+      {id:'suprastin_amp', name:'Супрастин (амп.)', tag:'аллергия'},
+      {id:'cerucal_amp', name:'Церукал (амп.)', tag:'тошнота / рвота'}
+    ]}
+  ],
+  members:[{id:'dmitry',name:'Дмитрий'},{id:'member2',name:'Участник 2'},{id:'member3',name:'Участник 3'}],
+  units:['','таб','капс','амп','шт','мл','мг','г','пак','саше','тюб','фл'],
+  how:['','натощак','до еды','во время еды','после еды','с едой','перед сном','по необходимости'],
+  commonStorageDefaults:['Красная аптечка','Аптечка в машине','Лагерь'],
+  personalStorageDefaults:['Личный несессер','Рюкзак','Карман вейдерсов','Гермосумка']
+};
+
+const LS_KEY = 'medkit_dev_autonomous_v4';
+
+let state = {
+  scope:'common',
+  memberId:'dmitry',
+  viewMode:'groups',
+  commonStorage:[...BASE.commonStorageDefaults],
+  personalStorage:{dmitry:[...BASE.personalStorageDefaults],member2:[...BASE.personalStorageDefaults],member3:[...BASE.personalStorageDefaults]},
+  filter:{common:'', personal:{dmitry:'',member2:'',member3:''}},
+  common:{},
+  personal:{dmitry:{},member2:{},member3:{}},
+  hiddenCommon:{},
+  hiddenPersonal:{dmitry:{},member2:{},member3:{}},
+  hiddenGroupsCommon:{},
+  hiddenGroupsPersonal:{dmitry:{},member2:{},member3:{}},
+  openCommon:{},
+  openPersonal:{dmitry:{},member2:{},member3:{}},
+  infoOpen:{},
+  searchQuery:'',
+  selectedItemKey:'',
+  customCommon:{},
+  customPersonal:{dmitry:{},member2:{},member3:{}}
+};
+
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem(LS_KEY)||'null');
+    if(s) state=Object.assign(state,s);
+  }catch(e){}
+  // Не тянем старое состояние открытых аккордеонов из прошлых версий:
+  // по умолчанию все разделы должны быть свернуты.
+  state.openCommon = {};
+  state.openPersonal = {dmitry:{},member2:{},member3:{}};
+}
+function normalizedText(s){
+  return String(s || '').toLowerCase().replace(/ё/g,'е').trim();
+}
+function itemMatchesSearch(group, item){
+  const q = normalizedText(currentSearchQuery());
+  if(!q) return true;
+
+  const info = MEDINFO[item.id] || {};
+  const key = itemKey(group.key, item.id);
+  const entry = ensureEntry(currentDataBucket(), key);
+
+  // 1) Сначала ищем по главным и ожидаемым полям.
+  const primaryFields = [
+    item.name,
+    item.tag,
+    group.title,
+    entry.place,
+    entry.comment,
+    entry.slot,
+    entry.how
+  ].map(normalizedText);
+
+  // Точное / префиксное совпадение в названии — самый приоритетный сценарий.
+  const name = normalizedText(item.name);
+  if (name.startsWith(q)) return true;
+
+  // Совпадение по любому основному полю.
+  if (primaryFields.some(v => v.includes(q))) return true;
+
+  // 2) Глубокий поиск по справке включаем только с 4+ символов,
+  // чтобы короткие куски вроде "сме" не ловили "смешивать", "смотреть" и т.п.
+  if (q.length < 4) return false;
+
+  const secondaryFields = [
+    info.purpose,
+    info.symptoms,
+    info.how,
+    info.replace
+  ].map(normalizedText);
+
+  return secondaryFields.some(v => v.includes(q));
+}
+function renderSearchView(){
+  const hidden = currentHiddenBucket();
+  const hiddenGroups = currentHiddenGroupsBucket();
+  const rows = [];
+  BASE.groups.forEach(group=>{
+    if(hiddenGroups[group.key]) return;
+    getGroupItems(group).forEach(item=>{
+      const key = itemKey(group.key, item.id);
+      if(hidden[key]) return;
+      if(itemMatchesSearch(group, item)) rows.push(renderItem(group, item));
+    });
+  });
+  const q = currentSearchQuery();
+  return `<div class="card place-list"><h3>Результаты поиска${q ? ': ' + esc(q) : ''}</h3>${rows.length ? rows.join('') : '<div class="muted">Ничего не найдено.</div>'}</div>`;
+}
+
+
+
+function currentCustomBucket(){
+  return state.scope==='common' ? state.customCommon : state.customPersonal[state.memberId];
+}
+function ensureCustomGroup(bucket, groupKey){
+  if(!bucket[groupKey]) bucket[groupKey] = [];
+  return bucket[groupKey];
+}
+function getGroupItems(group){
+  const base = group.items.slice();
+  const custom = (currentCustomBucket()[group.key] || []).map(x => Object.assign({}, x, {isCustom:true}));
+  return base.concat(custom);
+}
+function makeCustomId(groupKey){
+  return 'custom_' + groupKey + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6);
+}
+function addCustomItem(groupKey){
+  const name = window.prompt('Название позиции');
+  if(!name || !name.trim()) return;
+  const tag = window.prompt('Короткий ярлык / пояснение', '') || '';
+  const bucket = currentCustomBucket();
+  const arr = ensureCustomGroup(bucket, groupKey);
+  arr.push({id: makeCustomId(groupKey), name: name.trim(), tag: tag.trim()});
+  save(); renderAll();
+}
+function deleteCustomItem(groupKey, itemId){
+  const bucket = currentCustomBucket();
+  const arr = ensureCustomGroup(bucket, groupKey);
+  const idx = arr.findIndex(x => x.id === itemId);
+  if(idx >= 0) arr.splice(idx, 1);
+  const key = itemKey(groupKey, itemId);
+  delete currentHiddenBucket()[key];
+  delete currentDataBucket()[key];
+  if(state.selectedItemKey === key) state.selectedItemKey = '';
+  save(); renderAll();
+}
+
+function findItemByKey(key){
+  if(!key) return null;
+  const parts = key.split('::');
+  const gk = parts[0], iid = parts[1];
+  const group = BASE.groups.find(g=>g.key===gk);
+  if(!group) return null;
+  let item = group.items.find(i=>i.id===iid);
+  if(!item){
+    const custom = (currentCustomBucket()[gk] || []).find(i=>i.id===iid);
+    if(custom) item = Object.assign({}, custom, {isCustom:true});
+  }
+  if(!item) return null;
+  return {group, item, key};
+}
+
+function renderCardGroupOptions(selected){
+  return BASE.groups.map(g=>`<option value="${escAttr(g.key)}" ${g.key===selected?'selected':''}>${esc(g.title)}</option>`).join('');
+}
+function renderSelectedItemEditor(group, item, key, e){
+  return `
+    <div class="medinfo" style="margin-top:16px">
+      <div class="medinfo-grid">
+        <div class="field">
+          <div class="label">Название</div>
+          <input class="select" data-card-name="${escAttr(key)}" value="${escAttr(item.name)}" />
+        </div>
+        <div class="field">
+          <div class="label">Раздел</div>
+          <select class="select" data-card-group="${escAttr(key)}">
+            ${renderCardGroupOptions(group.key)}
+          </select>
+        </div>
+        <div class="field">
+          <div class="label">Ярлык</div>
+          <input class="select" data-card-tag="${escAttr(key)}" value="${escAttr(item.tag || '')}" />
+        </div>
+        <div class="field">
+          <div class="label">Было</div>
+          <input class="select" data-had="${escAttr(key)}" value="${escAttr(e.had)}" />
+        </div>
+        <div class="field">
+          <div class="label">Осталось</div>
+          <input class="select" data-left="${escAttr(key)}" value="${escAttr(e.left)}" />
+        </div>
+        <div class="field">
+          <div class="label">Ед.</div>
+          <select class="select" data-unit="${escAttr(key)}">
+            ${BASE.units.map(v=>`<option value="${escAttr(v)}" ${v===e.unit?'selected':''}>${esc(v || '—')}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <div class="label">Где лежит</div>
+          <select class="select" data-place="${escAttr(key)}">
+            <option value="">—</option>
+            ${currentStorageList().map(v=>`<option value="${escAttr(v)}" ${v===e.place?'selected':''}>${esc(v)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <div class="label">Комментарий</div>
+          <input class="select" data-comment="${escAttr(key)}" value="${escAttr(e.comment)}" />
+        </div>
+        ${group.key==='supplements' && state.scope==='personal' ? `
+          <div class="field">
+            <div class="label">Когда</div>
+            <select class="select" data-slot="${escAttr(key)}">
+              ${['','Утро','День','Вечер'].map(v=>`<option value="${escAttr(v)}" ${v===e.slot?'selected':''}>${esc(v || '—')}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <div class="label">Как принимать</div>
+            <select class="select" data-how="${escAttr(key)}">
+              ${BASE.how.map(v=>`<option value="${escAttr(v)}" ${v===e.how?'selected':''}>${esc(v || '—')}</option>`).join('')}
+            </select>
+          </div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderSelectedItemView(){
+  const found = findItemByKey(state.selectedItemKey);
+  if(!found) return '<div class="card"><div class="muted">Карточка не найдена.</div></div>';
+  const group = found.group, item = found.item, key = found.key;
+  const data = currentDataBucket();
+  const e = ensureEntry(data, key);
+  const info = MEDINFO[item.id] || {};
+  return `
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="tiny-btn" data-back-to-list>← Назад к списку</button>
+            <button class="tiny-btn" data-card-edit-toggle>${state.cardEditMode ? 'Готово' : 'Редактировать'}</button>
+          </div>
+          <div style="margin-top:12px;font-size:22px;font-weight:700">${esc(item.name)}</div>
+          <div class="item-tag" style="margin-top:6px">${esc(item.tag || '')}</div>
+          <div class="item-cat" style="margin-top:6px">${esc(group.title)}</div>
+        </div>
+        <label class="item-top-left" style="flex:0 0 auto">
+          <input class="item-check" type="checkbox" data-check="${escAttr(key)}" ${e.checked?'checked':''}>
+          <span class="muted" style="margin-top:2px">в аптечке</span>
+        </label>
+      </div>
+
+      <div class="item-grid-top" style="margin-top:14px">
+        <div class="field sm"><div class="label">Было</div><input class="select" data-had="${escAttr(key)}" value="${escAttr(e.had)}"></div>
+        <div class="field sm"><div class="label">Осталось</div><input class="select" data-left="${escAttr(key)}" value="${escAttr(e.left)}"></div>
+        <div class="field sm"><div class="label">Ед.</div><select class="select" data-unit="${escAttr(key)}">${BASE.units.map(v=>`<option value="${escAttr(v)}" ${v===e.unit?'selected':''}>${esc(v || '—')}</option>`).join('')}</select></div>
+      </div>
+
+      <div class="item-grid-bottom">
+        <div class="field"><div class="label">Где лежит</div><select class="select" data-place="${escAttr(key)}"><option value="">—</option>${currentStorageList().map(v=>`<option value="${escAttr(v)}" ${v===e.place?'selected':''}>${esc(v)}</option>`).join('')}</select></div>
+        <div class="field"><div class="label">Комментарий</div><input class="select" data-comment="${escAttr(key)}" value="${escAttr(e.comment)}"></div>
+      </div>
+
+      ${group.key==='supplements' && state.scope==='personal' ? `
+      <div class="item-grid-bottom">
+        <div class="field"><div class="label">Когда</div><select class="select" data-slot="${escAttr(key)}">${['','Утро','День','Вечер'].map(v=>`<option value="${escAttr(v)}" ${v===e.slot?'selected':''}>${esc(v || '—')}</option>`).join('')}</select></div>
+        <div class="field"><div class="label">Как принимать</div><select class="select" data-how="${escAttr(key)}">${BASE.how.map(v=>`<option value="${escAttr(v)}" ${v===e.how?'selected':''}>${esc(v || '—')}</option>`).join('')}</select></div>
+      </div>` : ''}
+
+      ${state.cardEditMode ? renderSelectedItemEditor(group, item, key, e) : ''}
+
+      <div class="medinfo" style="margin-top:16px">
+        <div class="medinfo-grid">
+          <div class="medinfo-block"><div class="medinfo-title">Для чего</div><div class="medinfo-text">${esc(info.purpose || 'Пока не заполнено')}</div></div>
+          <div class="medinfo-block"><div class="medinfo-title">При симптомах</div><div class="medinfo-text">${esc(info.symptoms || 'Пока не заполнено')}</div></div>
+          <div class="medinfo-block"><div class="medinfo-title">Как принимать</div><div class="medinfo-text">${esc(info.how || 'Пока не заполнено')}</div></div>
+          <div class="medinfo-block"><div class="medinfo-title">Чем заменить</div><div class="medinfo-text">${esc(info.replace || 'Пока не заполнено')}</div></div>
+          <div class="medinfo-block"><div class="medinfo-title">Противопоказания</div><div class="medinfo-text">${esc(info.contra || 'Пока не заполнено')}</div></div>
+          <div class="medinfo-block"><div class="medinfo-title">Побочки</div><div class="medinfo-text">${esc(info.side || 'Пока не заполнено')}</div></div>
+        </div>
+        <div class="medinfo-block" style="margin-top:10px"><div class="medinfo-title">Важно</div><div class="medinfo-text">${esc(info.warn || 'Пока не заполнено')}</div></div>
+      </div>
+    </div>
+  `;
+}
+
+
+function getSupplementStack(){
+  if(state.scope !== 'personal') return {morning:[], day:[], evening:[]};
+  const bucket = currentDataBucket();
+  const out = {morning:[], day:[], evening:[]};
+  const group = BASE.groups.find(g=>g.key==='supplements');
+  if(!group) return out;
+
+  // Берём не только базовые БАДы, но и кастомные позиции этого раздела.
+  getGroupItems(group).forEach(item=>{
+    const key = itemKey(group.key, item.id);
+    const entry = ensureEntry(bucket, key);
+    const slot = (entry.slot || '').toLowerCase().trim();
+    const row = {name:item.name, how:entry.how || ''};
+
+    if(slot === 'утро') out.morning.push(row);
+    else if(slot === 'день') out.day.push(row);
+    else if(slot === 'вечер') out.evening.push(row);
+  });
+
+  return out;
+}
+function renderSupplementQuickBlock(){
+  if(state.scope !== 'personal') return '';
+  const s = getSupplementStack();
+  const renderCol = (title, arr) => `
+    <div class="supp-col">
+      <h4>${title}</h4>
+      ${arr.length ? arr.map(x=>`
+        <div class="supp-item">
+          <div class="supp-name">${esc(x.name)}</div>
+          ${x.how ? `<div class="supp-how">${esc(x.how)}</div>` : ''}
+        </div>
+      `).join('') : '<div class="muted">Пока пусто</div>'}
+    </div>
+  `;
+  return `
+    <div class="card" id="suppQuickCard">
+      <h3>Стек / режим приёма</h3>
+      <div class="supp-stack">
+        ${renderCol('Утро', s.morning)}
+        ${renderCol('День', s.day)}
+        ${renderCol('Вечер', s.evening)}
+      </div>
+    </div>
+  `;
+}
+
+
+function inferGroupKeyFromText(line){
+  const s = normalizedText(line);
+  const exactMatches = [];
+  BASE.groups.forEach(group=>{
+    group.items.forEach(item=>{
+      const name = normalizedText(item.name);
+      if(name && (s.includes(name) || name.includes(s))) exactMatches.push(group.key);
+    });
+  });
+  if(exactMatches.length) return exactMatches[0];
+
+  if(/амп|amp|инъек|укол/.test(s)) return 'ampules';
+  if(/омега|omega|d3|витамин d|k2|магний|magnesium|астакс|astax|бербер|коллаген|креатин|цитрул|бета-алан|cla|ресвера|биотин|йохим|тирозин|пробиот|глюкозамин|хондроитин|артишок|расторопш|trib|tribo/.test(s)) return 'supplements';
+  if(/аллерг|супраст|цетрин|лоратад|антигист/.test(s)) return 'allergy';
+  if(/смект|лоперам|церук|панкреат|маалокс|сорб|диар|тошнот|рвот/.test(s)) return 'gut';
+  if(/визин|нафтиз|нос|капли|спрей|глаз/.test(s)) return 'eyesnose';
+  if(/мелаксен|вэлсон|сон|sleep/.test(s)) return 'sleep';
+  if(/перекис|пластыр|бинт|рана|антисеп|йод|зелён/.test(s)) return 'wounds';
+  if(/парацет|ингав|ремант|простуд|температ|жар/.test(s)) return 'cold';
+  return 'pain';
+}
+function guessTagFromText(line, groupKey){
+  const s = normalizedText(line);
+  const group = BASE.groups.find(g=>g.key===groupKey);
+  if(group){
+    for(const item of group.items){
+      const name = normalizedText(item.name);
+      if(name && (s.includes(name) || name.includes(s))){
+        return item.tag || '';
+      }
+    }
+  }
+  const tags = {
+    supplements:'режимный приём',
+    ampules:'ампула / укол',
+    allergy:'аллергия',
+    gut:'жкт',
+    eyesnose:'глаза / нос',
+    sleep:'сон',
+    wounds:'перевязка / обработка',
+    cold:'простуда / температура',
+    pain:'боль'
+  };
+  return tags[groupKey] || '';
+}
+function parseImportLines(text){
+  const lines = String(text || '').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  return lines.map(line=>{
+    const parts = line.split('|').map(x=>x.trim());
+    const rawName = parts[0] || '';
+    const groupKey = inferGroupKeyFromText(rawName);
+    return {
+      raw: line,
+      name: rawName,
+      place: parts[1] || '',
+      slot: parts[2] || '',
+      how: parts[3] || '',
+      groupKey,
+      groupTitle: (BASE.groups.find(g=>g.key===groupKey) || {}).title || groupKey,
+      tag: guessTagFromText(rawName, groupKey)
+    };
+  }).filter(x=>x.name);
+}
+function renderGroupOptions(selected){
+  return BASE.groups.map(g=>`<option value="${escAttr(g.key)}" ${g.key===selected?'selected':''}>${esc(g.title)}</option>`).join('');
+}
+function renderStorageOptions(selected){
+  const arr = currentStorageList() || [];
+  return ['<option value="" ' + (!selected ? 'selected' : '') + '>—</option>']
+    .concat(arr.map(v=>`<option value="${escAttr(v)}" ${v===selected?'selected':''}>${esc(v)}</option>`))
+    .join('');
+}
+function renderImportPreview(){
+  const root = document.getElementById('importPreview');
+  const applyBtn = document.getElementById('applyImportBtn');
+  const clearBtn = document.getElementById('clearImportBtn');
+  if(e.target.hasAttribute('data-card-name') || e.target.hasAttribute('data-card-tag')){
+    const key = e.target.getAttribute('data-card-name') || e.target.getAttribute('data-card-tag');
+    const found = findItemByKey(key);
+    if(found){
+      const {group, item} = found;
+      if(item.isCustom){
+        const arrc = ensureCustomGroup(currentCustomBucket(), group.key);
+        const idx = arrc.findIndex(x => x.id === item.id);
+        if(idx >= 0){
+          if(e.target.hasAttribute('data-card-name')) arrc[idx].name = e.target.value || '';
+          if(e.target.hasAttribute('data-card-tag')) arrc[idx].tag = e.target.value || '';
+          save();
+        }
+      }
+    }
+    return;
+  }
+  const arr = state.importDraft || [];
+  if(!root) return;
+  if(!arr.length){
+    root.style.display = 'none';
+    if(applyBtn) applyBtn.style.display = 'none';
+    if(clearBtn) clearBtn.style.display = 'none';
+    return;
+  }
+  root.style.display = 'block';
+  if(applyBtn) applyBtn.style.display = 'inline-block';
+  if(clearBtn) clearBtn.style.display = 'inline-block';
+  root.innerHTML = '<h3 style="margin-bottom:8px">Предпросмотр разбора</h3>' + arr.map((x, idx)=>`
+    <div class="import-row">
+      <div class="import-left" style="flex:1">
+        <div class="import-name">${esc(x.name)}</div>
+        <div class="import-meta">Раздел: ${esc(x.groupTitle)}${x.tag ? ' · Ярлык: ' + esc(x.tag) : ''}${x.place ? ' · Где лежит: ' + esc(x.place) : ''}${x.slot ? ' · Слот: ' + esc(x.slot) : ''}${x.how ? ' · Как принимать: ' + esc(x.how) : ''}</div>
+        ${state.importEditIndex===idx ? `
+          <div class="import-edit">
+            <div class="import-edit-grid">
+              <div class="field">
+                <div class="label">Название</div>
+                <input class="select" data-edit-name="${idx}" value="${escAttr(x.name)}" />
+              </div>
+              <div class="field">
+                <div class="label">Раздел</div>
+                <select class="select" data-edit-group="${idx}">
+                  ${renderGroupOptions(x.groupKey)}
+                </select>
+              </div>
+              <div class="field">
+                <div class="label">Ярлык</div>
+                <input class="select" data-edit-tag="${idx}" value="${escAttr(x.tag || '')}" />
+              </div>
+              <div class="field">
+                <div class="label">Где лежит</div>
+                <select class="select" data-edit-place="${idx}">
+                  ${renderStorageOptions(x.place || '')}
+                </select>
+              </div>
+              <div class="field">
+                <div class="label">Слот</div>
+                <select class="select" data-edit-slot="${idx}">
+                  <option value="" ${!x.slot?'selected':''}>—</option>
+                  <option value="Утро" ${x.slot==='Утро'?'selected':''}>Утро</option>
+                  <option value="День" ${x.slot==='День'?'selected':''}>День</option>
+                  <option value="Вечер" ${x.slot==='Вечер'?'selected':''}>Вечер</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="label">Как принимать</div>
+                <select class="select" data-edit-how="${idx}">
+                  <option value="" ${!x.how?'selected':''}>—</option>
+                  <option value="натощак" ${x.how==='натощак'?'selected':''}>натощак</option>
+                  <option value="до еды" ${x.how==='до еды'?'selected':''}>до еды</option>
+                  <option value="во время еды" ${x.how==='во время еды'?'selected':''}>во время еды</option>
+                  <option value="после еды" ${x.how==='после еды'?'selected':''}>после еды</option>
+                  <option value="с едой" ${x.how==='с едой'?'selected':''}>с едой</option>
+                  <option value="перед сном" ${x.how==='перед сном'?'selected':''}>перед сном</option>
+                  <option value="по необходимости" ${x.how==='по необходимости'?'selected':''}>по необходимости</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
+        <button class="tiny-btn" data-edit-draft="${idx}">${state.importEditIndex===idx ? 'Готово' : 'Редактировать'}</button>
+        <button class="tiny-btn" data-del-draft="${idx}">Убрать</button>
+      </div>
+    </div>
+  `).join('');
+}
+function applyImportDraft(){
+  state.importEditIndex = -1;
+  const arr = state.importDraft || [];
+  if(!arr.length) return;
+  const customBucket = currentCustomBucket();
+  const dataBucket = currentDataBucket();
+  arr.forEach(x=>{
+    const itemId = makeCustomId(x.groupKey);
+    const groupArr = ensureCustomGroup(customBucket, x.groupKey);
+    groupArr.push({id:itemId, name:x.name, tag:x.tag});
+    const key = itemKey(x.groupKey, itemId);
+    const entry = ensureEntry(dataBucket, key);
+    if(x.place) entry.place = x.place;
+    if(x.slot) entry.slot = x.slot;
+    if(x.how) entry.how = x.how;
+  });
+  state.importDraft = [];
+  const ta = document.getElementById('importText');
+  if(ta) ta.value = '';
+  save(); renderAll();
+}
+function clearImportDraft(){
+  state.importDraft = [];
+  state.importEditIndex = -1;
+  const ta = document.getElementById('importText');
+  if(ta) ta.value = '';
+  save(); renderAll();
+}
+
+function renderScope(){
+  const inCard = !!state.selectedItemKey;
+
+  const overviewCard = document.getElementById('overviewCard');
+  const suppAcc = document.getElementById('suppQuickAcc');
+  const storageAcc = document.getElementById('storageAcc');
+  const importAcc = document.getElementById('importAcc');
+  const searchCard = document.getElementById('searchCard');
+  const storageFilterCard = document.getElementById('storageFilterCard');
+  const refRoot = document.getElementById('refRoot');
+  const modeSeg = document.getElementById('modeSeg');
+  const modeLabel = document.getElementById('modeLabel');
+
+  document.querySelectorAll('#scopeSeg button').forEach(btn=>btn.classList.toggle('active', btn.dataset.scope===state.scope));
+  document.getElementById('memberRow').style.display = (!inCard && state.scope==='personal') ? 'flex' : 'none';
+  document.querySelectorAll('#modeSeg button').forEach(btn=>btn.classList.toggle('active', btn.dataset.mode===state.viewMode));
+  if (modeSeg) modeSeg.style.display = inCard ? 'none' : 'flex';
+  if (modeLabel) modeLabel.style.display = inCard ? 'none' : 'block';
+
+  // На карточке препарата скрываем вообще всё лишнее.
+  if (overviewCard) overviewCard.style.display = inCard ? 'none' : 'block';
+  if (suppAcc) suppAcc.style.display = inCard ? 'none' : (state.scope === 'personal' ? 'block' : 'none');
+  if (storageAcc) storageAcc.style.display = inCard ? 'none' : (state.viewMode === 'storage' ? 'block' : 'none');
+  if (importAcc) importAcc.style.display = inCard ? 'none' : 'block';
+  if (searchCard) searchCard.style.display = inCard ? 'none' : 'block';
+  if (storageFilterCard) storageFilterCard.style.display = (!inCard && state.viewMode === 'storage') ? 'block' : 'none';
+  if (refRoot) refRoot.style.display = inCard ? 'none' : 'block';
+
+  const searchEl = document.getElementById('searchInput');
+  if(searchEl) searchEl.value = state.searchQuery || '';
+
+  const titleEl = document.getElementById('searchTitle');
+  const hintEl = document.getElementById('searchHint');
+  if(titleEl){
+    titleEl.textContent = state.scope === 'personal' ? 'Поиск в личной аптечке' : 'Поиск в общей аптечке';
+  }
+  if(hintEl){
+    hintEl.textContent = state.scope === 'personal'
+      ? 'Ищет по текущей личной аптечке участника: названию, ярлыкам, симптомам, месту хранения и комментарию.'
+      : 'Ищет по текущей общей аптечке: названию, ярлыкам, симптомам, месту хранения и комментарию.';
+  }
+}
+function renderMemberSelect(){
+  const sel=document.getElementById('memberSelect');
+  sel.innerHTML=BASE.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  sel.value=state.memberId;
+}
+function renderStorageBlock(){
+  const arr=currentStorageList();
+  document.getElementById('storageList').innerHTML = arr.map((name,i)=>`<div class="storage-chip"><span>${esc(name)}</span><button data-del-storage="${i}" title="Удалить">×</button></div>`).join('') || '<span class="muted">Пока нет мест хранения.</span>';
+  const filter = currentFilter();
+  const chips = ['<button class="chip '+(!filter?'active':'')+'" data-filter="">Все</button>']
+    .concat(arr.map(v=>`<button class="chip ${filter===v?'active':''}" data-filter="${escAttr(v)}">${esc(v)}</button>`));
+  document.getElementById('storageFilterChips').innerHTML = chips.join('');
+}
+function renderProgress(){
+  const data=currentDataBucket();
+  const hidden=currentHiddenBucket();
+  const hiddenGroups=currentHiddenGroupsBucket();
+  let total=0, done=0;
+  BASE.groups.forEach(g=>{
+    if(hiddenGroups[g.key]) return;
+    g.items.forEach(i=>{
+      const key=itemKey(g.key,i.id);
+      if(hidden[key]) return;
+      total++;
+      if(ensureEntry(data,key).checked) done++;
+    });
+  });
+  document.getElementById('progressText').textContent = `${done} / ${total}`;
+  document.getElementById('progressBar').style.width = total ? `${(done/total)*100}%` : '0%';
+}
+function renderMedInfo(itemId){
+  const info = MEDINFO[itemId];
+  if(!info) return `<div class="medinfo"><div class="muted">Подробная карточка для этой позиции пока не заполнена.</div></div>`;
+  return `
+  <div class="medinfo">
+    <div class="medinfo-grid">
+      <div class="medinfo-block"><div class="medinfo-title">Для чего</div><div class="medinfo-text">${esc(info.purpose)}</div></div>
+      <div class="medinfo-block"><div class="medinfo-title">При симптомах</div><div class="medinfo-text">${esc(info.symptoms)}</div></div>
+      <div class="medinfo-block"><div class="medinfo-title">Как принимать</div><div class="medinfo-text">${esc(info.how)}</div></div>
+      <div class="medinfo-block"><div class="medinfo-title">Чем заменить</div><div class="medinfo-text">${esc(info.replace)}</div></div>
+      <div class="medinfo-block"><div class="medinfo-title">Противопоказания</div><div class="medinfo-text">${esc(info.contra)}</div></div>
+      <div class="medinfo-block"><div class="medinfo-title">Побочки</div><div class="medinfo-text">${esc(info.side)}</div></div>
+    </div>
+    <div class="medinfo-block" style="margin-top:10px"><div class="medinfo-title">Важно</div><div class="medinfo-text">${esc(info.warn)}</div></div>
+  </div>`;
+}
+function renderItem(group,item){
+  const data=currentDataBucket();
+  const key=itemKey(group.key,item.id);
+  const e=ensureEntry(data,key);
+  return `
+  <div class="item">
+    <div class="item-top">
+      <div class="item-top-left">
+        <input class="item-check" type="checkbox" data-check="${escAttr(key)}" ${e.checked?'checked':''}>
+        <div>
+          <button class="mini-link" data-open-card="${escAttr(key)}" style="font-size:16px;font-weight:700;text-align:left">${esc(item.name)}</button>
+          <div class="item-tag">${esc(item.tag)}</div>
+          <div class="item-cat">${esc(group.title)}</div>
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="tiny-btn" data-hide-item="${escAttr(key)}">Скрыть</button>
+        ${item.isCustom ? `<button class="tiny-btn" data-del-item="${escAttr(key)}">Удалить</button>` : ''}
+      </div>
+    </div>
+
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      ${e.place ? `<span class="storage-chip" style="padding:5px 9px">${esc(e.place)}</span>` : ''}
+      ${e.comment ? `<span class="muted">${esc(e.comment)}</span>` : ''}
+    </div>
+
+  </div>`;
+}
+function renderGroupsView(){
+  const hidden=currentHiddenBucket();
+  const hiddenGroups=currentHiddenGroupsBucket();
+  const open=currentOpenBucket();
+  return BASE.groups.filter(g=>!hiddenGroups[g.key]).map(group=>{
+    const visible = getGroupItems(group).filter(item=>!hidden[itemKey(group.key,item.id)]);
+    const itemsHtml = visible.map(item=>renderItem(group,item)).join('') || '<div class="muted">В этом разделе сейчас нет позиций.</div>';
+    return `<details class="section" ${open[group.key]===true?'open':''}>
+      <summary data-toggle-group="${escAttr(group.key)}">
+        <div class="summary-left"><span>${esc(group.title)}</span></div>
+        <div class="summary-right"><span class="arrow">▸</span></div>
+      </summary>
+      <div class="section-body">
+        <div class="group-tools">
+          <button class="group-hide-btn" type="button" data-add-item="${escAttr(group.key)}">${group.key==='supplements' ? 'Добавить БАД' : 'Добавить препарат'}</button>
+          <button class="group-hide-btn" type="button" data-hide-group="${escAttr(group.key)}">Скрыть раздел</button>
+        </div>
+        ${itemsHtml}
+      </div>
+    </details>`;
+  }).join('');
+}
+function renderStorageView(){
+  const hidden=currentHiddenBucket();
+  const filter=currentFilter();
+  if(!filter){
+    return `<div class="card"><div class="muted">Выбери место хранения выше — и увидишь единый список всего, что там лежит.</div></div>`;
+  }
+  const rows = [];
+  BASE.groups.forEach(group=>{
+    getGroupItems(group).forEach(item=>{
+      const key=itemKey(group.key,item.id);
+      if(hidden[key]) return;
+      const entry=ensureEntry(currentDataBucket(), key);
+      if(entry.place===filter) rows.push(renderItem(group,item));
+    });
+  });
+  return `<div class="card place-list"><h3>Содержимое: ${esc(filter)}</h3>${rows.length ? rows.join('') : '<div class="muted">В этом месте пока ничего не отмечено.</div>'}</div>`;
+}
+function renderMedkit(){
+  const q = currentSearchQuery();
+  document.getElementById('medkitRoot').innerHTML = state.selectedItemKey ? renderSelectedItemView() : (q ? renderSearchView() : (state.viewMode === 'groups' ? renderGroupsView() : renderStorageView()));
+  const hidden=currentHiddenBucket();
+  const hiddenGroups=currentHiddenGroupsBucket();
+  const hiddenItems = Object.keys(hidden).map(key=>{
+    const parts=key.split('::');
+    const group=BASE.groups.find(g=>g.key===parts[0]);
+    const item=group && group.items.find(i=>i.id===parts[1]);
+    if(!group||!item) return '';
+    return `<div class="hidden-chip"><div><div>${esc(item.name)}</div><div class="muted">${esc(group.title)}</div></div><div style="display:flex;gap:8px">${item.isCustom ? `<button class="tiny-btn" data-del-item="${escAttr(key)}">Удалить</button>` : ''}<button class="tiny-btn" data-restore-item="${escAttr(key)}">Показать</button></div></div>`;
+  }).join('');
+  const hiddenGroupsHtml = Object.keys(hiddenGroups).map(gk=>{
+    const group=BASE.groups.find(g=>g.key===gk);
+    if(!group) return '';
+    return `<div class="hidden-chip"><div>${esc(group.title)}</div><button class="tiny-btn" data-restore-group="${escAttr(gk)}">Вернуть</button></div>`;
+  }).join('');
+  if(state.selectedItemKey){ document.getElementById('hiddenRoot').innerHTML = ''; return; }
+  document.getElementById('hiddenRoot').innerHTML = (hiddenItems || hiddenGroupsHtml)
+    ? `<div class="hidden-block">${hiddenItems?`<h3>Скрытые позиции</h3>${hiddenItems}`:''}${hiddenGroupsHtml?`<h3 style="margin-top:${hiddenItems?'14px':'0'}">Скрытые разделы</h3>${hiddenGroupsHtml}`:''}</div>`
+    : '';
+}
+
+function renderQuickReference(){
+  return `
+    <div class="card">
+      <h3>Быстрая справка по ситуациям</h3>
+      <div class="ref-grid">
+        <div class="ref-card">
+          <h4>Боль</h4>
+          <ul>
+            <li><b>Сначала:</b> оценить силу боли и причину — травма, мышцы, голова, зуб, спина.</li>
+            <li><b>Обычно смотрят:</b> Ибупрофен, Нимесулид, Кетанов; при остром сценарии — ампулы сильного обезбола.</li>
+            <li><b>Важно:</b> если боль после травмы нарастает, есть деформация, потеря функции — не маскировать только таблетками.</li>
+          </ul>
+        </div>
+        <div class="ref-card">
+          <h4>Простуда / температура</h4>
+          <ul>
+            <li><b>Сначала:</b> покой, вода, контроль температуры, оценить общее состояние.</li>
+            <li><b>Обычно смотрят:</b> Парацетамол, Ибупрофен; симптоматические средства и то, что используете при простуде.</li>
+            <li><span class="ref-red">Красные флаги:</span> очень высокая температура, спутанность, тяжёлое дыхание, сильная слабость.</li>
+          </ul>
+        </div>
+        <div class="ref-card">
+          <h4>ЖКТ / отравление / рвота</h4>
+          <ul>
+            <li><b>Сначала:</b> остановить нагрузку, поить маленькими глотками, следить за обезвоживанием.</li>
+            <li><b>Обычно смотрят:</b> Смекта/сорбенты, регидратация, при выраженной тошноте — Церукал.</li>
+            <li><span class="ref-red">Красные флаги:</span> кровь, неукротимая рвота, сильная слабость, признаки обезвоживания.</li>
+          </ul>
+        </div>
+        <div class="ref-card">
+          <h4>Аллергия</h4>
+          <ul>
+            <li><b>Сначала:</b> убрать возможный аллерген, оценить — зуд/сыпь это или уже отёк/дыхание.</li>
+            <li><b>Обычно смотрят:</b> Супрастин; в тяжёлом сценарии — ампульные препараты по вашей схеме.</li>
+            <li><span class="ref-red">Срочно:</span> отёк губ, языка, горла, свистящее дыхание, ощущение нехватки воздуха.</li>
+          </ul>
+        </div>
+        <div class="ref-card">
+          <h4>Раны / перевязка</h4>
+          <ul>
+            <li><b>Сначала:</b> остановить кровотечение, очистить рану, наложить повязку.</li>
+            <li><b>Обычно смотрят:</b> Перекись/антисептик, пластыри, бинты, перевязочные материалы.</li>
+            <li><span class="ref-red">Красные флаги:</span> сильное кровотечение, глубокая рана, грязная рана, потеря чувствительности.</li>
+          </ul>
+        </div>
+        <div class="ref-card">
+          <h4>Сон / перегруз</h4>
+          <ul>
+            <li><b>Сначала:</b> убрать стимуляторы, дать тишину и паузу, оценить усталость и режим.</li>
+            <li><b>Обычно смотрят:</b> Мелаксен, Вэлсон и ваш личный вечерний сценарий.</li>
+            <li><b>Важно:</b> не использовать снотворные перед вождением, ночными переходами и работой на воде.</li>
+          </ul>
+        </div>
+        <div class="ref-card">
+          <h4>Глаза / нос</h4>
+          <ul>
+            <li><b>Сначала:</b> понять, это раздражение, сухость, заложенность или травма/соринка.</li>
+            <li><b>Обычно смотрят:</b> Визин и ваши капли/спреи для носа и глаз.</li>
+            <li><span class="ref-red">Важно:</span> если была травма глаза или резкое ухудшение зрения — не экспериментировать.</li>
+          </ul>
+        </div>
+        <div class="ref-card">
+          <h4>Ампулы / уколы</h4>
+          <ul>
+            <li><b>Сначала:</b> использовать только если у вас заранее продуман сценарий и есть понимание, что и зачем колется.</li>
+            <li><b>Обычно смотрят:</b> Дексаметазон, Кеторол, Супрастин, Церукал — по ситуации.</li>
+            <li><span class="ref-red">Важно:</span> это серьёзный блок для осознанного применения, а не первая кнопка при любой проблеме.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAll(){
+  renderScope();
+  renderMemberSelect();
+  renderStorageBlock();
+  renderProgress();
+  document.getElementById('suppQuickRoot').innerHTML = (state.selectedItemKey || state.scope !== 'personal') ? '' : renderSupplementQuickBlock();
+
+  const searchEl = document.getElementById('searchCard');
+  const searchRoot = document.getElementById('searchRoot');
+  if(searchEl && searchRoot){
+    searchRoot.innerHTML = '';
+    searchRoot.appendChild(searchEl);
+  }
+
+  renderMedkit();
+  renderImportPreview();
+
+  const refRoot = document.getElementById('refRoot');
+  if(refRoot){
+    refRoot.style.display = state.selectedItemKey ? 'none' : 'block';
+    refRoot.innerHTML = state.selectedItemKey ? '' : renderQuickReference();
+  }
+}
+function addStorage(name){
+  const clean=(name||'').trim();
+  if(!clean) return;
+  const arr=currentStorageList();
+  if(arr.includes(clean)) return;
+  arr.push(clean);
+  save(); renderAll();
+}
+function deleteStorage(idx){
+  const arr=currentStorageList();
+  const removed=arr[idx];
+  if(typeof removed==='undefined') return;
+  arr.splice(idx,1);
+  const bucket=currentDataBucket();
+  Object.keys(bucket).forEach(k=>{ if(bucket[k] && bucket[k].place===removed) bucket[k].place=''; });
+  if(currentFilter()===removed) setCurrentFilter('');
+  save(); renderAll();
+}
+function hideItem(key){ currentHiddenBucket()[key]=true; save(); renderAll(); }
+function restoreItem(key){ delete currentHiddenBucket()[key]; save(); renderAll(); }
+function hideGroup(key){ currentHiddenGroupsBucket()[key]=true; save(); renderAll(); }
+function restoreGroup(key){ delete currentHiddenGroupsBucket()[key]; save(); renderAll(); }
+
+document.addEventListener('click', (e)=>{
+  const scopeBtn=e.target.closest('#scopeSeg button[data-scope]');
+  if(scopeBtn){ state.scope=scopeBtn.dataset.scope; state.selectedItemKey=''; save(); renderAll(); return; }
+  const modeBtn=e.target.closest('#modeSeg button[data-mode]');
+  if(modeBtn){ state.viewMode=modeBtn.dataset.mode; state.selectedItemKey=''; state.cardEditMode=false; save(); renderAll(); return; }
+  if(e.target.id==='addStorageBtn'){ addStorage(document.getElementById('newStorageInput').value); document.getElementById('newStorageInput').value=''; return; }
+  const delStorage=e.target.closest('[data-del-storage]');
+  if(delStorage){ deleteStorage(Number(delStorage.dataset.delStorage)); return; }
+  const addItemBtn=e.target.closest('[data-add-item]');
+  if(addItemBtn){ addCustomItem(addItemBtn.dataset.addItem); return; }
+  const delItemBtn=e.target.closest('[data-del-item]');
+  if(delItemBtn){
+    const parts = delItemBtn.dataset.delItem.split('::');
+    deleteCustomItem(parts[0], parts[1]);
+    return;
+  }
+  const hideBtn=e.target.closest('[data-hide-item]');
+  if(hideBtn){ hideItem(hideBtn.dataset.hideItem); return; }
+  const restoreBtn=e.target.closest('[data-restore-item]');
+  if(restoreBtn){ restoreItem(restoreBtn.dataset.restoreItem); return; }
+  const hideGroupBtn=e.target.closest('[data-hide-group]');
+  if(hideGroupBtn){ hideGroup(hideGroupBtn.dataset.hideGroup); return; }
+  const restoreGroupBtn=e.target.closest('[data-restore-group]');
+  if(restoreGroupBtn){ restoreGroup(restoreGroupBtn.dataset.restoreGroup); return; }
+  if(e.target.id==='parseImportBtn'){
+    state.importDraft = parseImportLines(document.getElementById('importText').value || '');
+    state.importEditIndex = -1;
+    save(); renderAll(); return;
+  }
+  if(e.target.id==='applyImportBtn'){ applyImportDraft(); return; }
+  if(e.target.id==='clearImportBtn'){ clearImportDraft(); return; }
+  const editDraftBtn=e.target.closest('[data-edit-draft]');
+  if(editDraftBtn){
+    const idx = Number(editDraftBtn.dataset.editDraft);
+    state.importEditIndex = state.importEditIndex===idx ? -1 : idx;
+    save(); renderAll(); return;
+  }
+  const delDraftBtn=e.target.closest('[data-del-draft]');
+  if(delDraftBtn){
+    const idx = Number(delDraftBtn.dataset.delDraft);
+    state.importDraft.splice(idx,1);
+    if(state.importEditIndex===idx) state.importEditIndex = -1;
+    save(); renderAll(); return;
+  }
+  const openCardBtn=e.target.closest('[data-open-card]');
+  if(openCardBtn){ state.selectedItemKey=openCardBtn.dataset.openCard; state.cardEditMode=false; save(); renderAll(); window.scrollTo({top:0, behavior:'instant'}); return; }
+  const backBtn=e.target.closest('[data-back-to-list]');
+  if(backBtn){ state.selectedItemKey=''; state.cardEditMode=false; save(); renderAll(); window.scrollTo({top:0, behavior:'instant'}); return; }
+  const cardEditBtn=e.target.closest('[data-card-edit-toggle]');
+  if(cardEditBtn){ state.cardEditMode = !state.cardEditMode; save(); renderAll(); return; }
+  const filterBtn=e.target.closest('[data-filter]');
+  if(filterBtn){ setCurrentFilter(filterBtn.dataset.filter); state.selectedItemKey=''; state.cardEditMode=false; save(); renderAll(); return; }
+});
+
+document.addEventListener('input', (e)=>{
+  if(e.target.id==='searchInput'){
+    state.searchQuery = e.target.value || '';
+    save();
+    // Не перерисовываем весь экран, чтобы поле поиска не теряло фокус на каждой букве.
+    renderMedkit();
+    document.getElementById('refRoot').innerHTML = renderQuickReference();
+    return;
+  }
+});
+
+document.addEventListener('input', (e)=>{
+  const arr = state.importDraft || [];
+  const fields = [
+    ['data-edit-name','name'],
+    ['data-edit-tag','tag']
+  ];
+  for(const [attr, field] of fields){
+    if(e.target.hasAttribute(attr)){
+      const idx = Number(e.target.getAttribute(attr));
+      if(arr[idx]){
+        arr[idx][field] = e.target.value || '';
+        save();
+      }
+      return;
+    }
+  }
+});
+
+document.addEventListener('change', (e)=>{
+  const bucket=currentDataBucket();
+  const arr = state.importDraft || [];
+
+  if(e.target.id==='memberSelect'){ state.memberId=e.target.value; state.selectedItemKey=''; save(); renderAll(); return; }
+
+  if(e.target.hasAttribute('data-edit-group')){
+    const idx = Number(e.target.getAttribute('data-edit-group'));
+    if(arr[idx]){
+      arr[idx].groupKey = e.target.value;
+      arr[idx].groupTitle = (BASE.groups.find(g=>g.key===e.target.value) || {}).title || e.target.value;
+      save(); renderAll();
+    }
+    return;
+  }
+
+  if(e.target.hasAttribute('data-edit-slot')){
+    const idx = Number(e.target.getAttribute('data-edit-slot'));
+    if(arr[idx]){
+      arr[idx].slot = e.target.value || '';
+      save(); renderAll();
+    }
+    return;
+  }
+
+  if(e.target.hasAttribute('data-edit-how')){
+    const idx = Number(e.target.getAttribute('data-edit-how'));
+    if(arr[idx]){
+      arr[idx].how = e.target.value || '';
+      save(); renderAll();
+    }
+    return;
+  }
+
+  if(e.target.hasAttribute('data-edit-place')){
+    const idx = Number(e.target.getAttribute('data-edit-place'));
+    if(arr[idx]){
+      arr[idx].place = e.target.value || '';
+      save(); renderAll();
+    }
+    return;
+  }
+
+  const map = [
+    ['data-check','checked', el=>!!el.checked],
+    ['data-had','had', el=>el.value],
+    ['data-left','left', el=>el.value],
+    ['data-unit','unit', el=>el.value],
+    ['data-place','place', el=>el.value],
+    ['data-comment','comment', el=>el.value],
+    ['data-slot','slot', el=>el.value],
+    ['data-how','how', el=>el.value]
+  ];
+  for(const item of map){
+    const attr=item[0], field=item[1], getter=item[2];
+    if(e.target.hasAttribute(attr)){
+      const key=e.target.getAttribute(attr);
+      const entry=ensureEntry(bucket,key);
+      entry[field]=getter(e.target);
+      save();
+      if(attr==='data-check'||attr==='data-place'||attr==='data-slot'||attr==='data-how'){ renderAll(); }
+      return;
+    }
+  }
+});
+
+document.addEventListener('toggle', (e)=>{
+  if(e.target.matches('details.section')){
+    const summary=e.target.querySelector('summary[data-toggle-group]');
+    if(summary){ currentOpenBucket()[summary.dataset.toggleGroup]=e.target.open; save(); }
+  }
+});
+
+load();
+renderAll();
+</script>
+</body>
+</html>
